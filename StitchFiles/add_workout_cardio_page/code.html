@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Workout - GeminiFit</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#067ff9",
+              "background-light": "#f5f7f8",
+              "background-dark": "#0f1923",
+            },
+            fontFamily: {
+              display: ["Space Grotesk"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+      .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white">
+<div class="flex flex-col min-h-screen">
+<header class="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<button class="text-white">
+<span class="material-symbols-outlined"> close </span>
+</button>
+<h1 class="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Add Workout</h1>
+<div class="w-8"></div>
+</header>
+<main class="flex-grow p-4 space-y-6">
+<div class="p-1 bg-background-dark/50 dark:bg-background-light/10 rounded-lg flex space-x-1">
+<input checked="" class="hidden" id="cardio" name="workoutType" type="radio" value="cardio"/>
+<label class="flex-1 text-center py-2 px-4 rounded cursor-pointer text-sm font-medium text-white/70 has-[:checked]:bg-primary has-[:checked]:text-white transition-colors duration-300" for="cardio">
+            Cardio Workout
+          </label>
+<input class="hidden" id="weightlifting" name="workoutType" type="radio" value="weightlifting"/>
+<label class="flex-1 text-center py-2 px-4 rounded cursor-pointer text-sm font-medium text-white/70 has-[:checked]:bg-primary has-[:checked]:text-white transition-colors duration-300" for="weightlifting">
+            Weightlifting Workout
+          </label>
+</div>
+<div class="space-y-4">
+<div class="relative">
+<select class="w-full bg-background-dark/50 dark:bg-background-light/10 text-white placeholder-white/50 border-none rounded-lg p-4 appearance-none form-select focus:ring-2 focus:ring-primary">
+<option disabled="" selected="">Activity Type</option>
+<option>Running</option>
+<option>Cycling</option>
+<option>Swimming</option>
+<option>Elliptical</option>
+</select>
+</div>
+<div class="relative">
+<input class="w-full bg-background-dark/50 dark:bg-background-light/10 text-white placeholder-white/50 border-none rounded-lg p-4 focus:ring-2 focus:ring-primary" placeholder="Duration (e.g., 30 mins)" type="text"/>
+</div>
+<div class="relative">
+<textarea class="w-full bg-background-dark/50 dark:bg-background-light/10 text-white placeholder-white/50 border-none rounded-lg p-4 h-28 resize-none focus:ring-2 focus:ring-primary" placeholder="Notes (e.g., felt strong, new PR)"></textarea>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<div class="h-px bg-white/10 flex-grow"></div>
+<span class="text-sm font-bold text-white">OR</span>
+<div class="h-px bg-white/10 flex-grow"></div>
+</div>
+<div class="space-y-4 p-4 rounded-xl bg-primary/10">
+<div class="flex items-center space-x-3">
+<span class="material-symbols-outlined text-primary text-2xl"> auto_awesome </span>
+<h2 class="text-lg font-bold text-white">Add with Gemini</h2>
+</div>
+<p class="text-sm text-white/70">Describe your workout in plain text. Gemini will handle the rest.</p>
+<div class="relative">
+<textarea class="w-full bg-background-dark/50 dark:bg-background-light/10 text-white placeholder-white/50 border-none rounded-lg p-4 h-32 resize-none focus:ring-2 focus:ring-primary" placeholder="e.g., Ran 5k in 25 minutes, then did 3 sets of 10 pushups."></textarea>
+</div>
+</div>
+</main>
+<footer class="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
+<button class="w-full bg-primary text-white font-bold py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors duration-300">
+          Add Workout
+        </button>
+</footer>
+</div>
+
+
+</body></html>

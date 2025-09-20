@@ -1,0 +1,6 @@
+{
+  "appId": "com.geminifit.app",
+  "appName": "GeminiFit",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

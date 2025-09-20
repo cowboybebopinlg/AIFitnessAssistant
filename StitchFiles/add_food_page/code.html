@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<title>GeminiFit - Add Food</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#067ff9",
+            "background-light": "#f5f7f8",
+            "background-dark": "#0f1923",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-neutral-800 dark:text-neutral-200">
+<div class="flex flex-col h-screen justify-between">
+<div class="flex-grow overflow-y-auto">
+<header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10">
+<div class="flex items-center p-4">
+<button class="text-neutral-800 dark:text-neutral-200">
+<span class="material-symbols-outlined">close</span>
+</button>
+<h1 class="text-lg font-bold text-center flex-1 pr-6">Add Food</h1>
+</div>
+<div class="border-b border-neutral-200 dark:border-neutral-700 px-4">
+<div class="flex">
+<a class="flex-1 text-center py-3 text-sm font-bold border-b-2 border-primary text-primary" href="#">Saved</a>
+<a class="flex-1 text-center py-3 text-sm font-bold border-b-2 border-transparent text-neutral-500 dark:text-neutral-400" href="#">Recent</a>
+</div>
+</div>
+</header>
+<main class="p-4 space-y-4">
+<section>
+<div class="space-y-2">
+<div class="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBu3S3XR5A_ZurfAIdarEed34rAl2XtebxvVkuLR-cTDsU_BTRgK3kwvgawLnOtOGKaR3VvkG8bqJTOAqlb4bHEmje0KyhRNFr0WyBfnhCL2Dh32LiHHQ20M2y2AVv7VFaFYL7o5FiD9g6pj2SpWnJZGQWlSDo015zSY6k8pxt9sxmEpo7vZvVKNnMTJQCYD1xf1aQ0EtlnR5kXdg5plK1MjbStcOuZLyRTjbdWHA5jeQ3eibfg600PLDRhFdJjCk0ybPq1TCiYjPQ");'></div>
+<div class="flex-1">
+<p class="font-medium">Chicken Breast</p>
+<p class="text-sm text-neutral-500 dark:text-neutral-400">100g · 150 kcal</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
+</div>
+<div class="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAUt9HlSSy8sX1Zyx7ysZ6vBuM4vISGwF536ZN6zuUtIxZSQVCh0J6g1MOSIUU6VTnmJf7WfAX0472B27sa4-H8QvVmIMRWoU_WvhCSioBZV8xyiZTpsClMyUykFjiCSmk_vfFj9uG1sQdm2XT_e6HhHhGoSpt-9VJ-6-X4J3MjvZetQ5dfqs7FUBunI4Ww9K_ZouQ3BzX2QCZnALPoGC1kmQ-5zKrIOJZP61bjtssbHn-rax7Sm6bSQ_YUGTWqJoAAE8ljAh-qZdI");'></div>
+<div class="flex-1">
+<p class="font-medium">Broccoli</p>
+<p class="text-sm text-neutral-500 dark:text-neutral-400">100g · 120 kcal</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
+</div>
+<div class="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBexTgJPIZdRZW-uqHwPyQ24nAaQBoCIpPQHSlYfU-mjZvKJ436sfegCK0DaYE767V7_35GTbjsu-AzKzZgnmw2SSM0i9jFBCVgjIKabJpDCM_9POsudF2I9ZSta99_wxppJaN754obNhq4mYt8FLckKOGqSlxhoQ7-9P_QoeCm5LQrXqKOyUBqxuHAbfin_GOX9R4cgKIKDMT3brl8eYoH59NqYGQuOEuYxyjtlLTw5fZX9NfdCGi7Rj9qhx09uFoq8kCjTRHHWuM");'></div>
+<div class="flex-1">
+<p class="font-medium">Brown Rice</p>
+<p class="text-sm text-neutral-500 dark:text-neutral-400">100g · 200 kcal</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
+</div>
+<div class="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAA3JI976gfVxE6peeNUvJgvMzvCG_bTcLWWHUVAit3fP7t0abGAELtBgeKNecZpH_K84wWWuWYV43OZcU28bH0vp6YtoJUgYDHw0fHYXaKNAAFZdnkr_PTdo62HhJ5kiXJZQY5-zadlwrWlaR7yn7Zhw6yFB1-NPiDiFcWo-gK--WtmySwrN7CXuCiQdvpzpYfxsiJMDRKFDzyRZcEbT1tAR3PST3F8VYszfbJ-PD4GfBuE2waLoJ0urHb7IK-5PcQr_0p9Zd2F6U");'></div>
+<div class="flex-1">
+<p class="font-medium">Salmon</p>
+<p class="text-sm text-neutral-500 dark:text-neutral-400">100g · 180 kcal</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
+</div>
+<div class="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
+<div class="w-14 h-14 rounded-lg bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDImGjerOn5VRXd8zHdeBsJTKvDVPxCxdcS-6eDgmhyXuh2USrAKNZDS-kBoEw0vaBnXGf--C1Fsvb47-7Pq3Epj42zty0YIo0O8yi2rJwpAzhmpRE5eQ4Wji-bNBGWRqUx0N4qMGpHKgme8YmZLC0nU1xn2vyL9CWSPOnIx41sfAzQe05gXWunER1vIXQmRQZQDzWh8PX6yp5qVnsnJWtkkF1xN_NIram7GGiBwzi5ED2ZOPnriwXqd1f5CKP6Y9AnqY9e_15vgAE");'></div>
+<div class="flex-1">
+<p class="font-medium">Spinach</p>
+<p class="text-sm text-neutral-500 dark:text-neutral-400">100g · 100 kcal</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
+</div>
+</div>
+</section>
+<section class="py-4">
+<button class="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base">
+<span class="material-symbols-outlined text-xl">auto_awesome</span>
+<span>Add with Gemini</span>
+</button>
+</section>
+<section>
+<h2 class="text-xl font-bold mb-4">Manual Entry</h2>
+<div class="space-y-4">
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Food Name" type="text"/>
+<div class="grid grid-cols-2 gap-4">
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Calories" type="number"/>
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Protein (g)" type="number"/>
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Fat (g)" type="number"/>
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Carbs (g)" type="number"/>
+</div>
+<input class="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400" placeholder="Fiber (g)" type="number"/>
+<label class="flex items-center justify-between p-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50">
+<span class="font-medium">Save as Favorite</span>
+<div class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-neutral-300 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-primary"></div>
+</div>
+</label>
+</div>
+</section>
+<div class="pt-4">
+<button class="w-full h-12 px-6 rounded-lg bg-primary/90 hover:bg-primary text-white font-bold text-base">Add Food</button>
+</div>
+</main>
+</div>
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-neutral-200 dark:border-neutral-700">
+<nav class="flex justify-around items-center h-16">
+<a class="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-xs font-medium">Daily Log</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-xs font-medium">Trends</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="text-xs font-medium">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-xs font-medium">Settings</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>

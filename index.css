@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-500: #06f906;
+}
+
+.glow {
+  box-shadow: 0 0 5px var(--primary-500), 0 0 10px var(--primary-500), 0 0 15px var(--primary-500);
+}

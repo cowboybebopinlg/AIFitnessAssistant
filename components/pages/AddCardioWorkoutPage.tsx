@@ -1,0 +1,151 @@
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAppContext } from '../../context/AppContext';
+import { getWorkoutInfoFromText } from '../../services/geminiService';
+
+const AddCardioWorkoutPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { addWorkout, geminiApiKey } = useAppContext();
+
+  const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
+
+  const [activityType, setActivityType] = useState('');
+  const [duration, setDuration] = useState('');
+  const [notes, setNotes] = useState('');
+  const [geminiText, setGeminiText] = useState('');
+
+  const handleAddWorkout = () => {
+    if (!activityType || !duration) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    const newExercise: Exercise = {
+      id: new Date().toISOString(),
+      name: activityType,
+      type: 'cardio',
+      duration: parseInt(duration, 10),
+    };
+
+    const newWorkout: WorkoutSession = {
+      name: activityType,
+      notes: notes,
+      exercises: [newExercise],
+    };
+
+    addWorkout(dateString, newWorkout);
+    alert('Cardio workout added!');
+    navigate(-1);
+  };
+
+  const handleAnalyzeWorkoutWithGemini = async () => {
+    if (!geminiApiKey) {
+      alert('Please set your Gemini API key in the settings.');
+      return;
+    }
+
+    try {
+      const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
+      const newExercise: Exercise = {
+        id: new Date().toISOString(),
+        name: workout.name || 'Unknown Workout',
+        type: 'cardio',
+        duration: workout.duration || 0,
+      };
+
+      const newWorkout: WorkoutSession = {
+        name: workout.name || 'Unknown Workout',
+        notes: workout.notes || '',
+        exercises: [newExercise],
+      };
+
+      addWorkout(dateString, newWorkout);
+      alert('Workout added via Gemini!');
+      navigate(-1);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to parse workout with Gemini.');
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <header className="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+        <button className="text-white" onClick={() => navigate(-1)}>
+          <span className="material-symbols-outlined"> close </span>
+        </button>
+        <h1 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Add Cardio Workout</h1>
+        <div className="w-8"></div>
+      </header>
+      <main className="p-2 space-y-4">
+        <div className="space-y-2">
+          <div>
+            <label htmlFor="activity-type" className="block text-sm font-medium text-gray-400 mb-1">Activity Type</label>
+            <input 
+              id="activity-type"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
+              placeholder="e.g., Running"
+              type="text"
+              value={activityType}
+              onChange={(e) => setActivityType(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-400 mb-1">Duration</label>
+            <input 
+              id="duration"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., 30 mins"
+              type="text"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="notes" className="block text-sm font-medium text-gray-400 mb-1">Notes</label>
+            <textarea 
+              id="notes"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., felt strong, new PR)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            ></textarea>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="h-px bg-white/10 flex-grow"></div>
+          <span className="text-sm font-bold text-white">OR</span>
+          <div className="h-px bg-white/10 flex-grow"></div>
+        </div>
+        {geminiApiKey && (
+          <div className="space-y-2 p-3 rounded-xl bg-primary/10">
+            <div className="flex items-center space-x-3">
+              <span className="material-symbols-outlined text-primary text-2xl"> auto_awesome </span>
+              <h2 className="text-lg font-bold text-white">Add with Gemini</h2>
+            </div>
+            <p className="text-sm text-white/70">Describe your workout in plain text. Gemini will handle the rest.</p>
+            <div className="relative">
+              <textarea 
+                className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-primary" 
+                placeholder="e.g., Ran 5k in 25 minutes, then did 3 sets of 10 pushups."
+                value={geminiText}
+                onChange={(e) => setGeminiText(e.target.value)}
+              ></textarea>
+            </div>
+          </div>
+        )}
+      </main>
+      <footer className="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
+        <button 
+          className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
+          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleAddWorkout}
+        >
+          Save Workout
+        </button>
+      </footer>
+    </div>
+  );
+};
+
+export default AddCardioWorkoutPage;
