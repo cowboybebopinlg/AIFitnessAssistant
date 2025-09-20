@@ -12,10 +12,12 @@
     "sync": "npx cap sync"
   },
   "dependencies": {
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/core": "^6.0.0",
-    "@capacitor/filesystem": "^6.0.0",
-    "@capacitor/preferences": "^6.0.0",
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/browser": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/filesystem": "^7.0.0",
+    "@capacitor/preferences": "^7.0.0",
     "@google/genai": "^1.20.0",
     "@google/generative-ai": "^0.24.1",
     "react": "^19.1.1",
@@ -24,8 +26,10 @@
     "recharts": "^3.2.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
     "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^24.5.2",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",

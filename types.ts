@@ -27,12 +27,16 @@ export type Exercise = {
   type: 'cardio';
   duration?: number; // in minutes
   distance?: number; // in miles/km
+  averageHeartRate?: number;
+  caloriesBurned?: number;
 });
 
 export interface WorkoutSession {
   name: string;
   notes?: string;
   exercises: Exercise[];
+  averageHeartRate?: number;
+  caloriesBurned?: number;
 }
 
 export interface DailyLog {
@@ -68,6 +72,48 @@ export interface BodyMeasurement {
     value: number; // in inches
 }
 
+export interface FitbitActivity {
+  logId: number;
+  activityId: number;
+  activityParentId: number;
+  activityParentName: string;
+  name: string;
+  description: string;
+  calories: number;
+  distance: number;
+  steps: number;
+  duration: number; // in milliseconds
+  lastModified: string;
+  startTime: string;
+  isFavorite: boolean;
+  hasActiveZoneMinutes: boolean;
+  startDate: string;
+  hasStartTime: boolean;
+}
+
+export interface FitbitSummary {
+  caloriesOut: number;
+  activityCalories: number;
+  caloriesBMR: number;
+  activeScore: number;
+  steps: number;
+  floors: number;
+  elevation: number;
+  sedentaryMinutes: number;
+  lightlyActiveMinutes: number;
+  fairlyActiveMinutes: number;
+  veryActiveMinutes: number;
+  marginalCalories: number;
+  restingHeartRate: number;
+  heartRateZones: any[]; // Define more specifically if needed
+  hrv?: number; // Added HRV
+}
+
+export interface DailyFitbitData {
+  summary: FitbitSummary | null;
+  activities: FitbitActivity[];
+}
+
 export interface AppData {
   targets: NutritionTargets;
   logs: { [date: string]: DailyLog };
@@ -77,6 +123,7 @@ export interface AppData {
   settings?: {
     geminiApiKey?: string;
   };
+  fitbitData?: { [date: string]: DailyFitbitData }; // Now date-keyed
 }
 
 export interface TrendDataPoint {

@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { WorkoutSession, Exercise, ExerciseSet } from '../../types';
+import { WorkoutSession, Exercise, ExerciseSet, FitbitActivity } from '../../types';
 
 const AddWeightliftingWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addWorkout, geminiApiKey } = useAppContext();
+  const location = useLocation();
+  const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
+
+  console.log('AddWeightliftingWorkoutPage: location.state', location.state);
+  console.log('AddWeightliftingWorkoutPage: fitbitActivity', fitbitActivity);
 
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
   const [exercises, setExercises] = useState<Exercise[]>([
     { id: new Date().toISOString(), name: '', type: 'weights', bodyPart: '', sets: [{ reps: 0, weight: 0 }] },
   ]);
+  const [averageHeartRate, setAverageHeartRate] = useState('');
+  const [caloriesBurned, setCaloriesBurned] = useState('');
   const [geminiText, setGeminiText] = useState('');
+
+  useEffect(() => {
+    if (fitbitActivity) {
+      const newExercise: Exercise = {
+        id: new Date().toISOString(),
+        name: fitbitActivity.activityName || fitbitActivity.activityParentName,
+        type: 'weights',
+        bodyPart: '', // Fitbit doesn't provide body part
+        sets: [{ reps: 0, weight: 0 }], // Default sets, user can edit
+      };
+      setExercises([newExercise]);
+      setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
+      setCaloriesBurned(String(fitbitActivity.calories || ''));
+      setGeminiText(`Synced from Fitbit. Duration: ${fitbitActivity.duration / 60000} mins, Distance: ${fitbitActivity.distance || 0} miles, Steps: ${fitbitActivity.steps || 0}`);
+    }
+  }, [fitbitActivity]);
 
   const handleAddExercise = () => {
     setExercises([
@@ -44,6 +67,8 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     const newWorkout: WorkoutSession = {
       name: 'Weightlifting',
       exercises: exercises,
+      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : undefined,
     };
 
     addWorkout(dateString, newWorkout);
@@ -62,6 +87,8 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
       const newWorkout: WorkoutSession = {
         name: workout.name || 'Weightlifting',
         exercises: workout.exercises || [],
+        averageHeartRate: workout.averageHeartRate || undefined,
+        caloriesBurned: workout.caloriesBurned || undefined,
       };
 
       addWorkout(dateString, newWorkout);
@@ -83,6 +110,28 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
         <div className="w-10"></div>
       </header>
       <main className="p-2 space-y-4">
+        <div>
+            <label htmlFor="average-heart-rate" className="block text-sm font-medium text-gray-400 mb-1">Average Heart Rate (bpm)</label>
+            <input 
+              id="average-heart-rate"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., 120"
+              type="number"
+              value={averageHeartRate}
+              onChange={(e) => setAverageHeartRate(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="calories-burned" className="block text-sm font-medium text-gray-400 mb-1">Calories Burned</label>
+            <input 
+              id="calories-burned"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., 250"
+              type="number"
+              value={caloriesBurned}
+              onChange={(e) => setCaloriesBurned(e.target.value)}
+            />
+          </div>
         <div className="space-y-6">
           {exercises.map((exercise, exerciseIndex) => (
             <div key={exercise.id} className="rounded-xl bg-background-light p-4 shadow-sm dark:bg-gray-800/20">

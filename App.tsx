@@ -1,56 +1,40 @@
-import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, lazy, Suspense } from 'react';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
+
 import BottomNav from './components/BottomNav';
-import Dashboard from './components/pages/Dashboard';
-import DailyLog from './components/pages/DailyLog';
-import Trends from './components/pages/Trends';
-import Library from './components/pages/Library';
-import Settings from './components/pages/Settings';
-import AddFoodPage from './components/pages/AddFoodPage'; // Import AddFoodPage
-import ChooseWorkoutType from './components/pages/ChooseWorkoutType';
-import AddCardioWorkoutPage from './components/pages/AddCardioWorkoutPage';
-import AddWeightliftingWorkoutPage from './components/pages/AddWeightliftingWorkoutPage';
-import { AppProvider } from './context/AppContext';
-import { exchangeCodeForTokens } from './services/fitbitService';
-import { Preferences } from '@capacitor/preferences';
+import AppProvider from './context/AppContext';
 
-const App: React.FC = () => {
-  const location = useLocation();
+const Dashboard = lazy(() => import('./components/pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const DailyLog = lazy(() => import('./components/pages/DailyLog'));
+const AddFoodPage = lazy(() => import('./components/pages/AddFoodPage'));
+const ChooseWorkoutType = lazy(() => import('./components/pages/ChooseWorkoutType'));
+const AddCardioWorkoutPage = lazy(() => import('./components/pages/AddCardioWorkoutPage'));
+const AddWeightliftingWorkoutPage = lazy(() => import('./components/pages/AddWeightliftingWorkoutPage'));
+const Trends = lazy(() => import('./components/pages/Trends'));
+const Library = lazy(() => import('./components/pages/Library'));
+const Settings = lazy(() => import('./components/pages/Settings'));
 
+const AppContent: React.FC = () => {
   useEffect(() => {
-    const handleFitbitRedirect = async () => {
-      const params = new URLSearchParams(location.search);
-      const code = params.get('code');
-
-      if (code) {
-        try {
-          const tokens = await exchangeCodeForTokens(code);
-          await Preferences.set({ key: 'fitbit_access_token', value: tokens.access_token });
-          await Preferences.set({ key: 'fitbit_refresh_token', value: tokens.refresh_token });
-          await Preferences.set({ key: 'fitbit_expires_in', value: String(Date.now() + tokens.expires_in * 1000) });
-          console.log('Fitbit tokens stored successfully!');
-          // Clear the code from the URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (error) {
-          console.error('Error exchanging Fitbit code for tokens:', error);
-        }
+    CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      if (!canGoBack) {
+        CapacitorApp.exitApp();
       }
-    };
-
-    handleFitbitRedirect();
-  }, [location]);
+    });
+  }, []);
 
   return (
-    <AppProvider>
-      <Router>
-        <div className="bg-[#121212] min-h-screen flex justify-center font-grotesk"> {/* Changed bg-red-500 to bg-[#121212] */}
-          <div className="w-full max-w-md bg-dark-900 text-white flex flex-col shadow-2xl shadow-black">
-            <main className="flex-grow overflow-y-auto pb-20">
+    <Router>
+      <div className="bg-[#121212] min-h-screen flex justify-center font-grotesk">
+        <div className="w-full max-w-md bg-dark-900 text-white flex flex-col shadow-2xl shadow-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          <main className="flex-grow overflow-y-auto pb-20">
+            <Suspense fallback={<div>Loading...</div>}>
               <Routes>
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/log" element={<DailyLog />} />
-                  <Route path="/log/add-food" element={<AddFoodPage />} /> {/* New route for AddFoodPage */}
+                  <Route path="/log/add-food" element={<AddFoodPage />} />
                   <Route path="/log/add-workout" element={<ChooseWorkoutType />} />
                   <Route path="/log/add-workout/cardio" element={<AddCardioWorkoutPage />} />
                   <Route path="/log/add-workout/weights" element={<AddWeightliftingWorkoutPage />} />
@@ -58,11 +42,19 @@ const App: React.FC = () => {
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
               </Routes>
-            </main>
-            <BottomNav />
-          </div>
+            </Suspense>
+          </main>
+          <BottomNav />
         </div>
-      </Router>
+      </div>
+    </Router>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AppProvider>
+      <AppContent />
     </AppProvider>
   );
 };

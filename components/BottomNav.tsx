@@ -13,7 +13,7 @@ const BottomNav: React.FC = () => {
 
     return (
         <div className="sticky bottom-0">
-            <div className="flex gap-2 border-t border-dark-700 bg-black px-4 pb-3 pt-2">
+            <div className="flex gap-2 border-t border-dark-700 bg-black px-4 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                 {navItems.map(({ path, icon: Icon, label }) => (
                     <NavLink
                         key={path}

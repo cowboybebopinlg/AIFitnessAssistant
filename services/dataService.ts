@@ -1,6 +1,8 @@
 import { Preferences } from '@capacitor/preferences';
 import type { AppData, DailyLog } from '../types';
 
+import type { AppData, DailyLog, DailyFitbitData } from '../types';
+
 const getTodayDateString = (): string => {
     const today = new Date();
     const year = today.getFullYear();
@@ -42,6 +44,7 @@ const getInitialData = (): AppData => ({
     ],
     measurements: [],
     commonFoods: [],
+    fitbitData: {}, // Initialize as empty object
 });
 
 export const loadData = async (): Promise<AppData> => {
@@ -61,6 +64,9 @@ export const loadData = async (): Promise<AppData> => {
             });
             if (!parsedData.commonFoods) {
                 parsedData.commonFoods = [];
+            }
+            if (!parsedData.fitbitData) {
+                parsedData.fitbitData = {}; // Initialize as empty object
             }
             if ('apiKey' in parsedData) {
                 delete (parsedData as any).apiKey;

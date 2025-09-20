@@ -1,13 +1,17 @@
 import React from 'react';
-import { DailyLog, WorkoutSession, Exercise } from '../../types';
+import { DailyLog, WorkoutSession, Exercise, FitbitActivity } from '../../types';
+import { RunningIcon } from '../icons';
+import { useNavigate } from 'react-router-dom';
 
 interface WorkoutsSectionProps {
   log: DailyLog | undefined;
   onAddWorkoutClick: () => void;
+  fitbitActivities: FitbitActivity[];
 }
 
-const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClick }) => {
+const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClick, fitbitActivities }) => {
   const workouts = log?.workouts || [];
+  const navigate = useNavigate();
 
   const renderExerciseDetails = (exercise: Exercise) => {
     if (exercise.type === 'cardio') {
@@ -61,45 +65,94 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
         </button>
       </div>
       <div className="space-y-3">
-        {workouts.length === 0 ? (
+        {workouts.length === 0 && fitbitActivities.length === 0 ? (
           <p className="text-gray-400 text-center">No workouts for this day. Click 'Add Workout' to add one!</p>
         ) : (
-          workouts.map((workout, index) => (
-            <div key={index} className="rounded-lg bg-gray-900 p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>
-                  <h3 className="text-lg font-bold text-white">{workout.name}</h3>
-                </div>
-                <button className="text-gray-400 hover:text-white">
-                  <span className="material-symbols-outlined">more_vert</span>
-                </button>
-              </div>
-              <div className="mt-4 space-y-4">
-                {workout.exercises.map((exercise, exerciseIndex) => (
-                  <div key={exerciseIndex}>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-white">{exercise.name}</h4>
-                      {exercise.bodyPart && <p className="text-sm text-gray-400">{exercise.bodyPart}</p>}
-                    </div>
-                    {renderExerciseDetails(exercise)}
-                    {exercise.notes && (
-                      <div className="mt-2 text-xs text-gray-400">
-                        <p className="font-semibold">Notes:</p>
-                        <p>{exercise.notes}</p>
-                      </div>
-                    )}
+          <>
+            {workouts.map((workout, index) => (
+              <div key={index} className="rounded-lg bg-gray-900 p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>
+                    <h3 className="text-lg font-bold text-white">{workout.name}</h3>
                   </div>
-                ))}
-              </div>
-              {workout.notes && (
-                <div className="mt-4 text-xs text-gray-400">
-                  <p className="font-semibold">Workout Notes:</p>
-                  <p>{workout.notes}</p>
+                  <button className="text-gray-400 hover:text-white">
+                    <span className="material-symbols-outlined">more_vert</span>
+                  </button>
                 </div>
-              )}
-            </div>
-          ))
+                <div className="mt-4 space-y-4">
+                  {workout.exercises.map((exercise, exerciseIndex) => (
+                    <div key={exerciseIndex}>
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-white">{exercise.name}</h4>
+                        {exercise.bodyPart && <p className="text-sm text-gray-400">{exercise.bodyPart}</p>}
+                      </div>
+                      {renderExerciseDetails(exercise)}
+                      {exercise.notes && (
+                        <div className="mt-2 text-xs text-gray-400">
+                          <p className="font-semibold">Notes:</p>
+                          <p>{exercise.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {workout.notes && (
+                  <div className="mt-4 text-xs text-gray-400">
+                    <p className="font-semibold">Workout Notes:</p>
+                    <p>{workout.notes}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {fitbitActivities.map((activity, index) => (
+              <div key={`fitbit-${activity.logId || index}`} className="rounded-lg bg-gray-900 p-4 border border-blue-500">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-400">Fitbit Activity</p>
+                    <h3 className="text-lg font-bold text-white">{activity.activityName || activity.activityParentName}</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-blue-300 text-sm font-bold">Synced</div>
+                    <button
+                      className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-bold text-white"
+                      onClick={() => {
+                        const route = activity.activityParentName.toLowerCase().includes('run') || activity.activityParentName.toLowerCase().includes('walk') || activity.activityParentName.toLowerCase().includes('hike') ? '/log/add-cardio-workout' : '/log/add-workout/weights';
+                        console.log('Navigating to route:', route);
+                        navigate(route, { state: { fitbitActivity: activity } });
+                      }}
+                    >
+                      <span className="material-symbols-outlined text-sm">edit</span>
+                      Edit
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2 text-sm text-gray-300">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Calories:</span>
+                    <span>{activity.calories}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Duration:</span>
+                    <span>{activity.duration / 60000} mins</span>
+                  </div>
+                  {activity.distance && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Distance:</span>
+                      <span>{activity.distance} miles</span>
+                    </div>
+                  )}
+                  {activity.steps && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Steps:</span>
+                      <span>{activity.steps}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
     </section>

@@ -1,19 +1,36 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
+import { Exercise, WorkoutSession, FitbitActivity } from '../../types';
 
 const AddCardioWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addWorkout, geminiApiKey } = useAppContext();
+  const location = useLocation();
+  const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
+
+  console.log('AddCardioWorkoutPage: location.state', location.state);
+  console.log('AddCardioWorkoutPage: fitbitActivity', fitbitActivity);
 
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
   const [activityType, setActivityType] = useState('');
   const [duration, setDuration] = useState('');
+  const [averageHeartRate, setAverageHeartRate] = useState('');
+  const [caloriesBurned, setCaloriesBurned] = useState('');
   const [notes, setNotes] = useState('');
   const [geminiText, setGeminiText] = useState('');
+
+  useEffect(() => {
+    if (fitbitActivity) {
+      setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName);
+      setDuration(String(fitbitActivity.duration / 60000)); // Convert ms to minutes
+      setCaloriesBurned(String(fitbitActivity.calories));
+      setNotes(`Synced from Fitbit. Distance: ${fitbitActivity.distance} miles, Steps: ${fitbitActivity.steps}`);
+    }
+  }, [fitbitActivity]);
 
   const handleAddWorkout = () => {
     if (!activityType || !duration) {
@@ -26,6 +43,8 @@ const AddCardioWorkoutPage: React.FC = () => {
       name: activityType,
       type: 'cardio',
       duration: parseInt(duration, 10),
+      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : undefined,
     };
 
     const newWorkout: WorkoutSession = {
@@ -52,6 +71,8 @@ const AddCardioWorkoutPage: React.FC = () => {
         name: workout.name || 'Unknown Workout',
         type: 'cardio',
         duration: workout.duration || 0,
+        averageHeartRate: workout.averageHeartRate || undefined,
+        caloriesBurned: workout.caloriesBurned || undefined,
       };
 
       const newWorkout: WorkoutSession = {
@@ -89,6 +110,7 @@ const AddCardioWorkoutPage: React.FC = () => {
               type="text"
               value={activityType}
               onChange={(e) => setActivityType(e.target.value)}
+              disabled={!!fitbitActivity}
             />
           </div>
           <div>
@@ -100,6 +122,31 @@ const AddCardioWorkoutPage: React.FC = () => {
               type="text"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
+              disabled={!!fitbitActivity}
+            />
+          </div>
+          <div>
+            <label htmlFor="average-heart-rate" className="block text-sm font-medium text-gray-400 mb-1">Average Heart Rate (bpm)</label>
+            <input 
+              id="average-heart-rate"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., 140"
+              type="number"
+              value={averageHeartRate}
+              onChange={(e) => setAverageHeartRate(e.target.value)}
+              disabled={!!fitbitActivity}
+            />
+          </div>
+          <div>
+            <label htmlFor="calories-burned" className="block text-sm font-medium text-gray-400 mb-1">Calories Burned</label>
+            <input 
+              id="calories-burned"
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              placeholder="e.g., 300"
+              type="number"
+              value={caloriesBurned}
+              onChange={(e) => setCaloriesBurned(e.target.value)}
+              disabled={!!fitbitActivity}
             />
           </div>
           <div>
@@ -131,6 +178,7 @@ const AddCardioWorkoutPage: React.FC = () => {
                 placeholder="e.g., Ran 5k in 25 minutes, then did 3 sets of 10 pushups."
                 value={geminiText}
                 onChange={(e) => setGeminiText(e.target.value)}
+                disabled={!!fitbitActivity}
               ></textarea>
             </div>
           </div>
@@ -140,6 +188,7 @@ const AddCardioWorkoutPage: React.FC = () => {
         <button 
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
           onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleAddWorkout}
+          disabled={!!fitbitActivity && !!geminiText}
         >
           Save Workout
         </button>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon } from '../icons';
+import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon, RefreshCwIcon } from '../icons';
 import { getSmartSuggestion } from '../../services/geminiService';
-import { Preferences } from '@capacitor/preferences';
-import { getDailyActivity } from '../../services/fitbitService';
+import { getDailyActivity, getDailyHRV, getDailySpO2, getDailySkinTemp } from '../../services/fitbitService';
 
 // --- Re-created components based on Stitch design ---
 
@@ -38,10 +37,13 @@ const CircularProgress: React.FC<{ value: number }> = ({ value }) => {
     );
 };
 
-const MorningMetricsCard = ({ data }) => {
-    const readiness = 85;
-    const rhr = 60;
-    const hrv = 75;
+const MorningMetricsCard = ({ data, fitbitSummary }) => {
+    // Readiness Score is not available via Fitbit API, using a placeholder.
+    const readiness = 'N/A';
+    const rhr = fitbitSummary?.restingHeartRate || 60;
+    const hrv = fitbitSummary?.hrv || 75;
+    const spo2 = fitbitSummary?.spo2 || 'N/A';
+    const skinTemp = fitbitSummary?.skinTemp || 'N/A';
     const energy = '90%';
     const soreness = 'Low';
 
@@ -65,6 +67,14 @@ const MorningMetricsCard = ({ data }) => {
                 <div className="text-center self-center">
                     <p className="text-gray-400 text-sm">HRV</p>
                     <p className="text-white text-2xl font-bold">{hrv} ms</p>
+                </div>
+                <div className="text-center self-center">
+                    <p className="text-gray-400 text-sm">SpO2</p>
+                    <p className="text-white text-2xl font-bold">{spo2} %</p>
+                </div>
+                <div className="text-center self-center">
+                    <p className="text-gray-400 text-sm">Skin Temp</p>
+                    <p className="text-white text-2xl font-bold">{skinTemp} &deg;C</p>
                 </div>
                 <div className="text-center self-center">
                     <p className="text-gray-400 text-sm">Energy</p>
@@ -114,7 +124,7 @@ const NutritionCard = ({ data, targets }) => {
     );
 };
 
-const WorkoutsCard = ({ workouts }) => {
+const WorkoutsCard = ({ workouts, fitbitActivities }) => {
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
             <div className="flex justify-between items-start">
@@ -137,7 +147,24 @@ const WorkoutsCard = ({ workouts }) => {
                             <div className="text-primary-500 text-sm font-bold">Completed</div>
                         </div>
                     ))
-                ) : (
+                ) : null}
+
+                {fitbitActivities && fitbitActivities.length > 0 ? (
+                    fitbitActivities.map((activity, index) => (
+                        <div key={`fitbit-${index}`} className="flex items-center gap-4">
+                            <div className="text-white flex items-center justify-center rounded-lg bg-blue-700 shrink-0 w-12 h-12">
+                                <RunningIcon className="w-6 h-6" />
+                            </div>
+                            <div className="flex flex-col justify-center flex-grow">
+                                <p className="text-white text-base font-medium">{activity.activityName || activity.activityParentName} (Fitbit)</p>
+                                <p className="text-gray-400 text-sm">{activity.calories} calories, {activity.duration / 60000} mins</p>
+                            </div>
+                            <div className="text-blue-300 text-sm font-bold">Synced</div>
+                        </div>
+                    ))
+                ) : null}
+
+                {(!workouts || workouts.length === 0) && (!fitbitActivities || fitbitActivities.length === 0) && (
                     <p className="text-gray-400 text-center">No workouts logged for today.</p>
                 )}
             </div>
@@ -146,8 +173,6 @@ const WorkoutsCard = ({ workouts }) => {
 };
 
 const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
-    const mockSuggestion = "Focus on recovery today. Consider a light activity like yoga or a short walk to maintain mobility without overexerting yourself. Your body is primed for growth, so prioritize nutrient-rich meals and adequate sleep to maximize your gains.";
-
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
             <div className="flex justify-between items-start">
@@ -164,62 +189,100 @@ const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
 };
 
 const FitbitActivityCard: React.FC = () => {
-    const [steps, setSteps] = useState<number | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
+    const { isFitbitAuthenticated, fitbitAccessToken, setFitbitData, appData } = useAppContext();
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchFitbitSteps = async () => {
+    const fetchFitbitActivity = useCallback(async () => {
+        console.log('FitbitActivityCard: Checking for token...');
+        if (isFitbitAuthenticated && fitbitAccessToken) {
+            console.log('FitbitActivityCard: Token found. Fetching activity...', { token: fitbitAccessToken });
             setLoading(true);
             setError(null);
             try {
-                const { value: accessToken } = await Preferences.get({ key: 'fitbit_access_token' });
-                if (accessToken) {
-                    const activityData = await getDailyActivity(accessToken);
-                    if (activityData && activityData.summary && activityData.summary.steps !== undefined) {
-                        setSteps(activityData.summary.steps);
-                    } else {
-                        setSteps(0); // No steps data found
-                    }
-                } else {
-                    setError('Fitbit not connected.');
-                }
+                const activityData = await getDailyActivity(fitbitAccessToken);
+                const hrvData = await getDailyHRV(fitbitAccessToken);
+                const spo2Data = await getDailySpO2(fitbitAccessToken);
+                const skinTempData = await getDailySkinTemp(fitbitAccessToken);
+
+                console.log('FitbitActivityCard: Raw activity data received:', JSON.stringify(activityData, null, 2));
+                console.log('FitbitActivityCard: Activity summary:', activityData.summary);
+                console.log('FitbitActivityCard: Raw HRV data received:', JSON.stringify(hrvData, null, 2));
+                console.log('FitbitActivityCard: Raw SpO2 data received:', JSON.stringify(spo2Data, null, 2));
+                console.log('FitbitActivityCard: Raw Skin Temp data received:', JSON.stringify(skinTempData, null, 2));
+
+                const combinedSummary = {
+                    ...activityData.summary,
+                    hrv: hrvData?.hrv[0]?.value?.dailyRmssd,
+                    spo2: spo2Data?.value?.[0]?.avg,
+                    skinTemp: skinTempData?.temp?.[0]?.value,
+                };
+
+                const today = new Date().toISOString().slice(0, 10);
+                setFitbitData(today, {
+                    summary: combinedSummary,
+                    activities: activityData.activities || [],
+                });
             } catch (err) {
-                console.error('Error fetching Fitbit activity:', err);
-                setError('Failed to fetch Fitbit data.');
+                console.error('FitbitActivityCard: Detailed fetch error:', err);
+                setError('Failed to fetch Fitbit data. See console for details.');
             } finally {
                 setLoading(false);
             }
-        };
+        } else {
+            console.log('FitbitActivityCard: Not authenticated. Clearing data.');
+            const today = new Date().toISOString().slice(0, 10);
+            setFitbitData(today, { summary: null, activities: [] });
+        }
+    }, [isFitbitAuthenticated, fitbitAccessToken, setFitbitData]);
 
-        fetchFitbitSteps();
-    }, []);
+    useEffect(() => {
+        fetchFitbitActivity();
+    }, [fetchFitbitActivity]);
 
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-center mb-2">
                 <h3 className="text-white text-lg font-bold">Fitbit Activity</h3>
-                <button className="text-gray-400 hover:text-white">
-                    <ClipboardIcon className="w-6 h-6" />
-                </button>
+                {isFitbitAuthenticated && (
+                    <button onClick={fetchFitbitActivity} disabled={loading} className="text-gray-400 hover:text-white disabled:opacity-50">
+                        <RefreshCwIcon className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
+                )}
             </div>
             <div className="mt-2 text-center">
-                {loading && <p className="text-gray-400">Loading steps...</p>}
+                {loading && <p className="text-gray-400">Loading Fitbit data...</p>}
                 {error && <p className="text-red-400">{error}</p>}
-                {steps !== null && !loading && !error && (
-                    <p className="text-white text-2xl font-bold">Steps: {steps}</p>
+                {!loading && !error && (
+                    <div className="grid grid-cols-2 gap-4 text-white">
+                        <div>
+                            <p className="text-sm text-gray-400">Steps</p>
+                            <p className="text-2xl font-bold">{appData?.fitbitData?.summary?.steps?.toLocaleString() || 0}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-400">Calories</p>
+                            <p className="text-2xl font-bold">{appData?.fitbitData?.summary?.caloriesOut?.toLocaleString() || 0}</p>
+                        </div>
+                    </div>
                 )}
-                {steps === null && !loading && !error && <p className="text-gray-400">No steps data available.</p>}
+                 {!loading && !isFitbitAuthenticated && <p className="text-gray-400">Connect to Fitbit in Settings to see your activity.</p>}
             </div>
         </div>
     );
 };
 
-const Dashboard: React.FC = () => {
-    const { appData, isLoading, getTodaysLog } = useAppContext();
+export const Dashboard: React.FC = () => {
+    const { appData, isLoading, getTodaysLog, setFitbitData } = useAppContext();
     const [suggestion, setSuggestion] = useState('Loading...');
 
     const todaysLog = getTodaysLog();
+
+    const todayDateString = useMemo(() => {
+        return new Date().toISOString().slice(0, 10);
+    }, []);
+
+    const fitbitSummary = appData?.fitbitData?.[todayDateString]?.summary;
+    const fitbitActivities = appData?.fitbitData?.[todayDateString]?.activities || [];
 
     const nutritionTotals = useMemo(() => {
         const totals = { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 };
@@ -277,15 +340,13 @@ const Dashboard: React.FC = () => {
                     </div>
                 </header>
                 <main className="p-4 space-y-6">
-                    <MorningMetricsCard data={todaysLog} />
+                    <MorningMetricsCard data={todaysLog} fitbitSummary={fitbitSummary} />
                     <FitbitActivityCard />
                     <NutritionCard data={nutritionTotals} targets={targets} />
-                    <WorkoutsCard workouts={todaysLog?.workouts} />
+                    <WorkoutsCard workouts={todaysLog?.workouts} fitbitActivities={fitbitActivities} />
                     <SmartSuggestionsCard suggestion={suggestion} onRefresh={fetchSuggestion} />
                 </main>
             </div>
         </div>
     );
 };
-
-export default Dashboard;

@@ -11,10 +11,9 @@ export const getSmartSuggestion = async (): Promise<string> => {
 export const getNutritionInfoFromText = async (text: string, apiKey: string): Promise<Partial<Meal>> => {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
-            Analyze the following text and extract the nutritional information for a single meal.
             Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber".
             If a value is not present, set it to 0.
 
@@ -41,7 +40,7 @@ export const getNutritionInfoFromText = async (text: string, apiKey: string): Pr
 export const getWorkoutInfoFromText = async (text: string, apiKey: string): Promise<Partial<WorkoutSession>> => {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
             Analyze the following text and extract the workout information.

@@ -14,8 +14,8 @@
 #
 # --- END WARNING ---
 
-# Set the JAVA_HOME environment variable to the OpenJDK bundled with Unity.
-$env:JAVA_HOME = "C:\Program Files\Unity\Hub\Editor\6000.0.46f1\Editor\Data\PlaybackEngines\AndroidPlayer\OpenJDK"
+# Set the JAVA_HOME environment variable to the user's Java 21 installation.
+$env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.8.9-hotspot"
 
 # Set the ANDROID_HOME environment variable to the Android SDK bundled with Unity.
 $env:ANDROID_HOME = "C:\Program Files\Unity\Hub\Editor\6000.0.46f1\Editor\Data\PlaybackEngines\AndroidPlayer\SDK"
@@ -27,12 +27,8 @@ $env:Path = "$env:JAVA_HOME\bin;" + $env:Path
 $env:Path = "$env:ANDROID_HOME\platform-tools;" + $env:Path
 $env:Path = "$env:ANDROID_HOME\tools;" + $env:Path
 
-# Print the Java version to confirm that the correct JDK is being used.
-Write-Output "Java version:"
-java -version
 
 # Print the JAVA_HOME and ANDROID_HOME variables to confirm they are set.
-Write-Output "JAVA_HOME: $env:JAVA_HOME"
 Write-Output "ANDROID_HOME: $env:ANDROID_HOME"
 
 # Run the web build.

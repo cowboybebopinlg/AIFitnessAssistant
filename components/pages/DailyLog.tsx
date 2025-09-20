@@ -19,6 +19,10 @@ const DailyLog: React.FC = () => {
     return getLogForDate(dateString);
   }, [getLogForDate, dateString]);
 
+  const fitbitActivities = useMemo(() => {
+    return appData?.fitbitData?.[dateString]?.activities || [];
+  }, [appData, dateString]);
+
   const handlePrevDay = () => {
     setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 1)));
   };
@@ -105,7 +109,7 @@ const DailyLog: React.FC = () => {
           </div>
           <MetricsSection log={dailyLog} />
           <FoodEntriesSection log={dailyLog} onAddFoodClick={() => navigate(`/log/add-food?date=${dateString}`)} />
-          <WorkoutsSection log={dailyLog} onAddWorkoutClick={() => navigate(`/log/add-workout?date=${dateString}`)} />
+          <WorkoutsSection log={dailyLog} onAddWorkoutClick={() => navigate(`/log/add-workout?date=${dateString}`)} fitbitActivities={fitbitActivities} />
         </main>
       </div>
     </div>

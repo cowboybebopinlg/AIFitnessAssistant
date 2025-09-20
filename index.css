@@ -9,3 +9,10 @@
 .glow {
   box-shadow: 0 0 5px var(--primary-500), 0 0 10px var(--primary-500), 0 0 15px var(--primary-500);
 }
+
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
