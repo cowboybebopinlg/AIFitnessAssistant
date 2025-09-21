@@ -48,9 +48,14 @@ const AddCardioWorkoutPage: React.FC = () => {
     };
 
     const newWorkout: WorkoutSession = {
+      type: 'cardio',
       name: activityType,
       notes: notes,
-      exercises: [newExercise],
+      date: dateString,
+      duration: parseInt(duration, 10),
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : 0,
+      distance: fitbitActivity?.distance,
+      fitbitLogId: fitbitActivity?.logId,
     };
 
     addWorkout(dateString, newWorkout);
@@ -76,9 +81,12 @@ const AddCardioWorkoutPage: React.FC = () => {
       };
 
       const newWorkout: WorkoutSession = {
+        type: 'cardio',
         name: workout.name || 'Unknown Workout',
         notes: workout.notes || '',
-        exercises: [newExercise],
+        date: dateString,
+        duration: workout.duration || 0,
+        caloriesBurned: workout.caloriesBurned || 0,
       };
 
       addWorkout(dateString, newWorkout);

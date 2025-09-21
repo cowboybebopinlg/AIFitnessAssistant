@@ -65,10 +65,13 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
 
   const handleAddWorkout = () => {
     const newWorkout: WorkoutSession = {
+      type: 'weightlifting',
       name: 'Weightlifting',
       exercises: exercises,
-      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
-      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : undefined,
+      date: dateString,
+      duration: 0, // This will be calculated based on the exercises
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : 0,
+      fitbitLogId: fitbitActivity?.logId,
     };
 
     addWorkout(dateString, newWorkout);
@@ -85,10 +88,12 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     try {
       const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
       const newWorkout: WorkoutSession = {
+        type: 'weightlifting',
         name: workout.name || 'Weightlifting',
         exercises: workout.exercises || [],
-        averageHeartRate: workout.averageHeartRate || undefined,
-        caloriesBurned: workout.caloriesBurned || undefined,
+        date: dateString,
+        duration: workout.duration || 0,
+        caloriesBurned: workout.caloriesBurned || 0,
       };
 
       addWorkout(dateString, newWorkout);

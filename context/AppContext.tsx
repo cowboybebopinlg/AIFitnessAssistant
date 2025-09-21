@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitData } from '../types';
+import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitData, FitbitActivity } from '../types';
 import { loadData, saveData } from '../services/dataService';
-import { refreshAccessToken } from '../services/fitbitService';
+import { refreshAccessToken, getDailyActivity } from '../services/fitbitService';
 
 interface AppContextType {
     appData: AppData | null;
@@ -29,6 +29,7 @@ interface AppContextType {
     setFitbitData: (date: string, data: DailyFitbitData) => void;
     injectDummyFitbitData: () => void;
     deleteFitbitData: () => void;
+    syncFitbitData: (date: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -430,6 +431,54 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     }, []);
 
+    const syncFitbitData = async (date: string) => {
+        if (!fitbitAccessToken) return;
+
+        try {
+            const fitbitData = await getDailyActivity(fitbitAccessToken, date);
+            setFitbitData(date, fitbitData);
+
+            const existingWorkouts = getLogForDate(date)?.workouts || [];
+            const fitbitActivities = fitbitData.activities || [];
+
+            fitbitActivities.forEach((activity: FitbitActivity) => {
+                const existingWorkout = existingWorkouts.find(w => w.fitbitLogId === activity.logId);
+
+                if (!existingWorkout) {
+                    let newWorkout: WorkoutSession;
+                    if (activity.activityParentName === 'Weight Training') {
+                        newWorkout = {
+                            type: 'weightlifting',
+                            fitbitLogId: activity.logId,
+                            name: activity.name,
+                            date: activity.startDate,
+                            duration: activity.duration / 60000, // convert ms to minutes
+                            caloriesBurned: activity.calories,
+                            notes: activity.description,
+                            exercises: [],
+                        };
+                    } else {
+                        newWorkout = {
+                            type: 'cardio',
+                            fitbitLogId: activity.logId,
+                            name: activity.name,
+                            date: activity.startDate,
+                            duration: activity.duration / 60000, // convert ms to minutes
+                            caloriesBurned: activity.calories,
+                            notes: activity.description,
+                            distance: activity.distance,
+                            pace: 0,
+                            exercises: [],
+                        };
+                    }
+                    addWorkout(date, newWorkout);
+                }
+            });
+        } catch (error) {
+            console.error('Failed to sync Fitbit data', error);
+        }
+    };
+
     const value = {
         appData,
         isLoading,
@@ -455,6 +504,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setFitbitData,
         injectDummyFitbitData,
         deleteFitbitData,
+        syncFitbitData,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

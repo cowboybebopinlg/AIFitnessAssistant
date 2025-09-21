@@ -6,7 +6,7 @@ import WorkoutsSection from './WorkoutsSection';
 import { useAppContext } from '../../context/AppContext';
 
 const DailyLog: React.FC = () => {
-  const { appData, exportData, importData, getLogForDate } = useAppContext();
+  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -80,6 +80,17 @@ const DailyLog: React.FC = () => {
           </div>
         </header>
         <main className="p-4">
+          {isFitbitAuthenticated && (
+            <div className="flex justify-center mb-4">
+              <button
+                className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+                onClick={() => syncFitbitData(dateString)}
+              >
+                <span className="material-symbols-outlined text-sm">sync</span>
+                Sync with Fitbit
+              </button>
+            </div>
+          )}
           <div className="flex justify-end mb-4 gap-2">
             <button className="flex items-center gap-2 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white">
               <span className="material-symbols-outlined text-sm">content_copy</span>

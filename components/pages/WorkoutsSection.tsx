@@ -73,7 +73,8 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
               <div key={index} className="rounded-lg bg-gray-900 p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>
+                    {workout.exercises.length > 0 &&
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>}
                     <h3 className="text-lg font-bold text-white">{workout.name}</h3>
                   </div>
                   <button className="text-gray-400 hover:text-white">
@@ -106,7 +107,7 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
               </div>
             ))}
 
-            {fitbitActivities.map((activity, index) => (
+            {fitbitActivities.filter(activity => !workouts.some(w => w.fitbitLogId === activity.logId)).map((activity, index) => (
               <div key={`fitbit-${activity.logId || index}`} className="rounded-lg bg-gray-900 p-4 border border-blue-500">
                 <div className="flex items-start justify-between">
                   <div>
