@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { getAuthorizationUrl } from '../../services/fitbitService';
+import { getAuthorizationUrl, exchangeCodeForTokens, revokeToken } from '../../services/fitbitService';
 import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import { WebViewCache } from 'capacitor-plugin-webview-cache';
+import { Preferences } from '@capacitor/preferences';
 
 const Settings: React.FC = () => {
-    const { geminiApiKey, setGeminiApiKey, injectDummyFitbitData, deleteFitbitData } = useAppContext();
+    const { geminiApiKey, setGeminiApiKey, injectDummyFitbitData, deleteFitbitData, authenticateFitbit } = useAppContext();
     const [apiKey, setApiKey] = useState(geminiApiKey || '');
 
     const handleSave = () => {
@@ -17,21 +21,46 @@ const Settings: React.FC = () => {
         const authUrl = getAuthorizationUrl(scopes);
 
         // Add listeners to handle the redirect and browser closing
-        const handleRedirect = (event: { url: string }) => {
+        const handleRedirect = async (event: { url: string }) => {
+            console.log('handleRedirect called with URL:', event.url);
             if (event.url.startsWith('geminifit://auth')) {
-                // Stop listening and close the browser when the redirect is detected
+                console.log('Redirect URL matches geminifit://auth');
                 Browser.removeAllListeners();
                 Browser.close();
+
+                const url = new URL(event.url);
+                const code = url.searchParams.get('code');
+                console.log('Extracted code:', code);
+
+                if (code) {
+                    try {
+                        const tokenData = await exchangeCodeForTokens(code);
+                        console.log('Fitbit Token Data:', tokenData);
+                        await authenticateFitbit(tokenData);
+                        alert('Fitbit connected successfully!');
+                    } catch (error) {
+                        console.error('Error exchanging code for tokens:', error);
+                        alert('Failed to connect Fitbit.');
+                    }
+                } else {
+                    alert('Fitbit authorization failed: No code received.');
+                }
             }
         };
 
-        Browser.addListener('browserPageLoaded', handleRedirect);
+        App.addListener('appUrlOpen', handleRedirect);
         Browser.addListener('browserFinished', () => {
             // Also remove listeners if the user manually closes the browser
             Browser.removeAllListeners();
+            App.removeAllListeners(); // Also remove appUrlOpen listener
         });
 
-        // Open the in-app browser
+        // Clear cookies/cache before opening the in-app browser to ensure a fresh authorization flow
+        if (Capacitor.getPlatform() === 'android') {
+            await WebViewCache.clearCache();
+        } else {
+            await Browser.clearCookies();
+        }
         await Browser.open({ url: authUrl });
     };
 
@@ -72,7 +101,7 @@ const Settings: React.FC = () => {
                     Connect Fitbit
                 </button>
                 <button
-                    onClick={handleInjectDummyData}
+                    // onClick={handleInjectDummyData} // Temporarily disabled for debugging
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                     Inject Dummy Data
@@ -82,6 +111,33 @@ const Settings: React.FC = () => {
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
                     Delete Saved Data
+                </button>
+                <button
+                    onClick={async () => {
+                        // Attempt to revoke the refresh token with Fitbit
+                        const { value: refreshToken } = await Preferences.get({ key: 'fitbit_refresh_token' });
+                        if (refreshToken) {
+                            try {
+                                await revokeToken(refreshToken);
+                                console.log('Fitbit refresh token revoked successfully.');
+                            } catch (error) {
+                                console.error('Error revoking Fitbit refresh token:', error);
+                            }
+                        }
+
+                        deleteFitbitData();
+                        if (Capacitor.getPlatform() === 'android') {
+                            await WebViewCache.clearCache();
+                        } else {
+                            await Browser.clearCookies();
+                        }
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        alert('Fitbit cookies, cache, and all local/session storage data cleared!');
+                    }}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 mt-2"
+                >
+                    Clear Fitbit Cookies & Data
                 </button>
             </div>
         </div>

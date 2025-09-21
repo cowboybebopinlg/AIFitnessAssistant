@@ -193,7 +193,10 @@ const FitbitActivityCard: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
+    console.log('FitbitActivityCard: Rendered. isFitbitAuthenticated:', isFitbitAuthenticated, 'fitbitAccessToken:', fitbitAccessToken ? '[present]' : '[absent]');
+
     const fetchFitbitActivity = useCallback(async () => {
+        console.log('FitbitActivityCard: fetchFitbitActivity called.');
         console.log('FitbitActivityCard: Checking for token...');
         if (isFitbitAuthenticated && fitbitAccessToken) {
             console.log('FitbitActivityCard: Token found. Fetching activity...', { token: fitbitAccessToken });
@@ -213,9 +216,9 @@ const FitbitActivityCard: React.FC = () => {
 
                 const combinedSummary = {
                     ...activityData.summary,
-                    hrv: hrvData?.hrv[0]?.value?.dailyRmssd,
-                    spo2: spo2Data?.value?.[0]?.avg,
-                    skinTemp: skinTempData?.temp?.[0]?.value,
+                    hrv: hrvData?.hrv?.[0]?.value?.dailyRmssd || null,
+                    spo2: spo2Data?.value?.[0]?.avg || null,
+                    skinTemp: skinTempData?.temp?.[0]?.value || null,
                 };
 
                 const today = new Date().toISOString().slice(0, 10);
@@ -223,9 +226,13 @@ const FitbitActivityCard: React.FC = () => {
                     summary: combinedSummary,
                     activities: activityData.activities || [],
                 });
-            } catch (err) {
+            } catch (err: any) {
                 console.error('FitbitActivityCard: Detailed fetch error:', err);
-                setError('Failed to fetch Fitbit data. See console for details.');
+                if (err?.error?.status === 'PERMISSION_DENIED' && err?.error?.message?.includes('spo2')) {
+                    setError('Failed to fetch SpO2 data. Please ensure you have granted SpO2 permission in Fitbit settings and your device supports it.');
+                } else {
+                    setError('Failed to fetch Fitbit data. See console for details.');
+                }
             } finally {
                 setLoading(false);
             }

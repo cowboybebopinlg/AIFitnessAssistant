@@ -7,6 +7,37 @@ const REDIRECT_URI = 'geminifit://auth'; // Our custom deep link
 
 const FITBIT_AUTH_BASE_URL = 'https://www.fitbit.com/oauth2/authorize';
 const FITBIT_TOKEN_URL = 'https://api.fitbit.com/oauth2/token';
+const FITBIT_REVOKE_URL = 'https://api.fitbit.com/oauth2/revoke';
+
+// Helper function to get local date in YYYY-MM-DD format
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Revokes a Fitbit token (access token or refresh token).
+ * @param token - The token to revoke.
+ * @returns A promise that resolves when the token is revoked.
+ */
+export const revokeToken = async (token: string): Promise<any> => {
+  const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
+  const options = {
+    url: FITBIT_REVOKE_URL,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${credentials}`,
+    },
+    data: new URLSearchParams({
+      token: token,
+    }).toString(),
+  };
+
+  const response = await CapacitorHttp.request({ ...options, method: 'POST' });
+  return response.data;
+};
 
 /**
  * Generates the Fitbit authorization URL.
@@ -81,15 +112,16 @@ export const refreshAccessToken = async (refreshToken: string): Promise<any> => 
  * @param date - The date for which to fetch data (e.g., '2025-09-21' or 'today').
  * @returns A promise that resolves with the activity data.
  */
-export const getDailyActivity = async (accessToken: string, date: string = new Date().toISOString().slice(0, 10)): Promise<any> => {
+export const getDailyActivity = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/activities/date/${date}.json`,
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
   };
-
+  console.log(`FitbitService: Requesting daily activity from: ${options.url}`);
   const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily activity response:`, JSON.stringify(response.data, null, 2));
   return response.data;
 };
 
@@ -99,15 +131,16 @@ export const getDailyActivity = async (accessToken: string, date: string = new D
  * @param date - The date for which to fetch data (e.g., '2025-09-21').
  * @returns A promise that resolves with the HRV data.
  */
-export const getDailyHRV = async (accessToken: string, date: string = new Date().toISOString().slice(0, 10)): Promise<any> => {
+export const getDailyHRV = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/hrv/date/${date}.json`,
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
   };
-
+  console.log(`FitbitService: Requesting daily HRV from: ${options.url}`);
   const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily HRV response:`, JSON.stringify(response.data, null, 2));
   return response.data;
 };
 
@@ -117,15 +150,16 @@ export const getDailyHRV = async (accessToken: string, date: string = new Date()
  * @param date - The date for which to fetch data (e.g., '2025-09-21').
  * @returns A promise that resolves with the SpO2 data.
  */
-export const getDailySpO2 = async (accessToken: string, date: string = new Date().toISOString().slice(0, 10)): Promise<any> => {
+export const getDailySpO2 = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/spo2/date/${date}/all.json`,
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
   };
-
+  console.log(`FitbitService: Requesting daily SpO2 from: ${options.url}`);
   const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily SpO2 response:`, JSON.stringify(response.data, null, 2));
   return response.data;
 };
 
@@ -135,14 +169,15 @@ export const getDailySpO2 = async (accessToken: string, date: string = new Date(
  * @param date - The date for which to fetch data (e.g., '2025-09-21').
  * @returns A promise that resolves with the Skin Temperature data.
  */
-export const getDailySkinTemp = async (accessToken: string, date: string = new Date().toISOString().slice(0, 10)): Promise<any> => {
+export const getDailySkinTemp = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/temp/core/date/${date}.json`,
     headers: {
       'Authorization': `Bearer ${accessToken}`,
     },
   };
-
+  console.log(`FitbitService: Requesting daily Skin Temp from: ${options.url}`);
   const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily Skin Temp response:`, JSON.stringify(response.data, null, 2));
   return response.data;
 };
