@@ -15,6 +15,8 @@ const Trends = lazy(() => import('./components/pages/Trends'));
 const Library = lazy(() => import('./components/pages/Library'));
 const Settings = lazy(() => import('./components/pages/Settings'));
 
+import { SafeArea } from '@capacitor-community/safe-area';
+
 const AppContent: React.FC = () => {
   useEffect(() => {
     CapacitorApp.addListener('backButton', ({ canGoBack }) => {
@@ -22,12 +24,30 @@ const AppContent: React.FC = () => {
         CapacitorApp.exitApp();
       }
     });
+
+    const setSafeArea = () => {
+      SafeArea.getSafeAreaInsets().then(({ insets }) => {
+        for (const [key, value] of Object.entries(insets)) {
+          document.documentElement.style.setProperty(
+            `--safe-area-inset-${key}`,
+            `${value}px`
+          );
+        }
+      });
+    };
+
+    SafeArea.addListener('safeAreaChanged', setSafeArea);
+    setSafeArea();
+
+    return () => {
+      SafeArea.removeAllListeners();
+    };
   }, []);
 
   return (
     <Router>
       <div className="bg-[#121212] min-h-screen flex justify-center font-grotesk">
-        <div className="w-full max-w-md bg-dark-900 text-white flex flex-col shadow-2xl shadow-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+        <div className="w-full max-w-md bg-dark-900 text-white flex flex-col shadow-2xl shadow-black safe-area">
           <main className="flex-grow overflow-y-auto pb-20">
             <Suspense fallback={<div>Loading...</div>}>
               <Routes>
