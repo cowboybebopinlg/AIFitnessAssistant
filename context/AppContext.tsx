@@ -334,8 +334,6 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
                             restingHeartRate: 55,
                             heartRateZones: [],
                             hrv: 65,
-                            spo2: 98,
-                            skinTemp: 36.5,
                         },
                         activities: [
                             {

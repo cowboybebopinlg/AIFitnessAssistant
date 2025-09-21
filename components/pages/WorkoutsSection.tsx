@@ -2,6 +2,7 @@ import React from 'react';
 import { DailyLog, WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { RunningIcon } from '../icons';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../../context/AppContext';
 
 interface WorkoutsSectionProps {
   log: DailyLog | undefined;
@@ -12,6 +13,23 @@ interface WorkoutsSectionProps {
 const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClick, fitbitActivities }) => {
   const workouts = log?.workouts || [];
   const navigate = useNavigate();
+  const { deleteWorkout } = useAppContext();
+
+  const handleDelete = (index: number) => {
+    if (log?.date) {
+      deleteWorkout(log.date, index);
+    }
+  };
+
+  const handleEdit = (workout: WorkoutSession, index: number) => {
+    if (log?.date) {
+      if (workout.type === 'cardio') {
+        navigate(`/log/add-workout/cardio?date=${log.date}&workoutIndex=${index}`);
+      } else {
+        navigate(`/log/add-workout/weights?date=${log.date}&workoutIndex=${index}`);
+      }
+    }
+  };
 
   const renderExerciseDetails = (exercise: Exercise) => {
     if (exercise.type === 'cardio') {
@@ -76,10 +94,22 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
                     {workout.exercises.length > 0 &&
                     <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>}
                     <h3 className="text-lg font-bold text-white">{workout.name}</h3>
+                    <div className="mt-2 flex items-center gap-4 text-xs text-gray-400">
+                      <span>{Math.floor(workout.duration)} min</span>
+                      <span>{Math.floor(workout.caloriesBurned)} kcal</span>
+                      {workout.averageHeartRate && <span>{Math.floor(workout.averageHeartRate)} bpm</span>}
+                    </div>
                   </div>
-                  <button className="text-gray-400 hover:text-white">
-                    <span className="material-symbols-outlined">more_vert</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button className="text-gray-400 hover:text-white" onClick={() => handleEdit(workout, index)}>
+                      <span className="material-symbols-outlined">edit</span>
+                    </button>
+                    {!workout.fitbitLogId && (
+                      <button className="text-gray-400 hover:text-white" onClick={() => handleDelete(index)}>
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-4 space-y-4">
                   {workout.exercises.map((exercise, exerciseIndex) => (
@@ -132,22 +162,22 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
                 <div className="mt-4 space-y-2 text-sm text-gray-300">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Calories:</span>
-                    <span>{activity.calories}</span>
+                    <span>{Math.floor(activity.calories)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Duration:</span>
-                    <span>{activity.duration / 60000} mins</span>
+                    <span>{Math.floor(activity.duration / 60000)} mins</span>
                   </div>
                   {activity.distance && (
                     <div className="flex justify-between">
                       <span className="text-gray-400">Distance:</span>
-                      <span>{activity.distance} miles</span>
+                      <span>{Math.floor(activity.distance)} miles</span>
                     </div>
                   )}
                   {activity.steps && (
                     <div className="flex justify-between">
                       <span className="text-gray-400">Steps:</span>
-                      <span>{activity.steps}</span>
+                      <span>{Math.floor(activity.steps)}</span>
                     </div>
                   )}
                 </div>

@@ -20,9 +20,10 @@ export type Exercise = {
   id: string; // For React key prop
   name: string;
 } & ({
-  type: 'weights';
+  type: 'weightlifting';
   bodyPart: string;
   sets: ExerciseSet[];
+  caloriesBurned?: number;
 } | {
   type: 'cardio';
   duration?: number; // in minutes
@@ -31,13 +32,18 @@ export type Exercise = {
   caloriesBurned?: number;
 });
 
-export interface WorkoutSession {
+export type WorkoutSession = {
+  fitbitLogId?: number;
   name: string;
   notes?: string;
-  exercises: Exercise[];
+  date: string;
+  duration: number; // in minutes
+  caloriesBurned: number;
   averageHeartRate?: number;
-  caloriesBurned?: number;
-}
+} & (
+  | { type: 'cardio'; distance?: number; pace?: number; exercises: Exercise[]; }
+  | { type: 'weightlifting'; exercises: Exercise[]; }
+);
 
 export interface DailyLog {
   date: string;
@@ -89,6 +95,7 @@ export interface FitbitActivity {
   hasActiveZoneMinutes: boolean;
   startDate: string;
   hasStartTime: boolean;
+  averageHeartRate?: number;
 }
 
 export interface FitbitSummary {

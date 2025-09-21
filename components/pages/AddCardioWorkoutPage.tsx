@@ -26,8 +26,9 @@ const AddCardioWorkoutPage: React.FC = () => {
   useEffect(() => {
     if (fitbitActivity) {
       setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName);
-      setDuration(String(fitbitActivity.duration / 60000)); // Convert ms to minutes
-      setCaloriesBurned(String(fitbitActivity.calories));
+      setDuration(String(Math.floor(fitbitActivity.duration / 60000))); // Convert ms to minutes
+      setCaloriesBurned(String(Math.floor(fitbitActivity.calories)));
+      setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
       setNotes(`Synced from Fitbit. Distance: ${fitbitActivity.distance} miles, Steps: ${fitbitActivity.steps}`);
     }
   }, [fitbitActivity]);
@@ -52,10 +53,11 @@ const AddCardioWorkoutPage: React.FC = () => {
       name: activityType,
       notes: notes,
       date: dateString,
-      duration: parseInt(duration, 10),
-      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : 0,
+      duration: Math.floor(parseInt(duration, 10)),
+      caloriesBurned: caloriesBurned ? Math.floor(parseInt(caloriesBurned, 10)) : 0,
       distance: fitbitActivity?.distance,
       fitbitLogId: fitbitActivity?.logId,
+      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
     };
 
     addWorkout(dateString, newWorkout);

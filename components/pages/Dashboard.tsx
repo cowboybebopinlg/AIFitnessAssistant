@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon, RefreshCwIcon } from '../icons';
 import { getSmartSuggestion } from '../../services/geminiService';
-import { getDailyActivity, getDailyHRV, getDailySpO2, getDailySkinTemp } from '../../services/fitbitService';
+import { getDailyActivity, getDailyHRV } from '../../services/fitbitService';
 
 // --- Re-created components based on Stitch design ---
 
@@ -42,8 +42,6 @@ const MorningMetricsCard = ({ data, fitbitSummary }) => {
     const readiness = 'N/A';
     const rhr = fitbitSummary?.restingHeartRate || 60;
     const hrv = fitbitSummary?.hrv || 75;
-    const spo2 = fitbitSummary?.spo2 || 'N/A';
-    const skinTemp = fitbitSummary?.skinTemp || 'N/A';
     const energy = '90%';
     const soreness = 'Low';
 
@@ -67,14 +65,6 @@ const MorningMetricsCard = ({ data, fitbitSummary }) => {
                 <div className="text-center self-center">
                     <p className="text-gray-400 text-sm">HRV</p>
                     <p className="text-white text-2xl font-bold">{hrv} ms</p>
-                </div>
-                <div className="text-center self-center">
-                    <p className="text-gray-400 text-sm">SpO2</p>
-                    <p className="text-white text-2xl font-bold">{spo2} %</p>
-                </div>
-                <div className="text-center self-center">
-                    <p className="text-gray-400 text-sm">Skin Temp</p>
-                    <p className="text-white text-2xl font-bold">{skinTemp} &deg;C</p>
                 </div>
                 <div className="text-center self-center">
                     <p className="text-gray-400 text-sm">Energy</p>
@@ -205,20 +195,14 @@ const FitbitActivityCard: React.FC = () => {
             try {
                 const activityData = await getDailyActivity(fitbitAccessToken);
                 const hrvData = await getDailyHRV(fitbitAccessToken);
-                const spo2Data = await getDailySpO2(fitbitAccessToken);
-                const skinTempData = await getDailySkinTemp(fitbitAccessToken);
 
                 console.log('FitbitActivityCard: Raw activity data received:', JSON.stringify(activityData, null, 2));
                 console.log('FitbitActivityCard: Activity summary:', activityData.summary);
                 console.log('FitbitActivityCard: Raw HRV data received:', JSON.stringify(hrvData, null, 2));
-                console.log('FitbitActivityCard: Raw SpO2 data received:', JSON.stringify(spo2Data, null, 2));
-                console.log('FitbitActivityCard: Raw Skin Temp data received:', JSON.stringify(skinTempData, null, 2));
 
                 const combinedSummary = {
                     ...activityData.summary,
                     hrv: hrvData?.hrv?.[0]?.value?.dailyRmssd || null,
-                    spo2: spo2Data?.value?.[0]?.avg || null,
-                    skinTemp: skinTempData?.temp?.[0]?.value || null,
                 };
 
                 const today = new Date().toISOString().slice(0, 10);

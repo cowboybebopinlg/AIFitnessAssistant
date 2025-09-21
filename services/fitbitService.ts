@@ -144,40 +144,4 @@ export const getDailyHRV = async (accessToken: string, date: string = getLocalDa
   return response.data;
 };
 
-/**
- * Fetches daily SpO2 data using the native Capacitor HTTP plugin.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21').
- * @returns A promise that resolves with the SpO2 data.
- */
-export const getDailySpO2 = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
-  const options = {
-    url: `https://api.fitbit.com/1/user/-/spo2/date/${date}/all.json`,
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  };
-  console.log(`FitbitService: Requesting daily SpO2 from: ${options.url}`);
-  const response = await CapacitorHttp.request({ ...options, method: 'GET' });
-  console.log(`FitbitService: Raw daily SpO2 response:`, JSON.stringify(response.data, null, 2));
-  return response.data;
-};
 
-/**
- * Fetches daily Skin Temperature Variation data using the native Capacitor HTTP plugin.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21').
- * @returns A promise that resolves with the Skin Temperature data.
- */
-export const getDailySkinTemp = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
-  const options = {
-    url: `https://api.fitbit.com/1/user/-/temp/core/date/${date}.json`,
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-    },
-  };
-  console.log(`FitbitService: Requesting daily Skin Temp from: ${options.url}`);
-  const response = await CapacitorHttp.request({ ...options, method: 'GET' });
-  console.log(`FitbitService: Raw daily Skin Temp response:`, JSON.stringify(response.data, null, 2));
-  return response.data;
-};
