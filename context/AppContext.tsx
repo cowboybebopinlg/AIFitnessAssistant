@@ -302,6 +302,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
             if (!prevData) return null;
             const newFitbitData = { ...prevData.fitbitData };
             newFitbitData[date] = data;
+            console.log('setFitbitData: newFitbitData[date].summary', newFitbitData[date].summary);
             return {
                 ...prevData,
                 fitbitData: newFitbitData,
@@ -438,6 +439,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
             const existingWorkouts = getLogForDate(date)?.workouts || [];
             const fitbitActivities = fitbitData.activities || [];
+            console.log('syncFitbitData: fitbitActivities', fitbitActivities);
 
             fitbitActivities.forEach((activity: FitbitActivity) => {
                 const existingWorkout = existingWorkouts.find(w => w.fitbitLogId === activity.logId);

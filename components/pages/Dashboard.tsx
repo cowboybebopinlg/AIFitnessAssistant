@@ -184,6 +184,10 @@ const FitbitActivityCard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     console.log('FitbitActivityCard: Rendered. isFitbitAuthenticated:', isFitbitAuthenticated, 'fitbitAccessToken:', fitbitAccessToken ? '[present]' : '[absent]');
+    console.log('FitbitActivityCard: appData', appData);
+    console.log('FitbitActivityCard: appData.fitbitData', appData?.fitbitData);
+    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]', appData?.fitbitData?.[new Date().toISOString().slice(0, 10)]);
+    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]?.summary', appData?.fitbitData?.[new Date().toISOString().slice(0, 10)]?.summary);
 
     const fetchFitbitActivity = useCallback(async () => {
         console.log('FitbitActivityCard: fetchFitbitActivity called.');
@@ -212,7 +216,9 @@ const FitbitActivityCard: React.FC = () => {
                 });
             } catch (err: any) {
                 console.error('FitbitActivityCard: Detailed fetch error:', err);
-                if (err?.error?.status === 'PERMISSION_DENIED' && err?.error?.message?.includes('spo2')) {
+                if (err?.error?.status === 'RESOURCE_EXHAUSTED') {
+                    setError('Fitbit API quota exceeded. Please try again later.');
+                } else if (err?.error?.status === 'PERMISSION_DENIED' && err?.error?.message?.includes('spo2')) {
                     setError('Failed to fetch SpO2 data. Please ensure you have granted SpO2 permission in Fitbit settings and your device supports it.');
                 } else {
                     setError('Failed to fetch Fitbit data. See console for details.');
