@@ -115,6 +115,23 @@ const NutritionCard = ({ data, targets }) => {
 };
 
 const WorkoutsCard = ({ workouts, fitbitActivities }) => {
+    const combinedWorkouts = useMemo(() => {
+        const existingWorkouts = workouts || [];
+        const newFitbitWorkouts = (fitbitActivities || []).filter(
+            (activity) => !existingWorkouts.some((w) => w.fitbitLogId === activity.logId)
+        ).map((activity) => ({
+            // Convert FitbitActivity to a WorkoutSession-like object for consistent rendering
+            fitbitLogId: activity.logId,
+            name: activity.activityName || activity.activityParentName,
+            duration: Math.floor(activity.duration / 60000), // Convert to int minutes
+            caloriesBurned: Math.floor(activity.calories), // Convert to int calories
+            type: activity.activityParentName === 'Weight Training' ? 'weightlifting' : 'cardio',
+            exercises: [], // Placeholder, as full exercise details aren't available here
+        }));
+
+        return [...existingWorkouts, ...newFitbitWorkouts];
+    }, [workouts, fitbitActivities]);
+
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
             <div className="flex justify-between items-start">
@@ -124,37 +141,26 @@ const WorkoutsCard = ({ workouts, fitbitActivities }) => {
                 </button>
             </div>
             <div className="space-y-4 mt-2">
-                {workouts && workouts.length > 0 ? (
-                    workouts.map((workout, index) => (
-                        <div key={index} className="flex items-center gap-4">
-                            <div className="text-white flex items-center justify-center rounded-lg bg-gray-700 shrink-0 w-12 h-12">
-                                {workout.exercises[0]?.type === 'weights' ? <DumbbellIcon className="w-6 h-6" /> : <RunningIcon className="w-6 h-6" />}
+                {combinedWorkouts.length > 0 ? (
+                    combinedWorkouts.map((workout, index) => (
+                        <div key={workout.fitbitLogId || index} className="flex items-center gap-4">
+                            <div className={`text-white flex items-center justify-center rounded-lg shrink-0 w-12 h-12 ${workout.fitbitLogId ? 'bg-blue-700' : 'bg-gray-700'}`}>
+                                {workout.type === 'weightlifting' ? <DumbbellIcon className="w-6 h-6" /> : <RunningIcon className="w-6 h-6" />}
                             </div>
                             <div className="flex flex-col justify-center flex-grow">
-                                <p className="text-white text-base font-medium">{workout.name}</p>
-                                <p className="text-gray-400 text-sm">{workout.exercises[0]?.type === 'weights' ? 'Weightlifting' : 'Cardio'}</p>
+                                <p className="text-white text-base font-medium">{workout.name} {workout.fitbitLogId ? '(Fitbit)' : ''}</p>
+                                <p className="text-gray-400 text-sm">
+                                    {workout.type === 'weightlifting' ? 'Weightlifting' : 'Cardio'}
+                                    {workout.duration ? `, ${workout.duration} mins` : ''}
+                                    {workout.caloriesBurned ? `, ${workout.caloriesBurned} kcal` : ''}
+                                </p>
                             </div>
-                            <div className="text-primary-500 text-sm font-bold">Completed</div>
+                            <div className={`${workout.fitbitLogId ? 'text-blue-300' : 'text-primary-500'} text-sm font-bold`}>
+                                {workout.fitbitLogId ? 'Synced' : 'Completed'}
+                            </div>
                         </div>
                     ))
-                ) : null}
-
-                {fitbitActivities && fitbitActivities.length > 0 ? (
-                    fitbitActivities.map((activity, index) => (
-                        <div key={`fitbit-${index}`} className="flex items-center gap-4">
-                            <div className="text-white flex items-center justify-center rounded-lg bg-blue-700 shrink-0 w-12 h-12">
-                                <RunningIcon className="w-6 h-6" />
-                            </div>
-                            <div className="flex flex-col justify-center flex-grow">
-                                <p className="text-white text-base font-medium">{activity.activityName || activity.activityParentName} (Fitbit)</p>
-                                <p className="text-gray-400 text-sm">{activity.calories} calories, {activity.duration / 60000} mins</p>
-                            </div>
-                            <div className="text-blue-300 text-sm font-bold">Synced</div>
-                        </div>
-                    ))
-                ) : null}
-
-                {(!workouts || workouts.length === 0) && (!fitbitActivities || fitbitActivities.length === 0) && (
+                ) : (
                     <p className="text-gray-400 text-center">No workouts logged for today.</p>
                 )}
             </div>
@@ -178,7 +184,7 @@ const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
     );
 };
 
-const FitbitActivityCard: React.FC = () => {
+const FitbitActivityCard: React.FC<{ todayDateString: string }> = ({ todayDateString }) => {
     const { isFitbitAuthenticated, fitbitAccessToken, setFitbitData, appData } = useAppContext();
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -186,8 +192,8 @@ const FitbitActivityCard: React.FC = () => {
     console.log('FitbitActivityCard: Rendered. isFitbitAuthenticated:', isFitbitAuthenticated, 'fitbitAccessToken:', fitbitAccessToken ? '[present]' : '[absent]');
     console.log('FitbitActivityCard: appData', appData);
     console.log('FitbitActivityCard: appData.fitbitData', appData?.fitbitData);
-    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]', appData?.fitbitData?.[new Date().toISOString().slice(0, 10)]);
-    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]?.summary', appData?.fitbitData?.[new Date().toISOString().slice(0, 10)]?.summary);
+    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]', appData?.fitbitData?.[todayDateString]);
+    console.log('FitbitActivityCard: appData.fitbitData[todayDateString]?.summary', appData?.fitbitData?.[todayDateString]?.summary);
 
     const fetchFitbitActivity = useCallback(async () => {
         console.log('FitbitActivityCard: fetchFitbitActivity called.');
@@ -209,8 +215,7 @@ const FitbitActivityCard: React.FC = () => {
                     hrv: hrvData?.hrv?.[0]?.value?.dailyRmssd || null,
                 };
 
-                const today = new Date().toISOString().slice(0, 10);
-                setFitbitData(today, {
+                setFitbitData(todayDateString, {
                     summary: combinedSummary,
                     activities: activityData.activities || [],
                 });
@@ -228,10 +233,9 @@ const FitbitActivityCard: React.FC = () => {
             }
         } else {
             console.log('FitbitActivityCard: Not authenticated. Clearing data.');
-            const today = new Date().toISOString().slice(0, 10);
-            setFitbitData(today, { summary: null, activities: [] });
+            setFitbitData(todayDateString, { summary: null, activities: [] });
         }
-    }, [isFitbitAuthenticated, fitbitAccessToken, setFitbitData]);
+    }, [isFitbitAuthenticated, fitbitAccessToken, setFitbitData, todayDateString]);
 
     useEffect(() => {
         fetchFitbitActivity();
@@ -254,11 +258,11 @@ const FitbitActivityCard: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4 text-white">
                         <div>
                             <p className="text-sm text-gray-400">Steps</p>
-                            <p className="text-2xl font-bold">{appData?.fitbitData?.summary?.steps?.toLocaleString() || 0}</p>
+                            <p className="text-2xl font-bold">{appData?.fitbitData?.[todayDateString]?.summary?.steps?.toLocaleString() || 0}</p>
                         </div>
                         <div>
                             <p className="text-sm text-gray-400">Calories</p>
-                            <p className="text-2xl font-bold">{appData?.fitbitData?.summary?.caloriesOut?.toLocaleString() || 0}</p>
+                            <p className="text-2xl font-bold">{appData?.fitbitData?.[todayDateString]?.summary?.caloriesOut?.toLocaleString() || 0}</p>
                         </div>
                     </div>
                 )}
@@ -274,9 +278,7 @@ export const Dashboard: React.FC = () => {
 
     const todaysLog = getTodaysLog();
 
-    const todayDateString = useMemo(() => {
-        return new Date().toISOString().slice(0, 10);
-    }, []);
+    const todayDateString = new Date().toISOString().slice(0, 10);
 
     const fitbitSummary = appData?.fitbitData?.[todayDateString]?.summary;
     const fitbitActivities = appData?.fitbitData?.[todayDateString]?.activities || [];
@@ -338,7 +340,7 @@ export const Dashboard: React.FC = () => {
                 </header>
                 <main className="p-4 space-y-6">
                     <MorningMetricsCard data={todaysLog} fitbitSummary={fitbitSummary} />
-                    <FitbitActivityCard />
+                    <FitbitActivityCard todayDateString={todayDateString} />
                     <NutritionCard data={nutritionTotals} targets={targets} />
                     <WorkoutsCard workouts={todaysLog?.workouts} fitbitActivities={fitbitActivities} />
                     <SmartSuggestionsCard suggestion={suggestion} onRefresh={fetchSuggestion} />
