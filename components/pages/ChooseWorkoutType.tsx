@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ChooseWorkoutType: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const dateString = searchParams.get('date');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="relative flex h-screen w-full flex-col">

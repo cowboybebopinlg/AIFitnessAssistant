@@ -20,6 +20,7 @@ const AddCardioWorkoutPage: React.FC = () => {
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [notes, setNotes] = useState('');
   const [geminiText, setGeminiText] = useState('');
+  const [isLoadingGemini, setIsLoadingGemini] = useState(false); // New state for Gemini loading
 
   const isEditMode = workoutIndex !== null;
 
@@ -39,7 +40,7 @@ const AddCardioWorkoutPage: React.FC = () => {
         setNotes(workout.notes || '');
       }
     } else if (fitbitActivity) {
-      setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName);
+      setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName || 'Cardio Workout'); // Added 'Cardio Workout' fallback
       setDuration(String(Math.floor(fitbitActivity.duration / 60000))); // Convert ms to minutes
       setCaloriesBurned(String(Math.floor(fitbitActivity.calories)));
       setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
@@ -71,12 +72,10 @@ const AddCardioWorkoutPage: React.FC = () => {
 
     if (isEditMode) {
       updateWorkout(dateString, parseInt(workoutIndex!), workoutData);
-      alert('Cardio workout updated!');
     } else {
       addWorkout(dateString, workoutData);
-      alert('Cardio workout added!');
     }
-    navigate(-1);
+    navigate('/log'); // Navigate directly to daily log
   };
 
   const handleAnalyzeWorkoutWithGemini = async () => {
@@ -85,8 +84,12 @@ const AddCardioWorkoutPage: React.FC = () => {
       return;
     }
 
+    setIsLoadingGemini(true); // Set loading state
     try {
+      console.log('Sending to Gemini:', geminiText); // Log input
       const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
+      console.log('Received from Gemini:', workout); // Log output
+
       const newWorkout: WorkoutSession = {
         type: 'cardio',
         name: workout.name || 'Unknown Workout',
@@ -99,11 +102,12 @@ const AddCardioWorkoutPage: React.FC = () => {
       };
 
       addWorkout(dateString, newWorkout);
-      alert('Workout added via Gemini!');
-      navigate(-1);
+      navigate('/log');
     } catch (error) {
       console.error(error);
       alert('Failed to parse workout with Gemini.');
+    } finally {
+      setIsLoadingGemini(false); // Reset loading state
     }
   };
 
@@ -205,11 +209,22 @@ const AddCardioWorkoutPage: React.FC = () => {
         <button
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
           onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleSaveWorkout}
-          disabled={!!fitbitActivity && !!geminiText}
+          disabled={!!fitbitActivity && !!geminiText || isLoadingGemini}
         >
-          {isEditMode ? 'Save Changes' : 'Save Workout'}
+          {geminiText ? 'Analyze Workout' : (isEditMode ? 'Save Changes' : 'Save Workout')}
         </button>
       </footer>
+      {isLoadingGemini && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="flex flex-col rounded-xl bg-background-light dark:bg-background-dark p-8 items-center justify-center">
+            <svg className="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="mt-4 text-lg font-bold text-slate-900 dark:text-white">Analyzing with Gemini...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
