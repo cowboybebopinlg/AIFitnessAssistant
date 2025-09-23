@@ -44,23 +44,65 @@ export const getWorkoutInfoFromText = async (text: string, apiKey: string): Prom
 
         const prompt = `
             Analyze the following text and extract the workout information.
-            Return the data as a JSON object. The top-level object should be a WorkoutSession.
-            The WorkoutSession can have a name and a list of exercises.
-            Each exercise can have a name, type (weights or cardio), bodyPart, and a list of sets.
-            Each set has reps and weight.
+            Return the data as a JSON object that strictly adheres to the following TypeScript interface structure.
+            If a field is not explicitly mentioned in the input text, provide a reasonable default value (e.g., 0 for numbers, empty string for strings, empty array for exercises/sets).
+
+            interface WorkoutSession {
+              name: string;
+              notes?: string;
+              duration: number; // in minutes
+              caloriesBurned: number;
+              averageHeartRate?: number;
+              type: 'cardio' | 'weightlifting';
+              exercises: Exercise[];
+              distance?: number; // in miles/km, only for cardio
+              pace?: number; // only for cardio
+            }
+
+            interface Exercise {
+              id: string; // Use "generate-id" as a placeholder; client will generate actual ID
+              name: string;
+              type: 'weightlifting' | 'cardio';
+              bodyPart?: string; // only for weightlifting
+              sets?: ExerciseSet[]; // only for weightlifting
+              duration?: number; // in minutes, only for cardio
+              distance?: number; // in miles/km, only for cardio
+              averageHeartRate?: number; // only for cardio
+              caloriesBurned?: number; // only for cardio
+            }
+
+            interface ExerciseSet {
+              reps: number;
+              weight: number;
+              isPr?: boolean;
+              notes?: string;
+            }
 
             Input text: "${text}"
 
             JSON output:
         `;
 
+        console.log('Gemini Prompt:', prompt); // Log the prompt
+
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const responseText = await response.text();
         
+        console.log('Gemini Raw Response:', responseText); // Log the raw response
+
         // Clean the response to get only the JSON part
         const jsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const workout = JSON.parse(jsonText);
+        const workout: Partial<WorkoutSession> = JSON.parse(jsonText);
+
+        // Generate unique IDs for exercises if "generate-id" is present
+        if (workout.exercises) {
+            workout.exercises.forEach(exercise => {
+                if (exercise.id === "generate-id") {
+                    exercise.id = new Date().toISOString(); // Generate a unique ID
+                }
+            });
+        }
 
         return workout;
     } catch (error) {
