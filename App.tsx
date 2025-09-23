@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { App as CapacitorApp } from '@capacitor/app';
 
 import BottomNav from './components/BottomNav';
+import AskGeminiFeature from './components/AskGemini';
 import AppProvider from './context/AppContext';
 
 const Dashboard = lazy(() => import('./components/pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -14,6 +15,7 @@ const AddWeightliftingWorkoutPage = lazy(() => import('./components/pages/AddWei
 const Trends = lazy(() => import('./components/pages/Trends'));
 const Library = lazy(() => import('./components/pages/Library'));
 const Settings = lazy(() => import('./components/pages/Settings'));
+const ProfilePage = lazy(() => import('./components/pages/ProfilePage'));
 
 import { SafeArea } from '@capacitor-community/safe-area';
 
@@ -61,10 +63,12 @@ const AppContent: React.FC = () => {
                   <Route path="/trends" element={<Trends />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/profile" element={<ProfilePage />} />
               </Routes>
             </Suspense>
           </main>
           <BottomNav />
+          <AskGeminiFeature />
         </div>
       </div>
     </Router>

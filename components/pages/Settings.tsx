@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getAuthorizationUrl, exchangeCodeForTokens, revokeToken } from '../../services/fitbitService';
 import { Browser } from '@capacitor/browser';
@@ -10,6 +11,7 @@ import { Preferences } from '@capacitor/preferences';
 const Settings: React.FC = () => {
     const { geminiApiKey, setGeminiApiKey, injectDummyFitbitData, deleteFitbitData, authenticateFitbit } = useAppContext();
     const [apiKey, setApiKey] = useState(geminiApiKey || '');
+    const navigate = useNavigate();
 
     const handleSave = () => {
         setGeminiApiKey(apiKey);
@@ -78,6 +80,12 @@ const Settings: React.FC = () => {
         <div className="p-4">
             <h1 className="text-2xl font-bold mb-4">Settings</h1>
             <div className="space-y-4">
+                <button
+                    onClick={() => navigate('/profile')}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mb-4"
+                >
+                    Edit User Profile
+                </button>
                 <div>
                     <label htmlFor="gemini-api-key" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gemini API Key</label>
                     <input

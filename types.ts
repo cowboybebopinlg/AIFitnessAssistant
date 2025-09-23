@@ -127,10 +127,42 @@ export interface AppData {
   library: LibraryItem[];
   measurements: BodyMeasurement[];
   commonFoods: CommonFood[];
+  userProfile?: UserProfile; // Added UserProfile
   settings?: {
     geminiApiKey?: string;
   };
   fitbitData?: { [date: string]: DailyFitbitData }; // Now date-keyed
+}
+
+export interface Measurement {
+  name: string;
+  value: string | number;
+  unit: 'in' | 'cm';
+}
+
+export interface UserProfile {
+  primaryGoal: string;
+  targetDate: string;
+  missionStatement: string;
+  height: string;
+  startingWeight: number;
+  measurements: Measurement[];
+  healthFactors: string;
+  readinessModel: string;
+  trainingSplit: string;
+  cardioTargets: string;
+  trainingDayTargets: {
+    calories: number;
+    protein: number;
+    fat: number;
+    fiber: number;
+  };
+  recoveryDayTargets: {
+    calories: number;
+    protein: number;
+    fat: number;
+    fiber: number;
+  };
 }
 
 export interface TrendDataPoint {

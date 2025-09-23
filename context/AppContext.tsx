@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitData, FitbitActivity } from '../types';
+import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitData, FitbitActivity, UserProfile } from '../types';
 import { loadData, saveData } from '../services/dataService';
 import { refreshAccessToken, getDailyActivity } from '../services/fitbitService';
 
@@ -21,6 +21,8 @@ interface AppContextType {
     geminiApiKey: string | null;
     setGeminiApiKey: (key: string | null) => void;
     addCommonFood: (food: CommonFood) => void;
+    userProfile: UserProfile | undefined;
+    updateUserProfile: (profile: UserProfile) => void;
     // Fitbit specific state and functions
     isFitbitAuthenticated: boolean;
     fitbitAccessToken: string | null;
@@ -479,6 +481,13 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     };
 
+    const updateUserProfile = (profile: UserProfile) => {
+        setAppData(prevData => {
+            if (!prevData) return null;
+            return { ...prevData, userProfile: profile };
+        });
+    };
+
     const value = {
         appData,
         isLoading,
@@ -496,6 +505,8 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         geminiApiKey,
         setGeminiApiKey,
         addCommonFood,
+        userProfile: appData?.userProfile,
+        updateUserProfile,
         // Fitbit
         isFitbitAuthenticated,
         fitbitAccessToken,
