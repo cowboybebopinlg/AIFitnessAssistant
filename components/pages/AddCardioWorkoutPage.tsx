@@ -7,14 +7,12 @@ import { Exercise, WorkoutSession, FitbitActivity } from '../../types';
 const AddCardioWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { addWorkout, geminiApiKey } = useAppContext();
+  const { addWorkout, updateWorkout, getLogForDate, geminiApiKey } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
 
-  console.log('AddCardioWorkoutPage: location.state', location.state);
-  console.log('AddCardioWorkoutPage: fitbitActivity', fitbitActivity);
-
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
+  const workoutIndex = searchParams.get('workoutIndex');
 
   const [activityType, setActivityType] = useState('');
   const [duration, setDuration] = useState('');
@@ -23,45 +21,61 @@ const AddCardioWorkoutPage: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [geminiText, setGeminiText] = useState('');
 
+  const isEditMode = workoutIndex !== null;
+
   useEffect(() => {
-    if (fitbitActivity) {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    if (isEditMode) {
+      const log = getLogForDate(dateString);
+      const workout = log?.workouts[parseInt(workoutIndex!)];
+      if (workout && workout.type === 'cardio') {
+        setActivityType(workout.name);
+        setDuration(String(workout.duration));
+        setCaloriesBurned(String(workout.caloriesBurned));
+        setAverageHeartRate(String(workout.averageHeartRate || ''));
+        setNotes(workout.notes || '');
+      }
+    } else if (fitbitActivity) {
       setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName);
       setDuration(String(Math.floor(fitbitActivity.duration / 60000))); // Convert ms to minutes
       setCaloriesBurned(String(Math.floor(fitbitActivity.calories)));
       setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
       setNotes(`Synced from Fitbit. Distance: ${fitbitActivity.distance} miles, Steps: ${fitbitActivity.steps}`);
     }
-  }, [fitbitActivity]);
+  }, [fitbitActivity, isEditMode, workoutIndex, dateString, getLogForDate]);
 
-  const handleAddWorkout = () => {
+  const handleSaveWorkout = () => {
     if (!activityType || !duration) {
       alert('Please fill in all fields.');
       return;
     }
 
-    const newExercise: Exercise = {
-      id: new Date().toISOString(),
-      name: activityType,
-      type: 'cardio',
-      duration: parseInt(duration, 10),
-      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
-      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : undefined,
-    };
+    const existingWorkout = isEditMode ? getLogForDate(dateString)?.workouts[parseInt(workoutIndex!)] : undefined;
 
-    const newWorkout: WorkoutSession = {
+    const workoutData: WorkoutSession = {
       type: 'cardio',
       name: activityType,
       notes: notes,
       date: dateString,
       duration: Math.floor(parseInt(duration, 10)),
       caloriesBurned: caloriesBurned ? Math.floor(parseInt(caloriesBurned, 10)) : 0,
-      distance: fitbitActivity?.distance,
-      fitbitLogId: fitbitActivity?.logId,
+      distance: existingWorkout?.distance || fitbitActivity?.distance,
+      fitbitLogId: existingWorkout?.fitbitLogId || fitbitActivity?.logId,
       averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : undefined,
+      exercises: existingWorkout?.exercises || [],
+      pace: (existingWorkout && 'pace' in existingWorkout) ? existingWorkout.pace : 0,
     };
 
-    addWorkout(dateString, newWorkout);
-    alert('Cardio workout added!');
+    if (isEditMode) {
+      updateWorkout(dateString, parseInt(workoutIndex!), workoutData);
+      alert('Cardio workout updated!');
+    } else {
+      addWorkout(dateString, workoutData);
+      alert('Cardio workout added!');
+    }
     navigate(-1);
   };
 
@@ -73,15 +87,6 @@ const AddCardioWorkoutPage: React.FC = () => {
 
     try {
       const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
-      const newExercise: Exercise = {
-        id: new Date().toISOString(),
-        name: workout.name || 'Unknown Workout',
-        type: 'cardio',
-        duration: workout.duration || 0,
-        averageHeartRate: workout.averageHeartRate || undefined,
-        caloriesBurned: workout.caloriesBurned || undefined,
-      };
-
       const newWorkout: WorkoutSession = {
         type: 'cardio',
         name: workout.name || 'Unknown Workout',
@@ -89,6 +94,8 @@ const AddCardioWorkoutPage: React.FC = () => {
         date: dateString,
         duration: workout.duration || 0,
         caloriesBurned: workout.caloriesBurned || 0,
+        exercises: [],
+        pace: 0,
       };
 
       addWorkout(dateString, newWorkout);
@@ -106,14 +113,14 @@ const AddCardioWorkoutPage: React.FC = () => {
         <button className="text-white" onClick={() => navigate(-1)}>
           <span className="material-symbols-outlined"> close </span>
         </button>
-        <h1 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">Add Cardio Workout</h1>
+        <h1 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">{isEditMode ? 'Edit Cardio Workout' : 'Add Cardio Workout'}</h1>
         <div className="w-8"></div>
       </header>
       <main className="p-2 space-y-4">
         <div className="space-y-2">
           <div>
             <label htmlFor="activity-type" className="block text-sm font-medium text-gray-400 mb-1">Activity Type</label>
-            <input 
+            <input
               id="activity-type"
               className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
               placeholder="e.g., Running"
@@ -125,9 +132,9 @@ const AddCardioWorkoutPage: React.FC = () => {
           </div>
           <div>
             <label htmlFor="duration" className="block text-sm font-medium text-gray-400 mb-1">Duration</label>
-            <input 
+            <input
               id="duration"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
               placeholder="e.g., 30 mins"
               type="text"
               value={duration}
@@ -137,9 +144,9 @@ const AddCardioWorkoutPage: React.FC = () => {
           </div>
           <div>
             <label htmlFor="average-heart-rate" className="block text-sm font-medium text-gray-400 mb-1">Average Heart Rate (bpm)</label>
-            <input 
+            <input
               id="average-heart-rate"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
               placeholder="e.g., 140"
               type="number"
               value={averageHeartRate}
@@ -149,9 +156,9 @@ const AddCardioWorkoutPage: React.FC = () => {
           </div>
           <div>
             <label htmlFor="calories-burned" className="block text-sm font-medium text-gray-400 mb-1">Calories Burned</label>
-            <input 
+            <input
               id="calories-burned"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
               placeholder="e.g., 300"
               type="number"
               value={caloriesBurned}
@@ -161,9 +168,9 @@ const AddCardioWorkoutPage: React.FC = () => {
           </div>
           <div>
             <label htmlFor="notes" className="block text-sm font-medium text-gray-400 mb-1">Notes</label>
-            <textarea 
+            <textarea
               id="notes"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-primary" 
+              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-primary"
               placeholder="e.g., felt strong, new PR)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -183,8 +190,8 @@ const AddCardioWorkoutPage: React.FC = () => {
             </div>
             <p className="text-sm text-white/70">Describe your workout in plain text. Gemini will handle the rest.</p>
             <div className="relative">
-              <textarea 
-                className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-primary" 
+              <textarea
+                className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-primary"
                 placeholder="e.g., Ran 5k in 25 minutes, then did 3 sets of 10 pushups."
                 value={geminiText}
                 onChange={(e) => setGeminiText(e.target.value)}
@@ -195,12 +202,12 @@ const AddCardioWorkoutPage: React.FC = () => {
         )}
       </main>
       <footer className="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
-        <button 
+        <button
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
-          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleAddWorkout}
+          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleSaveWorkout}
           disabled={!!fitbitActivity && !!geminiText}
         >
-          Save Workout
+          {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
     </div>

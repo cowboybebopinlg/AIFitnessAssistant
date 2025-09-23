@@ -23,6 +23,10 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   const [geminiText, setGeminiText] = useState('');
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (fitbitActivity) {
       const newExercise: Exercise = {
         id: new Date().toISOString(),
@@ -66,12 +70,13 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   const handleAddWorkout = () => {
     const newWorkout: WorkoutSession = {
       type: 'weightlifting',
-      name: 'Weightlifting',
+      name: fitbitActivity?.name || 'Weightlifting',
       exercises: exercises,
       date: dateString,
-      duration: 0, // This will be calculated based on the exercises
-      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : 0,
+      duration: fitbitActivity ? fitbitActivity.duration / 60000 : 0,
+      caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : (fitbitActivity?.calories || 0),
       fitbitLogId: fitbitActivity?.logId,
+      averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : fitbitActivity?.averageHeartRate,
     };
 
     addWorkout(dateString, newWorkout);

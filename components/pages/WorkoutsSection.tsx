@@ -91,6 +91,7 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
               <div key={index} className="rounded-lg bg-gray-900 p-4">
                 <div className="flex items-start justify-between">
                   <div>
+                    {workout.fitbitLogId && <p className="text-xs font-bold uppercase tracking-wider text-blue-400">Fitbit</p>}
                     {workout.exercises.length > 0 &&
                     <p className="text-xs font-bold uppercase tracking-wider text-blue-400">{workout.exercises[0]?.type}</p>}
                     <h3 className="text-lg font-bold text-white">{workout.name}</h3>
@@ -134,53 +135,6 @@ const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClic
                     <p>{workout.notes}</p>
                   </div>
                 )}
-              </div>
-            ))}
-
-            {fitbitActivities.filter(activity => !workouts.some(w => w.fitbitLogId === activity.logId)).map((activity, index) => (
-              <div key={`fitbit-${activity.logId || index}`} className="rounded-lg bg-gray-900 p-4 border border-blue-500">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-blue-400">Fitbit Activity</p>
-                    <h3 className="text-lg font-bold text-white">{activity.activityName || activity.activityParentName}</h3>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-blue-300 text-sm font-bold">Synced</div>
-                    <button
-                      className="flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-xs font-bold text-white"
-                      onClick={() => {
-                        const route = activity.activityParentName.toLowerCase().includes('run') || activity.activityParentName.toLowerCase().includes('walk') || activity.activityParentName.toLowerCase().includes('hike') ? '/log/add-cardio-workout' : '/log/add-workout/weights';
-                        console.log('Navigating to route:', route);
-                        navigate(route, { state: { fitbitActivity: activity } });
-                      }}
-                    >
-                      <span className="material-symbols-outlined text-sm">edit</span>
-                      Edit
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-gray-300">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Calories:</span>
-                    <span>{Math.floor(activity.calories)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Duration:</span>
-                    <span>{Math.floor(activity.duration / 60000)} mins</span>
-                  </div>
-                  {activity.distance && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Distance:</span>
-                      <span>{Math.floor(activity.distance)} miles</span>
-                    </div>
-                  )}
-                  {activity.steps && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Steps:</span>
-                      <span>{Math.floor(activity.steps)}</span>
-                    </div>
-                  )}
-                </div>
               </div>
             ))}
           </>
