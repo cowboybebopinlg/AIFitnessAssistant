@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { WorkoutSession, Exercise, ExerciseSet, FitbitActivity } from '../../types';
+import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
+import { getWorkoutInfoFromText } from '../../services/geminiService';
 
 const AddWeightliftingWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { addWorkout, geminiApiKey } = useAppContext();
+  const { addWorkout, geminiApiKey, updateWorkout, getLogForDate } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
 
-  console.log('AddWeightliftingWorkoutPage: location.state', location.state);
-  console.log('AddWeightliftingWorkoutPage: fitbitActivity', fitbitActivity);
-
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
+  const workoutIndex = searchParams.get('workoutIndex');
+  const isEditMode = workoutIndex !== null;
 
   const [exercises, setExercises] = useState<Exercise[]>([
     { id: new Date().toISOString(), name: '', type: 'weights', bodyPart: '', sets: [{ reps: 0, weight: 0 }] },
@@ -21,10 +21,20 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   const [averageHeartRate, setAverageHeartRate] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [geminiText, setGeminiText] = useState('');
+  const [isLoadingGemini, setIsLoadingGemini] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    if (isEditMode) {
+      const log = getLogForDate(dateString);
+      const workout = log?.workouts[parseInt(workoutIndex!, 10)];
+      if (workout && workout.type === 'weightlifting') {
+        setExercises(workout.exercises);
+        setAverageHeartRate(String(workout.averageHeartRate || ''));
+        setCaloriesBurned(String(workout.caloriesBurned || ''));
+      }
+    }
+  }, [isEditMode, workoutIndex, dateString, getLogForDate]);
 
   useEffect(() => {
     if (fitbitActivity) {
@@ -67,56 +77,80 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     setExercises(newExercises);
   };
 
-  const handleAddWorkout = () => {
-    const newWorkout: WorkoutSession = {
+  const handleSaveWorkout = () => {
+    const workoutData: Omit<WorkoutSession, 'date'> = {
       type: 'weightlifting',
       name: fitbitActivity?.name || 'Weightlifting',
       exercises: exercises,
-      date: dateString,
       duration: fitbitActivity ? fitbitActivity.duration / 60000 : 0,
       caloriesBurned: caloriesBurned ? parseInt(caloriesBurned, 10) : (fitbitActivity?.calories || 0),
       fitbitLogId: fitbitActivity?.logId,
       averageHeartRate: averageHeartRate ? parseInt(averageHeartRate, 10) : fitbitActivity?.averageHeartRate,
     };
 
-    addWorkout(dateString, newWorkout);
-    alert('Weightlifting workout added!');
+    if (isEditMode) {
+      updateWorkout(dateString, parseInt(workoutIndex!), workoutData);
+    } else {
+      addWorkout(dateString, { ...workoutData, date: dateString });
+    }
     navigate(-1);
   };
 
   const handleAnalyzeWorkoutWithGemini = async () => {
     if (!geminiApiKey) {
-      alert('Please set your Gemini API key in the settings.');
+      // Consider a more user-friendly notification
       return;
     }
-
+    setIsLoadingGemini(true);
     try {
-      const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
-      const newWorkout: WorkoutSession = {
-        type: 'weightlifting',
-        name: workout.name || 'Weightlifting',
-        exercises: workout.exercises || [],
-        date: dateString,
-        duration: workout.duration || 0,
-        caloriesBurned: workout.caloriesBurned || 0,
-      };
-
-      addWorkout(dateString, newWorkout);
-      alert('Workout added via Gemini!');
+      const geminiWorkout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
+      
+      if (isEditMode) {
+        const log = getLogForDate(dateString);
+        const existingWorkout = log?.workouts[parseInt(workoutIndex!, 10)] as WorkoutSession;
+        if (existingWorkout) {
+          const updatedWorkout = {
+            ...existingWorkout,
+            name: geminiWorkout.name || existingWorkout.name,
+            exercises: [...existingWorkout.exercises, ...(geminiWorkout.exercises || [])],
+            duration: geminiWorkout.duration || existingWorkout.duration,
+            caloriesBurned: geminiWorkout.caloriesBurned || existingWorkout.caloriesBurned,
+          };
+          updateWorkout(dateString, parseInt(workoutIndex!), updatedWorkout);
+        }
+      } else {
+        const newWorkout: WorkoutSession = {
+          type: 'weightlifting',
+          name: geminiWorkout.name || 'Weightlifting',
+          exercises: geminiWorkout.exercises || [],
+          date: dateString,
+          duration: geminiWorkout.duration || 0,
+          caloriesBurned: geminiWorkout.caloriesBurned || 0,
+        };
+        addWorkout(dateString, newWorkout);
+      }
       navigate(-1);
     } catch (error) {
       console.error(error);
-      alert('Failed to parse workout with Gemini.');
+      // Consider a more user-friendly error message
+    } finally {
+      setIsLoadingGemini(false);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
+      {isLoadingGemini && (
+        <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+          <p className="text-white text-lg mt-4">Gemini is analyzing your workout...</p>
+        </div>
+      )}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200/10 bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:bg-background-dark/80">
         <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 dark:text-gray-300" onClick={() => navigate(-1)}>
           <span className="material-symbols-outlined"> close </span>
         </button>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">Add Workout</h1>
+        <h1 className="text-lg font-bold text-gray-900 dark:text-white">{isEditMode ? 'Edit Workout' : 'Add Workout'}</h1>
         <div className="w-10"></div>
       </header>
       <main className="p-2 space-y-4">
@@ -247,9 +281,9 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
       <footer className="sticky bottom-0 border-t border-gray-200/10 bg-background-light/80 py-2 backdrop-blur-sm dark:bg-background-dark/80">
         <button 
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
-          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleAddWorkout}
+          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleSaveWorkout}
         >
-          Save Workout
+          {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
     </div>
