@@ -163,13 +163,15 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
           type: "OBJECT",
           properties: {
             intent: { type: "STRING", enum: ["LOG_FOOD", "LOG_WORKOUT", "ASK_QUESTION", "ANALYZE_MEAL_IMAGE", "GENERATE_WORKOUT", "SUMMARIZE_WEEK", "UNKNOWN"] },
-            data: { type: "OBJECT", description: "Contains extracted entities or generated content." },
+            data: { type: "STRING", description: "Contains extracted entities or generated content, as a JSON string." },
             summary: { type: "STRING", description: "A user-facing summary or the full text response for questions/summaries." }
           }
         }
       }
     };
     
+    console.log('Gemini API Request Payload:', JSON.stringify(payload, null, 2));
+
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -177,7 +179,11 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+        if (!response.ok) {
+            console.error('Gemini API Error Status:', response.status, response.statusText);
+            console.error('Gemini API Error Response Body:', await response.text());
+            throw new Error(`API Error: ${response.statusText || 'Unknown error'}`);
+        }
         const result = await response.json();
         const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (jsonText) {
@@ -197,12 +203,13 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   const handleActionClick = (response?: AskGeminiResponse) => {
       if (!response) return;
       onClose(); 
+      const parsedData = response.data ? JSON.parse(response.data as string) : {};
       switch (response.intent) {
           case 'LOG_FOOD':
-              navigate('/log/add-food', { state: { prefillItems: response.data.items, summary: response.summary } });
+              navigate('/log/add-food', { state: { prefillItems: parsedData.items, summary: response.summary } });
               break;
           case 'LOG_WORKOUT':
-              navigate('/log/add-workout', { state: { prefillWorkout: response.data, summary: response.summary } });
+              navigate('/log/add-workout', { state: { prefillWorkout: parsedData, summary: response.summary } });
               break;
       }
   };
@@ -210,7 +217,7 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background-dark/80 backdrop-blur-sm z-40 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black z-40 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-background-dark w-full max-w-lg h-[80vh] flex flex-col rounded-xl border border-slate-700 font-['Space_Grotesk'] text-white" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center p-4 border-b border-slate-700">
           <h2 className="text-xl font-bold">Ask Gemini</h2>
@@ -246,29 +253,28 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
         </div>
         
         <div className="p-4 border-t border-slate-700">
-          {conversation.filter(m => m.sender === 'user').length === 0 && (
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-                <button onClick={() => fileInputRef.current?.click()} className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 p-4 hover:bg-slate-700">
-                    <span className="material-symbols-outlined">image</span><span>Upload Image</span>
-                </button>
-                 <button onClick={handleRecordAudio} disabled={isRecording} className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 p-4 hover:bg-slate-700 disabled:opacity-50">
-                    <span className="material-symbols-outlined">{isRecording ? 'settings_voice' : 'mic'}</span><span>{isRecording ? 'Listening...' : 'Record'}</span>
-                </button>
-            </div>
-          )}
-          <div className="relative">
+          <div className="relative flex items-center rounded-full border border-slate-700 bg-slate-800">
+            <button className="p-2 text-slate-400 hover:text-white">
+                <span className="material-symbols-outlined">add</span>
+            </button>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-white">
+                <span className="material-symbols-outlined">image</span>
+            </button>
             <input
               type="text"
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && handleSend()}
-              className="w-full rounded-full border border-slate-700 bg-slate-800 p-4 pr-12 placeholder-slate-500 focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Type your message..."
+              className="flex-1 bg-transparent outline-none text-white placeholder-slate-500 text-sm px-2"
+              placeholder="Ask Gemini"
               disabled={isLoading}
             />
-            <button onClick={handleSend} disabled={isLoading || !prompt.trim()} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-blue-600 p-3 text-white disabled:bg-slate-600 hover:bg-blue-700">
-                <span className="material-symbols-outlined">send</span>
+            <button onClick={handleRecordAudio} disabled={isRecording} className="p-2 text-slate-400 hover:text-white disabled:opacity-50">
+                <span className="material-symbols-outlined">{isRecording ? 'settings_voice' : 'mic'}</span>
+            </button>
+            <button onClick={handleSend} disabled={isLoading || !prompt.trim()} className="bg-blue-600 hover:bg-blue-700 text-white w-9 h-9 rounded-full flex items-center justify-center disabled:bg-slate-600 mr-1">
+                <span className="material-symbols-outlined text-lg">send</span>
             </button>
           </div>
         </div>
@@ -292,7 +298,7 @@ const AskGeminiFeature = () => {
             {!isHidden && (
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="fixed bottom-20 right-6 bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-30"
+                    className="fixed bottom-24 right-6 bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-30"
                     aria-label="Ask Gemini"
                 >
                     <span className="material-symbols-outlined text-3xl">auto_awesome</span>
