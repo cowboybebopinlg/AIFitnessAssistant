@@ -1,11 +1,68 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Meal, WorkoutSession } from '../types';
+import type { Meal, WorkoutSession, DailyLog, UserProfile } from '../types';
 
 // Gemini integration is temporarily disabled to focus on UI and local data tracking.
 // All functions will return mock data.
 
-export const getSmartSuggestion = async (): Promise<string> => {
-    return "Focus on recovery today. Consider a light activity like yoga or a short walk to maintain mobility without overexerting yourself. Your body is primed for growth, so prioritize nutrient-rich meals and adequate sleep to maximize your gains.";
+export const getSmartSuggestion = async (
+    yesterdaysLog: DailyLog | undefined,
+    todaysLog: DailyLog | undefined,
+    userProfile: UserProfile | undefined,
+    apiKey: string
+): Promise<string> => {
+    if (!apiKey) {
+        return "Gemini API key is not set. Please set it in the settings.";
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    let todaysLogPrompt = "Not available";
+    if (todaysLog) {
+        const logToSend = { ...todaysLog };
+        if (logToSend.readiness === -1) {
+            delete logToSend.readiness;
+        }
+        todaysLogPrompt = JSON.stringify(logToSend, null, 2);
+    }
+
+    const prompt = `
+        Based on the following user data, provide a smart suggestion for today's activities and food to help them meet their goals.
+
+        **User Profile and Goals:**
+        ${userProfile ? JSON.stringify(userProfile, null, 2) : "Not available"}
+
+        **Yesterday's Log:**
+        ${yesterdaysLog ? JSON.stringify(yesterdaysLog, null, 2) : "Not available"}
+
+        **Today's Date:** ${new Date().toDateString()}
+        **Today's Log:**
+        ${todaysLogPrompt}
+
+        **Important Notes:**
+        - The user's metrics like energy level, sleep quality, etc., are rated on a scale of 1 to 5.
+        - Keep the suggestions brief and to the point.
+        - If the user has a training schedule in their profile, compare it for the current day to what they have completed in today's log.
+        - Return the response as a JSON object that adheres to the following TypeScript interface. The suggestions in each array should be plain strings, without any markdown or bullet points.
+        \`\`\`json
+        {
+            "food": "string[]",
+            "activity": "string[]",
+            "other": "string[]"
+        }
+        \`\`\`
+
+        **Recommendation:**
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return await response.text();
+    } catch (error) {
+        console.error("Error generating smart suggestion:", error);
+        return "Failed to generate smart suggestion. Please try again later.";
+    }
 };
 
 export const getNutritionInfoFromText = async (text: string, apiKey: string): Promise<Partial<Meal>> => {

@@ -78,6 +78,10 @@ Stress Level: ${stressLevel}/5
             </button>
           </div>
           <div className="flex justify-between text-white">
+            <span>Readiness Score:</span>
+            <span>{log?.readiness?.toString() || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between text-white">
             <span>HRV:</span>
             <span>{log?.hrv?.toString() || 'N/A'}</span>
           </div>

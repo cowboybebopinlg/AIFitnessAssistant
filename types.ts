@@ -48,16 +48,17 @@ export type WorkoutSession = {
 export interface DailyLog {
   date: string;
   weight: number | null;
-  energy: number | null; // scale 1-5
-  soreness: number | null; // scale 1-5
-  sleepQuality: number | null; // scale 1-5
-  yesterdayStress: number | null; // scale 1-5
+  energy: number | null;
+  soreness: number | null;
+  sleepQuality: number | null;
+  yesterdayStress: number | null;
   meals: Meal[];
   workouts: WorkoutSession[];
   notes: string;
   hrv?: number;
   rhr?: number;
   calories?: number;
+  readiness?: number;
 }
 
 export interface NutritionTargets {

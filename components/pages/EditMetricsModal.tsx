@@ -13,11 +13,13 @@ const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, lo
   const [hrv, setHrv] = useState(log?.hrv || '');
   const [rhr, setRhr] = useState(log?.rhr || '');
   const [calories, setCalories] = useState(log?.calories || '');
+  const [readiness, setReadiness] = useState(log?.readiness || '');
 
   useEffect(() => {
     setHrv(log?.hrv || '');
     setRhr(log?.rhr || '');
     setCalories(log?.calories || '');
+    setReadiness(log?.readiness || '');
   }, [log]);
 
   const handleSave = () => {
@@ -26,6 +28,7 @@ const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, lo
         hrv: hrv ? parseInt(hrv.toString(), 10) : undefined,
         rhr: rhr ? parseInt(rhr.toString(), 10) : undefined,
         calories: calories ? parseInt(calories.toString(), 10) : undefined,
+        readiness: readiness ? parseInt(readiness.toString(), 10) : -1,
       });
       onClose();
     }
@@ -55,6 +58,19 @@ const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, lo
               <p className="text-base text-gray-600 dark:text-gray-400">Manually enter your metrics.</p>
             </div>
             <div className="space-y-4">
+              <div>
+                <label htmlFor="readiness" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Readiness Score
+                </label>
+                <input
+                  type="number"
+                  name="readiness"
+                  id="readiness"
+                  value={readiness}
+                  onChange={(e) => setReadiness(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                />
+              </div>
               <div>
                 <label htmlFor="hrv" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   HRV (Heart Rate Variability)
@@ -96,7 +112,7 @@ const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, lo
               </div>
             </div>
             <button
-              className="w-full rounded-lg bg-primary py-4 text-center font-bold text-white"
+              className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
               onClick={handleSave}
             >
               Save

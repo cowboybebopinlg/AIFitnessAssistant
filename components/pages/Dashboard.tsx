@@ -37,11 +37,12 @@ const CircularProgress: React.FC<{ value: number }> = ({ value }) => {
     );
 };
 
-const MorningMetricsCard = ({ data, fitbitSummary }) => {
+const MorningMetricsCard = ({ data, fitbitData }) => {
+    const fitbitSummary = fitbitData?.summary;
     // Readiness Score is not available via Fitbit API, using a placeholder.
     const readiness = 'N/A';
     const rhr = fitbitSummary?.restingHeartRate || 'N/A';
-    const hrv = fitbitSummary?.hrv || 'N/A';
+    const hrv = fitbitData?.hrv?.[0]?.value?.dailyRmssd || 'N/A';
     const steps = fitbitSummary?.steps?.toLocaleString() || 'N/A';
     const calories = fitbitSummary?.caloriesOut?.toLocaleString() || 'N/A';
 
@@ -169,17 +170,52 @@ const WorkoutsCard = ({ workouts, fitbitActivities }) => {
 };
 
 const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
+    const parseSuggestion = (text) => {
+        try {
+            // Clean the response to get only the JSON part
+            const jsonText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const parsed = JSON.parse(jsonText);
+            const sections = [];
+            if (parsed.food && parsed.food.length > 0) {
+                sections.push({ title: "Food", content: parsed.food.map(item => `• ${item}`).join('\n') });
+            }
+            if (parsed.activity && parsed.activity.length > 0) {
+                sections.push({ title: "Activity", content: parsed.activity.map(item => `• ${item}`).join('\n') });
+            }
+            if (parsed.other && parsed.other.length > 0) {
+                sections.push({ title: "Other Suggestions", content: parsed.other.map(item => `• ${item}`).join('\n') });
+            }
+            return sections;
+        } catch (error) {
+            console.error("Failed to parse smart suggestion JSON:", error);
+            return [{ title: "Suggestion", content: text }];
+        }
+    };
+
+    const suggestionSections = parseSuggestion(suggestion);
+
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
             <div className="flex justify-between items-start">
                 <h3 className="text-white text-lg font-bold">Smart Suggestions</h3>
-                <button className="text-gray-400 hover:text-white">
-                    <ClipboardIcon className="w-6 h-6" />
+                <button className="text-blue-500 hover:text-blue-400" onClick={onRefresh}>
+                    <RefreshCwIcon className="w-6 h-6" />
                 </button>
             </div>
-            <p className="text-gray-300 text-sm font-normal leading-relaxed mt-2">
-                {suggestion}
-            </p>
+            {suggestionSections.length > 0 ? (
+                suggestionSections.map((section, index) => (
+                    <div key={index} className="mt-4">
+                        <h4 className="text-primary-500 font-bold">{section.title}</h4>
+                        <p className="text-gray-300 text-sm font-normal leading-relaxed whitespace-pre-line">
+                            {section.content}
+                        </p>
+                    </div>
+                ))
+            ) : (
+                <p className="text-gray-300 text-sm font-normal leading-relaxed mt-2">
+                    {suggestion}
+                </p>
+            )}
         </div>
     );
 };
@@ -187,15 +223,18 @@ const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
 
 
 export const Dashboard: React.FC = () => {
-    const { appData, isLoading, getTodaysLog, setFitbitData } = useAppContext();
+    const { appData, isLoading, getTodaysLog, getLogForDate, geminiApiKey } = useAppContext();
     const [suggestion, setSuggestion] = useState('Loading...');
+    const [hasFetchedInitialSuggestion, setHasFetchedInitialSuggestion] = useState(false);
 
     const todaysLog = getTodaysLog();
 
     const todayDateString = new Date().toISOString().slice(0, 10);
 
-    const fitbitSummary = appData?.fitbitData?.[todayDateString]?.summary;
-    const fitbitActivities = appData?.fitbitData?.[todayDateString]?.activities || [];
+    const todaysFitbitData = appData?.fitbitData?.[todayDateString];
+
+    const fitbitSummary = todaysFitbitData?.summary;
+    const fitbitActivities = todaysFitbitData?.activities || [];
 
     const nutritionTotals = useMemo(() => {
         const totals = { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 };
@@ -212,20 +251,30 @@ export const Dashboard: React.FC = () => {
     const fetchSuggestion = useCallback(async () => {
         setSuggestion('Generating new suggestion...');
         try {
-            const newSuggestion = await getSmartSuggestion();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayDateString = yesterday.toISOString().slice(0, 10);
+            const yesterdaysLog = getLogForDate(yesterdayDateString);
+
+            const newSuggestion = await getSmartSuggestion(
+                yesterdaysLog,
+                todaysLog,
+                appData?.userProfile,
+                geminiApiKey || ''
+            );
             setSuggestion(newSuggestion);
         } catch (error: any) {
-            // Since Gemini integration is disabled, we'll just log the error and display a generic message.
             console.error("Error fetching smart suggestion:", error);
-            setSuggestion("Failed to get smart suggestion (Gemini disabled).");
+            setSuggestion("Failed to get smart suggestion. Please try again later.");
         }
-    }, []);
+    }, [appData, getLogForDate, todaysLog, geminiApiKey]);
 
     useEffect(() => {
-        if (appData) {
+        if (appData && !hasFetchedInitialSuggestion) {
             fetchSuggestion();
+            setHasFetchedInitialSuggestion(true);
         }
-    }, [fetchSuggestion, appData]);
+    }, [fetchSuggestion, appData, hasFetchedInitialSuggestion]);
 
     if (isLoading || !appData) {
         return (
@@ -253,7 +302,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </header>
                 <main className="p-4 space-y-6">
-                    <MorningMetricsCard data={todaysLog} fitbitSummary={fitbitSummary} />
+                    <MorningMetricsCard data={todaysLog} fitbitData={todaysFitbitData} />
                     
                     <NutritionCard data={nutritionTotals} targets={targets} />
                     <WorkoutsCard workouts={todaysLog?.workouts} fitbitActivities={fitbitActivities} />
