@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import AddFoodWithGeminiModal from '../AddFoodWithGeminiModal';
+import AddWithGeminiModal from '../AddWithGeminiModal';
 import { useAppContext } from '../../context/AppContext';
 import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
@@ -254,7 +254,7 @@ const AddFoodPage: React.FC = () => {
         </nav>
       </footer>
 
-      <AddFoodWithGeminiModal
+      <AddWithGeminiModal
         isOpen={isGeminiModalOpen}
         onClose={() => setIsGeminiModalOpen(false)}
         title="Add Food with Gemini"

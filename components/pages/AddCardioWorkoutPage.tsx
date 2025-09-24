@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import { Exercise, WorkoutSession, FitbitActivity } from '../../types';
+import AddWithGeminiModal from '../AddWithGeminiModal';
 
 const AddCardioWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const AddCardioWorkoutPage: React.FC = () => {
   const [averageHeartRate, setAverageHeartRate] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [notes, setNotes] = useState('');
-  const [geminiText, setGeminiText] = useState('');
+  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
   const [isLoadingGemini, setIsLoadingGemini] = useState(false); // New state for Gemini loading
 
   const isEditMode = workoutIndex !== null;
@@ -78,7 +79,7 @@ const AddCardioWorkoutPage: React.FC = () => {
     navigate('/log'); // Navigate directly to daily log
   };
 
-  const handleAnalyzeWorkoutWithGemini = async () => {
+  const handleAnalyzeWorkoutWithGemini = async (text: string) => {
     if (!geminiApiKey) {
       alert('Please set your Gemini API key in the settings.');
       return;
@@ -86,8 +87,8 @@ const AddCardioWorkoutPage: React.FC = () => {
 
     setIsLoadingGemini(true); // Set loading state
     try {
-      console.log('Sending to Gemini:', geminiText); // Log input
-      const workout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
+      console.log('Sending to Gemini:', text); // Log input
+      const workout = await getWorkoutInfoFromText(text, geminiApiKey);
       console.log('Received from Gemini:', workout); // Log output
 
       const newWorkout: WorkoutSession = {
@@ -188,30 +189,23 @@ const AddCardioWorkoutPage: React.FC = () => {
         </div>
         {geminiApiKey && (
           <div className="space-y-2 p-3 rounded-xl bg-primary/10">
-            <div className="flex items-center space-x-3">
-              <span className="material-symbols-outlined text-primary text-2xl"> auto_awesome </span>
-              <h2 className="text-lg font-bold text-white">Add with Gemini</h2>
-            </div>
-            <p className="text-sm text-white/70">Describe your workout in plain text. Gemini will handle the rest.</p>
-            <div className="relative">
-              <textarea
-                className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-primary"
-                placeholder="e.g., Ran 5k in 25 minutes, then did 3 sets of 10 pushups."
-                value={geminiText}
-                onChange={(e) => setGeminiText(e.target.value)}
-                disabled={!!fitbitActivity}
-              ></textarea>
-            </div>
+            <button
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/20 py-3 font-bold text-primary hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+              onClick={() => setIsGeminiModalOpen(true)}
+            >
+              <span className="material-symbols-outlined"> auto_awesome </span>
+              <span>Add with Gemini</span>
+            </button>
           </div>
         )}
       </main>
       <footer className="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
         <button
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
-          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleSaveWorkout}
-          disabled={!!fitbitActivity && !!geminiText || isLoadingGemini}
+          onClick={handleSaveWorkout}
+          disabled={!!fitbitActivity || isLoadingGemini}
         >
-          {geminiText ? 'Analyze Workout' : (isEditMode ? 'Save Changes' : 'Save Workout')}
+          {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
       {isLoadingGemini && (
@@ -225,6 +219,14 @@ const AddCardioWorkoutPage: React.FC = () => {
           </div>
         </div>
       )}
+      <AddWithGeminiModal
+        isOpen={isGeminiModalOpen}
+        onClose={() => setIsGeminiModalOpen(false)}
+        title="Add Cardio Workout with Gemini"
+        description="Describe your cardio workout in plain text. e.g., 'Ran 5k in 25 minutes and then walked for 10 minutes.'"
+        placeholder="e.g., Ran 5k in 25 minutes..."
+        onAnalyze={handleAnalyzeWorkoutWithGemini}
+      />
     </div>
   );
 };

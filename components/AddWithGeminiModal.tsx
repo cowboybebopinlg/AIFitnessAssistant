@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 
-interface AddFoodWithGeminiModalProps {
+interface AddWithGeminiModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -9,7 +10,7 @@ interface AddFoodWithGeminiModalProps {
   onAnalyze: (text: string) => void;
 }
 
-const AddFoodWithGeminiModal: React.FC<AddFoodWithGeminiModalProps> = ({
+const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
   isOpen,
   onClose,
   title,
@@ -86,4 +87,4 @@ const AddFoodWithGeminiModal: React.FC<AddFoodWithGeminiModalProps> = ({
   );
 };
 
-export default AddFoodWithGeminiModal;
+export default AddWithGeminiModal;

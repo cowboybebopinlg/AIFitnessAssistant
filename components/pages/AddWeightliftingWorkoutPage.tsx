@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
+import AddWithGeminiModal from '../AddWithGeminiModal';
 
 const AddWeightliftingWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   ]);
   const [averageHeartRate, setAverageHeartRate] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
-  const [geminiText, setGeminiText] = useState('');
+  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
   const [isLoadingGemini, setIsLoadingGemini] = useState(false);
 
   useEffect(() => {
@@ -48,7 +49,6 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
       setExercises([newExercise]);
       setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
       setCaloriesBurned(String(fitbitActivity.calories || ''));
-      setGeminiText(`Synced from Fitbit. Duration: ${fitbitActivity.duration / 60000} mins, Distance: ${fitbitActivity.distance || 0} miles, Steps: ${fitbitActivity.steps || 0}`);
     }
   }, [fitbitActivity]);
 
@@ -96,14 +96,14 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     navigate(-1);
   };
 
-  const handleAnalyzeWorkoutWithGemini = async () => {
+  const handleAnalyzeWorkoutWithGemini = async (text: string) => {
     if (!geminiApiKey) {
       // Consider a more user-friendly notification
       return;
     }
     setIsLoadingGemini(true);
     try {
-      const geminiWorkout = await getWorkoutInfoFromText(geminiText, geminiApiKey);
+      const geminiWorkout = await getWorkoutInfoFromText(text, geminiApiKey);
       
       if (isEditMode) {
         const log = getLogForDate(dateString);
@@ -261,31 +261,33 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
           </button>
         </div>
         {geminiApiKey && (
-          <div className="space-y-2 p-3 rounded-xl bg-primary/10">
-            <div className="flex items-center space-x-3">
-              <span className="material-symbols-outlined text-primary text-2xl"> auto_awesome </span>
-              <h2 className="text-lg font-bold text-white">Add with Gemini</h2>
+            <div className="space-y-2 p-3 rounded-xl bg-primary/10">
+                <button
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/20 py-3 font-bold text-primary hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+                onClick={() => setIsGeminiModalOpen(true)}
+                >
+                <span className="material-symbols-outlined"> auto_awesome </span>
+                <span>Add with Gemini</span>
+                </button>
             </div>
-            <p className="text-sm text-white/70">Describe your workout in plain text. Gemini will handle the rest.</p>
-            <div className="relative">
-              <textarea 
-                className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-24 resize-none focus:ring-2 focus:ring-primary" 
-                placeholder="e.g., Bench press 3 sets of 10 reps at 60kg"
-                value={geminiText}
-                onChange={(e) => setGeminiText(e.target.value)}
-              ></textarea>
-            </div>
-          </div>
         )}
       </main>
       <footer className="sticky bottom-0 border-t border-gray-200/10 bg-background-light/80 py-2 backdrop-blur-sm dark:bg-background-dark/80">
         <button 
           className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
-          onClick={geminiText ? handleAnalyzeWorkoutWithGemini : handleSaveWorkout}
+          onClick={handleSaveWorkout}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
+      <AddWithGeminiModal
+        isOpen={isGeminiModalOpen}
+        onClose={() => setIsGeminiModalOpen(false)}
+        title="Add Weightlifting Workout with Gemini"
+        description="Describe your workout in plain text. e.g., '3 sets of 10 reps of bench press at 135lbs, and 3 sets of 12 reps of squats at 225lbs.'"
+        placeholder="e.g., 3 sets of 10 reps of bench press at 135lbs..."
+        onAnalyze={handleAnalyzeWorkoutWithGemini}
+      />
     </div>
   );
 };
