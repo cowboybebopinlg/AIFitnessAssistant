@@ -8,6 +8,8 @@ interface AddWithGeminiModalProps {
   description: string;
   placeholder: string;
   onAnalyze: (text: string) => void;
+  buttonText?: string;
+  buttonClassName?: string;
 }
 
 const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
@@ -17,6 +19,8 @@ const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
   description,
   placeholder,
   onAnalyze,
+  buttonText = 'Analyze',
+  buttonClassName = 'w-full rounded-lg bg-primary py-4 text-center font-bold text-white',
 }) => {
   const [textareaContent, setTextareaContent] = useState('');
 
@@ -74,10 +78,10 @@ const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
               </button>
             </div>
             <button
-              className="w-full rounded-lg bg-primary py-4 text-center font-bold text-white"
+              className={buttonClassName}
               onClick={handleAnalyzeClick}
             >
-              Analyze
+              {buttonText}
             </button>
           </div>
           <div className="h-8"></div>

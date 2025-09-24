@@ -28,7 +28,7 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   const { geminiApiKey, appData } = useAppContext();
   const navigate = useNavigate();
 
-  const [prompt, setPrompt] = useState('');
+  const [textareaContent, setTextareaContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -67,7 +67,7 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
     } else if (!isOpen) {
         // Reset on close
         setConversation([]);
-        setPrompt('');
+        setTextareaContent('');
         setIsLoading(false);
         setError(null);
         setImagePreview(null);
@@ -102,19 +102,19 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
   const handleRecordAudio = () => {
     setIsRecording(true);
-    setPrompt("Listening...");
+    setTextareaContent("Listening...");
     setTimeout(() => {
-        setPrompt("Generate a 3-day workout split focusing on chest, back, and legs.");
+        setTextareaContent("Generate a 3-day workout split focusing on chest, back, and legs.");
         setIsRecording(false);
     }, 2000);
   };
   
   const handleSend = () => {
-      if (!prompt.trim()) return;
-      const userMessage: Message = { sender: 'user', text: prompt };
+      if (!textareaContent.trim()) return;
+      const userMessage: Message = { sender: 'user', text: textareaContent };
       setConversation(prev => [...prev, userMessage]);
       callGeminiAPI(userMessage);
-      setPrompt('');
+      setTextareaContent('');
   };
 
   const callGeminiAPI = async (userMessage: Message) => {
@@ -218,67 +218,68 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black z-40 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-background-dark w-full max-w-lg h-[80vh] flex flex-col rounded-xl border border-slate-700 font-['Space_Grotesk'] text-white" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center p-4 border-b border-slate-700">
-          <h2 className="text-xl font-bold">Ask Gemini</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">&times;</button>
-        </div>
-        
-        <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-          {conversation.map((msg, index) => (
-            <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 rounded-br-none' : 'bg-slate-700 rounded-bl-none'}`}>
-                {msg.imagePreview && <img src={msg.imagePreview} alt="User upload" className="rounded-lg mb-2" />}
-                <p className="text-white whitespace-pre-wrap">{msg.text}</p>
-                {msg.sender === 'gemini' && msg.response && (msg.response.intent === 'LOG_FOOD' || msg.response.intent === 'LOG_WORKOUT') && (
-                    <button onClick={() => handleActionClick(msg.response)} className="mt-2 w-full text-left bg-blue-500/50 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                        Go to Log &rarr;
-                    </button>
+        <div className="bg-background-dark w-full max-w-lg h-[80vh] flex flex-col rounded-xl border border-slate-700 font-['Space_Grotesk'] text-white" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 border-b border-slate-700">
+                <h2 className="text-xl font-bold">Ask Gemini</h2>
+                <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                {conversation.map((msg, index) => (
+                    <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 rounded-br-none' : 'bg-slate-700 rounded-bl-none'}`}>
+                        {msg.imagePreview && <img src={msg.imagePreview} alt="User upload" className="rounded-lg mb-2" />}
+                        <p className="text-white whitespace-pre-wrap">{msg.text}</p>
+                        {msg.sender === 'gemini' && msg.response && (msg.response.intent === 'LOG_FOOD' || msg.response.intent === 'LOG_WORKOUT') && (
+                            <button onClick={() => handleActionClick(msg.response)} className="mt-2 w-full text-left bg-blue-500/50 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                                Go to Log &rarr;
+                            </button>
+                        )}
+                    </div>
+                    </div>
+                ))}
+                {isLoading && (
+                    <div className="flex justify-start">
+                    <div className="bg-slate-700 p-3 rounded-2xl rounded-bl-none">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                        </div>
+                    </div>
+                    </div>
                 )}
-              </div>
+                <div ref={chatEndRef} />
             </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-slate-700 p-3 rounded-2xl rounded-bl-none">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                  </div>
+            <div className="flex flex-col gap-4 p-4 pt-0">
+              <textarea
+                className="h-40 w-full resize-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-primary"
+                placeholder="Ask Gemini"
+                value={textareaContent}
+                onChange={(e) => setTextareaContent(e.target.value)}
+              ></textarea>
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-full border-t border-gray-300 dark:border-gray-600"></span>
+                <span className="relative bg-white dark:bg-gray-800 px-2 text-sm text-gray-500 dark:text-gray-400">OR</span>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <span className="material-symbols-outlined">image</span>
+                  <span>Upload</span>
+                </button>
+                <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <span className="material-symbols-outlined">photo_camera</span>
+                  <span>Take Photo</span>
+                </button>
+              </div>
+              <button
+                className="w-full rounded-lg bg-blue-600 py-4 text-center font-bold text-white"
+                onClick={handleSend}
+              >
+                Send
+              </button>
             </div>
-          )}
-          <div ref={chatEndRef} />
         </div>
-        
-        <div className="p-4 border-t border-slate-700">
-          <div className="relative flex items-center rounded-full border border-slate-700 bg-slate-800">
-            <button className="p-2 text-slate-400 hover:text-white">
-                <span className="material-symbols-outlined">add</span>
-            </button>
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-            <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-white">
-                <span className="material-symbols-outlined">image</span>
-            </button>
-            <input
-              type="text"
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleSend()}
-              className="flex-1 bg-transparent outline-none text-white placeholder-slate-500 text-sm px-2"
-              placeholder="Ask Gemini"
-              disabled={isLoading}
-            />
-            <button onClick={handleRecordAudio} disabled={isRecording} className="p-2 text-slate-400 hover:text-white disabled:opacity-50">
-                <span className="material-symbols-outlined">{isRecording ? 'settings_voice' : 'mic'}</span>
-            </button>
-            <button onClick={handleSend} disabled={isLoading || !prompt.trim()} className="bg-blue-600 hover:bg-blue-700 text-white w-9 h-9 rounded-full flex items-center justify-center disabled:bg-slate-600 mr-1">
-                <span className="material-symbols-outlined text-lg">send</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
