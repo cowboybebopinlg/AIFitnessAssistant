@@ -1,0 +1,112 @@
+
+import React, { useState, useEffect } from 'react';
+import { DailyLog } from '../../types';
+
+interface EditMetricsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  log: DailyLog | undefined;
+  updateLog: (date: string, updatedLog: Partial<DailyLog>) => void;
+}
+
+const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, log, updateLog }) => {
+  const [hrv, setHrv] = useState(log?.hrv || '');
+  const [rhr, setRhr] = useState(log?.rhr || '');
+  const [calories, setCalories] = useState(log?.calories || '');
+
+  useEffect(() => {
+    setHrv(log?.hrv || '');
+    setRhr(log?.rhr || '');
+    setCalories(log?.calories || '');
+  }, [log]);
+
+  const handleSave = () => {
+    if (log) {
+      updateLog(log.date, {
+        hrv: hrv ? parseInt(hrv.toString(), 10) : undefined,
+        rhr: rhr ? parseInt(rhr.toString(), 10) : undefined,
+        calories: calories ? parseInt(calories.toString(), 10) : undefined,
+      });
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-end transition-all duration-300 ease-in-out ${
+        isOpen ? 'visible bg-black/50' : 'invisible bg-black/0'
+      }`}
+      onClick={onClose}
+    >
+      <div
+        className={`w-full max-w-md transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col rounded-t-xl bg-white dark:bg-gray-800">
+          <div className="flex w-full items-center justify-center p-4">
+            <div className="h-1.5 w-10 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+          </div>
+          <div className="flex flex-col gap-4 p-4 pt-0">
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Metrics</h1>
+              <p className="text-base text-gray-600 dark:text-gray-400">Manually enter your metrics.</p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="hrv" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  HRV (Heart Rate Variability)
+                </label>
+                <input
+                  type="number"
+                  name="hrv"
+                  id="hrv"
+                  value={hrv}
+                  onChange={(e) => setHrv(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="rhr" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  RHR (Resting Heart Rate)
+                </label>
+                <input
+                  type="number"
+                  name="rhr"
+                  id="rhr"
+                  value={rhr}
+                  onChange={(e) => setRhr(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="calories" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Calories Burned
+                </label>
+                <input
+                  type="number"
+                  name="calories"
+                  id="calories"
+                  value={calories}
+                  onChange={(e) => setCalories(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                />
+              </div>
+            </div>
+            <button
+              className="w-full rounded-lg bg-primary py-4 text-center font-bold text-white"
+              onClick={handleSave}
+            >
+              Save
+            </button>
+          </div>
+          <div className="h-8"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EditMetricsModal;

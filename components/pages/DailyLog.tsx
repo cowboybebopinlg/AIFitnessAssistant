@@ -4,12 +4,14 @@ import MetricsSection from './MetricsSection';
 import FoodEntriesSection from './FoodEntriesSection';
 import WorkoutsSection from './WorkoutsSection';
 import { useAppContext } from '../../context/AppContext';
+import EditMetricsModal from './EditMetricsModal';
 
 const DailyLog: React.FC = () => {
-  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData } = useAppContext();
+  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateLog } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isEditMetricsModalOpen, setIsEditMetricsModalOpen] = useState(false);
 
   const dateString = useMemo(() => {
     return currentDate.toISOString().split('T')[0];
@@ -55,6 +57,14 @@ const DailyLog: React.FC = () => {
       };
       reader.readAsText(file);
     }
+  };
+
+  const handleOpenEditMetricsModal = () => {
+    setIsEditMetricsModalOpen(true);
+  };
+
+  const handleCloseEditMetricsModal = () => {
+    setIsEditMetricsModalOpen(false);
   };
 
   return (
@@ -118,11 +128,17 @@ const DailyLog: React.FC = () => {
               Import Data
             </button>
           </div>
-          <MetricsSection log={dailyLog} />
+          <MetricsSection log={dailyLog} onEditMetrics={handleOpenEditMetricsModal} />
           <FoodEntriesSection log={dailyLog} onAddFoodClick={() => navigate(`/log/add-food?date=${dateString}`)} />
           <WorkoutsSection log={dailyLog} onAddWorkoutClick={() => navigate(`/log/add-workout?date=${dateString}`)} fitbitActivities={fitbitActivities} />
         </main>
       </div>
+      <EditMetricsModal
+        isOpen={isEditMetricsModalOpen}
+        onClose={handleCloseEditMetricsModal}
+        log={dailyLog}
+        updateLog={updateLog}
+      />
     </div>
   );
 };
