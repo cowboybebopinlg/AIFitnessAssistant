@@ -8,7 +8,7 @@ interface MetricsSectionProps {
 }
 
 const MetricsSection: React.FC<MetricsSectionProps> = ({ log }) => {
-  const { updateLog } = useAppContext();
+  const { updateLog, isFitbitAuthenticated } = useAppContext();
 
   const [energyLevel, setEnergyLevel] = useState(log?.energy || 0);
   const [sleepQuality, setSleepQuality] = useState(log?.sleepQuality || 0);
@@ -64,6 +64,23 @@ Stress Level: ${stressLevel}/5
           Copy
         </button>
       </div>
+      {isFitbitAuthenticated && log && (log.hrv || log.rhr || log.calories) && (
+        <div className="space-y-2 pt-4">
+          <h3 className="text-md font-bold text-white">Fitbit Data</h3>
+          <div className="flex justify-between text-white">
+            <span>HRV:</span>
+            <span>{log.hrv?.toString() || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between text-white">
+            <span>RHR:</span>
+            <span>{log.rhr?.toString() || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between text-white">
+            <span>Calories Burned:</span>
+            <span>{log.calories?.toString() || 'N/A'}</span>
+          </div>
+        </div>
+      )}
       <div className="space-y-4">
         <MetricInput
           label="Energy Level"

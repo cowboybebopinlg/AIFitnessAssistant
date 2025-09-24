@@ -55,6 +55,9 @@ export interface DailyLog {
   meals: Meal[];
   workouts: WorkoutSession[];
   notes: string;
+  hrv?: number;
+  rhr?: number;
+  calories?: number;
 }
 
 export interface NutritionTargets {
@@ -119,6 +122,9 @@ export interface FitbitSummary {
 export interface DailyFitbitData {
   summary: FitbitSummary | null;
   activities: FitbitActivity[];
+  hrv?: any;
+  rhr?: any;
+  calories?: any;
 }
 
 export interface AppData {

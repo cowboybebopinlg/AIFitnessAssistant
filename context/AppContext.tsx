@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { Preferences } from '@capacitor/preferences';
 import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitData, FitbitActivity, UserProfile } from '../types';
 import { loadData, saveData } from '../services/dataService';
-import { refreshAccessToken, getDailyActivity } from '../services/fitbitService';
+import { refreshAccessToken, getDailyActivity, getDailyHRV, getDailyHeartRate, getCalories } from '../services/fitbitService';
 
 interface AppContextType {
     appData: AppData | null;
@@ -28,7 +28,7 @@ interface AppContextType {
     fitbitAccessToken: string | null;
     authenticateFitbit: (tokens: { access_token: string; refresh_token: string; expires_in: number }) => Promise<void>;
     logoutFitbit: () => Promise<void>;
-    setFitbitData: (date: string, data: DailyFitbitData) => void;
+    setFitbitData: (date: string, data: Partial<DailyFitbitData>) => void;
     injectDummyFitbitData: () => void;
     deleteFitbitData: () => void;
     syncFitbitData: (date: string) => Promise<void>;
@@ -299,11 +299,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     };
     
-    const setFitbitData = useCallback((date: string, data: DailyFitbitData) => {
+    const setFitbitData = useCallback((date: string, data: Partial<DailyFitbitData>) => {
         setAppData(prevData => {
             if (!prevData) return null;
             const newFitbitData = { ...prevData.fitbitData };
-            newFitbitData[date] = data;
+            newFitbitData[date] = { ...newFitbitData[date], ...data };
             console.log('setFitbitData: newFitbitData[date].summary', newFitbitData[date].summary);
             return {
                 ...prevData,
@@ -436,11 +436,40 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (!fitbitAccessToken) return;
 
         try {
-            const fitbitData = await getDailyActivity(fitbitAccessToken, date);
+            const activityData = await getDailyActivity(fitbitAccessToken, date);
+            const hrvData = await getDailyHRV(fitbitAccessToken, date);
+            const heartRateData = await getDailyHeartRate(fitbitAccessToken, date);
+            const caloriesData = await getCalories(fitbitAccessToken, date);
+
+            console.log('Fitbit API Data:', {
+                activityData,
+                hrvData,
+                heartRateData,
+                caloriesData
+            });
+
+            const fitbitData: DailyFitbitData = {
+                summary: activityData?.summary,
+                activities: activityData?.activities,
+                hrv: hrvData?.hrv,
+                rhr: heartRateData?.["activities-heart"]?.[0]?.value?.restingHeartRate,
+                calories: caloriesData?.['activities-calories']?.[0]?.value
+            };
+
             setFitbitData(date, fitbitData);
 
+            const hrvValue = hrvData?.hrv?.[0]?.value?.dailyRmssd;
+            const rhrValue = heartRateData?.["activities-heart"]?.[0]?.value?.restingHeartRate;
+            const caloriesValue = caloriesData?.['activities-calories']?.[0]?.value;
+
+            updateLog(date, {
+                hrv: hrvValue,
+                rhr: rhrValue,
+                calories: caloriesValue ? parseInt(caloriesValue) : undefined
+            });
+
             const existingWorkouts = getLogForDate(date)?.workouts || [];
-            const fitbitActivities = fitbitData.activities || [];
+            const fitbitActivities = activityData.activities || [];
             console.log('syncFitbitData: fitbitActivities', fitbitActivities);
 
             fitbitActivities.forEach((activity: FitbitActivity) => {

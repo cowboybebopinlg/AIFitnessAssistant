@@ -125,12 +125,6 @@ export const getDailyActivity = async (accessToken: string, date: string = getLo
   return response.data;
 };
 
-/**
- * Fetches daily Heart Rate Variability (HRV) data using the native Capacitor HTTP plugin.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21').
- * @returns A promise that resolves with the HRV data.
- */
 export const getDailyHRV = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/hrv/date/${date}.json`,
@@ -143,5 +137,43 @@ export const getDailyHRV = async (accessToken: string, date: string = getLocalDa
   console.log(`FitbitService: Raw daily HRV response:`, JSON.stringify(response.data, null, 2));
   return response.data;
 };
+
+/**
+ * Fetches daily heart rate data, including resting heart rate.
+ * @param accessToken - The user's access token.
+ * @param date - The date for which to fetch data (e.g., '2025-09-21').
+ * @returns A promise that resolves with the heart rate data.
+ */
+export const getDailyHeartRate = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
+  const options = {
+    url: `https://api.fitbit.com/1/user/-/activities/heart/date/${date}/1d.json`,
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  };
+  console.log(`FitbitService: Requesting daily heart rate from: ${options.url}`);
+  const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily heart rate response:`, JSON.stringify(response.data, null, 2));
+  return response.data;
+}
+
+/**
+ * Fetches daily calorie expenditure.
+ * @param accessToken - The user's access token.
+ * @param date - The date for which to fetch data (e.g., '2025-09-21').
+ * @returns A promise that resolves with the calorie data.
+ */
+export const getCalories = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
+  const options = {
+    url: `https://api.fitbit.com/1/user/-/activities/calories/date/${date}/1d.json`,
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+    },
+  };
+  console.log(`FitbitService: Requesting daily calories from: ${options.url}`);
+  const response = await CapacitorHttp.request({ ...options, method: 'GET' });
+  console.log(`FitbitService: Raw daily calories response:`, JSON.stringify(response.data, null, 2));
+  return response.data;
+}
 
 
