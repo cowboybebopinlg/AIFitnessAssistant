@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 import { useAppContext } from '../../context/AppContext';
 import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
+import LoadingIndicator from '../LoadingIndicator';
 
 const AddFoodPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { appData, addMeal, getTodaysLog, geminiApiKey, addCommonFood } = useAppContext();
   const todayLog = getTodaysLog();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
@@ -66,6 +72,7 @@ const AddFoodPage: React.FC = () => {
       return;
     }
 
+    setIsAnalyzing(true);
     try {
       const meal = await getNutritionInfoFromText(text, geminiApiKey);
       const newMeal: Meal = {
@@ -77,10 +84,12 @@ const AddFoodPage: React.FC = () => {
         fiber: meal.fiber || 0,
       };
       addMeal(dateString, newMeal);
-      alert(`Added via Gemini: ${newMeal.name}`);
+      navigate('/log');
     } catch (error) {
       console.error(error);
       alert("Failed to parse food entry with Gemini.");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -229,30 +238,7 @@ const AddFoodPage: React.FC = () => {
           </div>
         </main>
       </div>
-      <footer className="sticky bottom-0 bg-background-light dark:bg-background-dark border-t border-neutral-200 dark:border-neutral-700">
-        <nav className="flex justify-around items-center h-16">
-          <a className="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
-            <span className="material-symbols-outlined">home</span>
-            <span className="text-xs font-medium">Dashboard</span>
-          </a>
-          <a className="flex flex-col items-center gap-1 text-primary" href="#">
-            <span className="material-symbols-outlined">description</span>
-            <span className="text-xs font-medium">Daily Log</span>
-          </a>
-          <a className="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
-            <span className="material-symbols-outlined">trending_up</span>
-            <span className="text-xs font-medium">Trends</span>
-          </a>
-          <a className="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
-            <span className="material-symbols-outlined">bookmark</span>
-            <span className="text-xs font-medium">Library</span>
-          </a>
-          <a className="flex flex-col items-center gap-1 text-neutral-500 dark:text-neutral-400" href="#">
-            <span className="material-symbols-outlined">settings</span>
-            <span className="text-xs font-medium">Settings</span>
-          </a>
-        </nav>
-      </footer>
+
 
       <AddWithGeminiModal
         isOpen={isGeminiModalOpen}
@@ -262,6 +248,7 @@ const AddFoodPage: React.FC = () => {
         placeholder="e.g., 1 scoop protein, 1 banana, 300ml milk"
         onAnalyze={handleAnalyzeFoodWithGemini}
       />
+      {isAnalyzing && <LoadingIndicator />}
     </div>
   );
 };

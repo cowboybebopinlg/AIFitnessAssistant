@@ -4,43 +4,11 @@ import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon, RefreshCwIcon }
 import { getSmartSuggestion } from '../../services/geminiService';
 import { getDailyActivity, getDailyHRV } from '../../services/fitbitService';
 
-// --- Re-created components based on Stitch design ---
 
-const CircularProgress: React.FC<{ value: number }> = ({ value }) => {
-    const percentage = value || 0;
-    const circumference = 2 * Math.PI * 15.9155;
-    const strokeDasharray = `${(percentage / 100) * circumference}, ${circumference}`;
-
-    return (
-        <div className="relative w-20 h-20 mx-auto">
-            <svg className="w-full h-full" viewBox="0 0 36 36">
-                <path
-                    className="text-gray-700"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    strokeWidth="3"
-                ></path>
-                <path
-                    className="text-primary-500"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    strokeDasharray={strokeDasharray}
-                    strokeLinecap="round"
-                    strokeWidth="3"
-                    transform="rotate(-90 18 18)"
-                ></path>
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary-500 glow">{value}</span>
-            </div>
-        </div>
-    );
-};
 
 const MorningMetricsCard = ({ data, fitbitData }) => {
     const fitbitSummary = fitbitData?.summary;
-    // Readiness Score is not available via Fitbit API, using a placeholder.
-    const readiness = 'N/A';
+    const readiness = data?.readiness > 0 ? data.readiness : 'N/A';
     const rhr = fitbitSummary?.restingHeartRate || 'N/A';
     const hrv = fitbitData?.hrv?.[0]?.value?.dailyRmssd || 'N/A';
     const steps = fitbitSummary?.steps?.toLocaleString() || 'N/A';
@@ -55,9 +23,9 @@ const MorningMetricsCard = ({ data, fitbitData }) => {
                 </button>
             </div>
             <div className="grid grid-cols-3 gap-4 mt-2">
-                <div className="text-center">
-                    <CircularProgress value={readiness} />
-                    <p className="text-white text-sm mt-2">Readiness</p>
+                <div className="text-center self-center">
+                    <p className="text-gray-400 text-sm">Readiness</p>
+                    <p className="text-white text-2xl font-bold">{readiness}</p>
                 </div>
                 <div className="text-center self-center">
                     <p className="text-gray-400 text-sm">RHR</p>

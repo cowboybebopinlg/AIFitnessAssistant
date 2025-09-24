@@ -20,7 +20,7 @@ const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
   placeholder,
   onAnalyze,
   buttonText = 'Analyze',
-  buttonClassName = 'w-full rounded-lg bg-primary py-4 text-center font-bold text-white',
+  buttonClassName = 'w-full rounded-lg bg-blue-600 py-4 text-center font-bold text-white',
 }) => {
   const [textareaContent, setTextareaContent] = useState('');
 
