@@ -78,7 +78,7 @@ const AddFoodPage: React.FC = () => {
 
     setIsAnalyzing(true);
     try {
-      const meal = await getNutritionInfoFromText(text, geminiApiKey);
+      const meal = await getNutritionInfoFromText(text, appData, geminiApiKey);
       const newMeal: Meal = {
         name: meal.name || 'Unknown Food',
         calories: meal.calories || 0,

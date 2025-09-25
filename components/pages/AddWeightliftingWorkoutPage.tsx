@@ -115,7 +115,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     }
     setIsLoadingGemini(true);
     try {
-      const geminiWorkout = await getWorkoutInfoFromText(text, geminiApiKey);
+      const geminiWorkout = await getWorkoutInfoFromText(text, appData, geminiApiKey);
       
       if (isEditMode) {
         const log = getLogForDate(dateString);

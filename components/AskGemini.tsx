@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import type { UserProfile, CommonFood, Exercise } from '../types';
+import { getIntentfulResponse } from '../services/geminiService';
+import type { AskGeminiResponse } from '../types';
 
 // --- TYPE DEFINITIONS ---
 type Message = {
@@ -10,12 +11,6 @@ type Message = {
   imagePreview?: string;
   base64Image?: string;
   response?: AskGeminiResponse; // Store the full response for actions
-};
-
-type AskGeminiResponse = {
-  intent: 'LOG_FOOD' | 'LOG_WORKOUT' | 'ASK_QUESTION' | 'ANALYZE_MEAL_IMAGE' | 'GENERATE_WORKOUT' | 'SUMMARIZE_WEEK' | 'UNKNOWN';
-  data: { [key: string]: any; };
-  summary: string;
 };
 
 type AskGeminiModalProps = {
@@ -30,48 +25,16 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
   const [textareaContent, setTextareaContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [base64Image, setBase64Image] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  // Mocked user profile data for system instruction
-  const userProfile: UserProfile | undefined = appData?.userProfile;
-  const commonFoods: CommonFood[] = appData?.commonFoods || [];
-  const libraryExercises: Exercise[] = appData?.library.map(item => ({ id: item.id, name: item.name, type: 'weightlifting', bodyPart: item.muscles, sets: [] })) || [];
-
-  const MOCKED_USER_PROFILE_SUMMARY = userProfile ? `
-- Primary Goal: ${userProfile.primaryGoal}
-- Height: ${userProfile.height}
-- Starting Weight: ${userProfile.startingWeight} lbs
-- Mission Statement: ${userProfile.missionStatement}
-- Training Split: ${userProfile.trainingSplit}
-- Nutrition Targets (Training): Calories: ${userProfile.trainingDayTargets.calories}, Protein: ${userProfile.trainingDayTargets.protein}g, Fat: ${userProfile.trainingDayTargets.fat}g, Fiber: ${userProfile.trainingDayTargets.fiber}g
-- Nutrition Targets (Recovery): Calories: ${userProfile.recoveryDayTargets.calories}, Protein: ${userProfile.recoveryDayTargets.protein}g, Fat: ${userProfile.recoveryDayTargets.fat}g, Fiber: ${userProfile.recoveryDayTargets.fiber}g
-- Health Factors: ${userProfile.healthFactors}
-- Readiness Model: ${userProfile.readinessModel}
-- Cardio Targets: ${userProfile.cardioTargets}
-` : 'No user profile data available.';
-
-  const MOCKED_COMMON_FOODS_SUMMARY = commonFoods.length > 0 ? commonFoods.map(food => `- ${food.name} (${food.calories} kcal, ${food.protein}g protein)`).join('\n') : 'No common foods saved.';
-  const MOCKED_EXERCISE_LIST = libraryExercises.length > 0 ? libraryExercises.map(ex => ex.name).join(', ') : 'No exercises in library.';
-
 
   useEffect(() => {
     if (isOpen && conversation.length === 0) {
-        // Start with a greeting
         setConversation([{ sender: 'gemini', text: "Hello! How can I help you today? Log a meal, start a workout, or ask me anything." }]);
     } else if (!isOpen) {
-        // Reset on close
         setConversation([]);
         setTextareaContent('');
         setIsLoading(false);
-        setError(null);
-        setImagePreview(null);
-        setBase64Image(null);
     }
   }, [isOpen]);
 
@@ -79,36 +42,6 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [conversation]);
 
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = (reader.result as string).split(',')[1];
-        const userMessage: Message = {
-            sender: 'user',
-            text: "Analyze this meal for me. What is it and roughly how many calories?",
-            imagePreview: previewUrl,
-            base64Image: base64String
-        };
-        setConversation(prev => [...prev, userMessage]);
-        callGeminiAPI(userMessage);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRecordAudio = () => {
-    setIsRecording(true);
-    setTextareaContent("Listening...");
-    setTimeout(() => {
-        setTextareaContent("Generate a 3-day workout split focusing on chest, back, and legs.");
-        setIsRecording(false);
-    }, 2000);
-  };
-  
   const handleSend = () => {
       if (!textareaContent.trim()) return;
       const userMessage: Message = { sender: 'user', text: textareaContent };
@@ -118,80 +51,23 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   };
 
   const callGeminiAPI = async (userMessage: Message) => {
-    if (!geminiApiKey) {
+    if (!geminiApiKey || !appData) {
         setConversation(prev => [...prev, { sender: 'gemini', text: "Please set your Gemini API key in the settings to use this feature." }]);
         return;
     }
 
     setIsLoading(true);
-    setError(null);
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
-
-    let systemInstruction = `You are an intelligent assistant for the GeminiFit app. Your job is to analyze the user's input, determine their intent, and provide a helpful response in a structured JSON format.`;
-
-    // Add user profile context for the first user message of a session
-    if (conversation.filter(m => m.sender === 'user').length <= 1) {
-        systemInstruction += `
-
-        HERE IS THE USER'S PROFILE FOR CONTEXT:
-        ${MOCKED_USER_PROFILE_SUMMARY}
-        - Common Foods: ${MOCKED_COMMON_FOODS_SUMMARY}
-        - Known Exercises: ${MOCKED_EXERCISE_LIST}`;
-    }
-    
-    let parts: any[] = [{ text: userMessage.text }];
-    if (userMessage.base64Image) {
-      parts.push({
-        inlineData: { mimeType: "image/png", data: userMessage.base64Image }
-      });
-    }
-
-    // A simple way to add conversation history - more advanced methods exist
-    const conversationHistory = conversation.map(msg => ({
-        role: msg.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }]
-    }));
-
-
-    const payload = {
-      contents: [...conversationHistory, { role: 'user', parts }],
-      systemInstruction: { parts: [{ text: systemInstruction }] },
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: "OBJECT",
-          properties: {
-            intent: { type: "STRING", enum: ["LOG_FOOD", "LOG_WORKOUT", "ASK_QUESTION", "ANALYZE_MEAL_IMAGE", "GENERATE_WORKOUT", "SUMMARIZE_WEEK", "UNKNOWN"] },
-            data: { type: "STRING", description: "Contains extracted entities or generated content, as a JSON string." },
-            summary: { type: "STRING", description: "A user-facing summary or the full text response for questions/summaries." }
-          }
-        }
-      }
-    };
-    
-    console.log('Gemini API Request Payload:', JSON.stringify(payload, null, 2));
+    const history = conversation
+        .filter(msg => !(msg.sender === 'gemini' && conversation.indexOf(msg) === 0)) // Filter out initial Gemini greeting
+        .map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+        }));
 
     try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            console.error('Gemini API Error Status:', response.status, response.statusText);
-            console.error('Gemini API Error Response Body:', await response.text());
-            throw new Error(`API Error: ${response.statusText || 'Unknown error'}`);
-        }
-        const result = await response.json();
-        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (jsonText) {
-            const parsedResponse: AskGeminiResponse = JSON.parse(jsonText);
-            setConversation(prev => [...prev, { sender: 'gemini', text: parsedResponse.summary, response: parsedResponse }]);
-        } else {
-            throw new Error("No valid content received from API.");
-        }
+        const parsedResponse = await getIntentfulResponse(geminiApiKey, userMessage.text, appData, history);
+        setConversation(prev => [...prev, { sender: 'gemini', text: parsedResponse.summary, response: parsedResponse }]);
     } catch (err) {
         console.error("Gemini API call failed:", err);
         setConversation(prev => [...prev, { sender: 'gemini', text: "Sorry, I encountered an error. Please try again." }]);

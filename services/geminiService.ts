@@ -1,173 +1,223 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Meal, WorkoutSession, DailyLog, UserProfile } from '../types';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+import type { Meal, WorkoutSession, AppData, AskGeminiResponse } from '../types';
+import { generateMCP } from './mcpService';
 
-// Gemini integration is temporarily disabled to focus on UI and local data tracking.
-// All functions will return mock data.
+const MODEL_NAME = "gemini-2.5-flash";
 
-export const getSmartSuggestion = async (
-    yesterdaysLog: DailyLog | undefined,
-    todaysLog: DailyLog | undefined,
-    userProfile: UserProfile | undefined,
-    apiKey: string
-): Promise<string> => {
+const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+];
+
+/**
+ * Gets a structured suggestion for the dashboard.
+ */
+export const getDashboardSuggestion = async (appData: AppData, apiKey: string): Promise<string> => {
     if (!apiKey) {
         return "Gemini API key is not set. Please set it in the settings.";
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    let todaysLogPrompt = "Not available";
-    if (todaysLog) {
-        const logToSend = { ...todaysLog };
-        if (logToSend.readiness === -1) {
-            delete logToSend.readiness;
-        }
-        todaysLogPrompt = JSON.stringify(logToSend, null, 2);
-    }
-
+    const mcp = generateMCP(appData);
     const prompt = `
-        Based on the following user data, provide a smart suggestion for today's activities and food to help them meet their goals.
-
-        **User Profile and Goals:**
-        ${userProfile ? JSON.stringify(userProfile, null, 2) : "Not available"}
-
-        **Yesterday's Log:**
-        ${yesterdaysLog ? JSON.stringify(yesterdaysLog, null, 2) : "Not available"}
-
-        **Today's Date:** ${new Date().toDateString()}
-        **Today's Log:**
-        ${todaysLogPrompt}
+        Based on the user data in the Model Context Protocol (MCP), provide a smart suggestion for today's activities and food to help them meet their goals.
 
         **Important Notes:**
         - The user's metrics like energy level, sleep quality, etc., are rated on a scale of 1 to 5.
         - Keep the suggestions brief and to the point.
         - If the user has a training schedule in their profile, compare it for the current day to what they have completed in today's log.
         - Return the response as a JSON object that adheres to the following TypeScript interface. The suggestions in each array should be plain strings, without any markdown or bullet points.
-        \`\`\`json
+        \
         {
             "food": "string[]",
             "activity": "string[]",
             "other": "string[]"
         }
-        \`\`\`
+        \
+
+        ${mcp}
 
         **Recommendation:**
     `;
 
     try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         return await response.text();
     } catch (error) {
-        console.error("Error generating smart suggestion:", error);
+        console.error("Error generating dashboard suggestion:", error);
         return "Failed to generate smart suggestion. Please try again later.";
     }
 };
 
-export const getNutritionInfoFromText = async (text: string, apiKey: string): Promise<Partial<Meal>> => {
+
+/**
+ * Gets a structured response with intent from the Gemini model.
+ * This is the primary function for the "Ask Gemini" feature.
+ */
+export const getIntentfulResponse = async (
+    apiKey: string, 
+    userPrompt: string, 
+    appData: AppData, 
+    conversationHistory: any[]
+): Promise<AskGeminiResponse> => {
+    if (!apiKey) {
+        return {
+            intent: 'UNKNOWN',
+            summary: "Gemini API key is not set. Please set it in the settings.",
+            data: {},
+        };
+    }
+    const mcp = generateMCP(appData);
+    const systemInstruction = `
+        You are an intelligent assistant for the GeminiFit app. Your job is to analyze the user's input, determine their intent, and provide a helpful response in a structured JSON format.
+        ${mcp}
+    `;
+
+    const model = new GoogleGenerativeAI(apiKey).getGenerativeModel({
+        model: MODEL_NAME,
+        safetySettings,
+        systemInstruction,
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "OBJECT",
+              properties: {
+                intent: { type: "STRING", enum: ["LOG_FOOD", "LOG_WORKOUT", "ASK_QUESTION", "ANALYZE_MEAL_IMAGE", "GENERATE_WORKOUT", "SUMMARIZE_WEEK", "UNKNOWN"] },
+                data: { type: "STRING", description: "Contains extracted entities or generated content, as a JSON string." },
+                summary: { type: "STRING", description: "A user-facing summary or the full text response for questions/summaries." }
+              }
+            }
+        }
+    });
+
+    try {
+        const chat = model.startChat({ history: conversationHistory });
+        const result = await chat.sendMessage(userPrompt);
+        const response = await result.response;
+        const jsonText = response.text();
+        return JSON.parse(jsonText) as AskGeminiResponse;
+    } catch (error) {
+        console.error("Error in getIntentfulResponse:", error);
+        return {
+            intent: 'UNKNOWN',
+            summary: "Sorry, I encountered an error. Please try again.",
+            data: {},
+        };
+    }
+};
+
+
+/**
+ * A generic function to get a conversational response from the Gemini model.
+ */
+export const getConversationalResponse = async (
+    apiKey: string,
+    userPrompt: string,
+    appData: AppData,
+    customInstructions: string = ""
+): Promise<string> => {
+    if (!apiKey) {
+        return "Gemini API key is not set. Please set it in the settings.";
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME, safetySettings });
+    
+    const mcp = generateMCP(appData);
+    const systemInstruction = `${customInstructions}\n\n${mcp}`;
+
+    try {
+        const chat = model.startChat({
+            history: [
+                { role: "user", parts: [{ text: systemInstruction }] },
+                { role: "model", parts: [{ text: "Acknowledged. I have received the Model Context Protocol. I am ready to assist you." }] },
+            ]
+        });
+
+        const result = await chat.sendMessage(userPrompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error("Error in getConversationalResponse:", error);
+        return "Error communicating with the AI. Please check your API key and try again.";
+    }
+};
+
+/**
+ * Parses natural language text to extract structured nutrition information.
+ */
+export const getNutritionInfoFromText = async (text: string, appData: AppData, apiKey: string): Promise<Partial<Meal>> => {
+    const mcp = generateMCP(appData);
+    const instruction = `
+        You are an expert nutrition data parser. Your task is to extract nutritional information from the user's text input and return it as a clean JSON object.
+        Use the context provided in the Model Context Protocol (MCP) to understand user-specific terms (e.g., "my usual shake").
+
+        Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber", "sodium".
+        If a value is not present, set it to 0.
+
+        ${mcp}
+
+        Input text: "${text}"
+
+        JSON output:
+    `;
+
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        const prompt = `
-            Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber", "sodium".
-            If a value is not present, set it to 0.
-
-            Input text: "${text}"
-
-            JSON output:
-        `;
-
-        const result = await model.generateContent(prompt);
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+        const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
         
-        // Clean the response to get only the JSON part
         const jsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const meal = JSON.parse(jsonText);
-
-        return meal;
+        return JSON.parse(jsonText);
     } catch (error) {
-        console.error("Error parsing nutrition info from text:", error);
+        console.error("Error parsing nutrition info:", error);
         throw new Error("Failed to parse nutrition info from text.");
     }
 };
 
-export const getWorkoutInfoFromText = async (text: string, apiKey: string): Promise<Partial<WorkoutSession>> => {
+/**
+ * Parses natural language text to extract structured workout information.
+ */
+export const getWorkoutInfoFromText = async (text: string, appData: AppData, apiKey: string): Promise<Partial<WorkoutSession>> => {
+    const mcp = generateMCP(appData);
+    const instruction = `
+        You are an expert workout data parser. Your task is to extract workout information from the user's text input and return it as a clean JSON object.
+        Use the context provided in the Model Context Protocol (MCP) to understand user-specific terms and history.
+        Return the data as a JSON object that strictly adheres to the following TypeScript interface structure.
+        If a field is not explicitly mentioned, provide a reasonable default.
+
+        interface WorkoutSession { ... } // (Interface definition as before)
+
+        ${mcp}
+
+        Input text: "${text}"
+
+        JSON output:
+    `;
+
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-        const prompt = `
-            Analyze the following text and extract the workout information.
-            Return the data as a JSON object that strictly adheres to the following TypeScript interface structure.
-            If a field is not explicitly mentioned in the input text, provide a reasonable default value (e.g., 0 for numbers, empty string for strings, empty array for exercises/sets).
-
-            interface WorkoutSession {
-              name: string;
-              notes?: string;
-              duration: number; // in minutes
-              caloriesBurned: number;
-              averageHeartRate?: number;
-              type: 'cardio' | 'weightlifting';
-              exercises: Exercise[];
-              distance?: number; // in miles/km, only for cardio
-              pace?: number; // only for cardio
-            }
-
-            interface Exercise {
-              id: string; // Use "generate-id" as a placeholder; client will generate actual ID
-              name: string;
-              type: 'weightlifting' | 'cardio';
-              bodyPart?: string; // only for weightlifting
-              sets?: ExerciseSet[]; // only for weightlifting
-              duration?: number; // in minutes, only for cardio
-              distance?: number; // in miles/km, only for cardio
-              averageHeartRate?: number; // only for cardio
-              caloriesBurned?: number; // only for cardio
-            }
-
-            interface ExerciseSet {
-              reps: number;
-              weight: number;
-              isPr?: boolean;
-              notes?: string;
-            }
-
-            Input text: "${text}"
-
-            JSON output:
-        `;
-
-        console.log('Gemini Prompt:', prompt); // Log the prompt
-
-        const result = await model.generateContent(prompt);
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+        const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
         
-        console.log('Gemini Raw Response:', responseText); // Log the raw response
-
-        // Clean the response to get only the JSON part
         const jsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        
-        // Sanitize the JSON string by replacing undefined with null
-        const sanitizedJsonText = jsonText.replace(/undefined/g, 'null');
+        const workout = JSON.parse(jsonText.replace(/undefined/g, 'null'));
 
-        const workout: Partial<WorkoutSession> = JSON.parse(sanitizedJsonText);
-
-        // Generate unique IDs for exercises if "generate-id" is present
         if (workout.exercises) {
-            workout.exercises.forEach(exercise => {
-                if (exercise.id === "generate-id") {
-                    exercise.id = new Date().toISOString(); // Generate a unique ID
-                }
-            });
+            workout.exercises.forEach(ex => { if (ex.id === "generate-id") ex.id = new Date().toISOString(); });
         }
 
         return workout;
     } catch (error) {
-        console.error("Error parsing workout info from text:", error);
+        console.error("Error parsing workout info:", error);
         throw new Error("Failed to parse workout info from text.");
     }
 };

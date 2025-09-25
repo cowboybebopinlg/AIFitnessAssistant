@@ -18,3 +18,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1CZ_jQvfuflqD76NpJV0z5-
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## AI Model
+
+This application uses the `gemini-2.5-flash` model for its AI capabilities. Please refer to the official Google Cloud documentation for more information on this model: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions

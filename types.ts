@@ -179,3 +179,9 @@ export interface TrendDataPoint {
   date: string;
   value: number;
 }
+
+export type AskGeminiResponse = {
+  intent: 'LOG_FOOD' | 'LOG_WORKOUT' | 'ASK_QUESTION' | 'ANALYZE_MEAL_IMAGE' | 'GENERATE_WORKOUT' | 'SUMMARIZE_WEEK' | 'UNKNOWN';
+  data: { [key: string]: any; };
+  summary: string;
+};

@@ -88,7 +88,7 @@ const AddCardioWorkoutPage: React.FC = () => {
     setIsLoadingGemini(true); // Set loading state
     try {
       console.log('Sending to Gemini:', text); // Log input
-      const workout = await getWorkoutInfoFromText(text, geminiApiKey);
+      const workout = await getWorkoutInfoFromText(text, appData, geminiApiKey);
       console.log('Received from Gemini:', workout); // Log output
 
       const newWorkout: WorkoutSession = {

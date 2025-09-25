@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon, RefreshCwIcon } from '../icons';
-import { getSmartSuggestion } from '../../services/geminiService';
+import { getDashboardSuggestion } from '../../services/geminiService';
 import { getDailyActivity, getDailyHRV } from '../../services/fitbitService';
 
 
@@ -231,10 +231,8 @@ export const Dashboard: React.FC = () => {
             const yesterdayDateString = yesterday.toISOString().slice(0, 10);
             const yesterdaysLog = getLogForDate(yesterdayDateString);
 
-            const newSuggestion = await getSmartSuggestion(
-                yesterdaysLog,
-                todaysLog,
-                appData?.userProfile,
+            const newSuggestion = await getDashboardSuggestion(
+                appData,
                 geminiApiKey || ''
             );
             setSuggestion(newSuggestion);
