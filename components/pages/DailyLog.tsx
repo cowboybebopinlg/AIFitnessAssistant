@@ -5,16 +5,29 @@ import FoodEntriesSection from './FoodEntriesSection';
 import WorkoutsSection from './WorkoutsSection';
 import { useAppContext } from '../../context/AppContext';
 import EditMetricsModal from './EditMetricsModal';
+import EditFoodModal from './EditFoodModal';
+import { Meal } from '../../types';
+
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const DailyLog: React.FC = () => {
-  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateLog } = useAppContext();
+  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateLog, updateMeal } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isEditMetricsModalOpen, setIsEditMetricsModalOpen] = useState(false);
+  const [isEditFoodModalOpen, setIsEditFoodModalOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
+
 
   const dateString = useMemo(() => {
-    return currentDate.toISOString().split('T')[0];
+    return getLocalDateString(currentDate);
   }, [currentDate]);
 
   const dailyLog = useMemo(() => {
@@ -26,11 +39,15 @@ const DailyLog: React.FC = () => {
   }, [appData, dateString]);
 
   const handlePrevDay = () => {
-    setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() - 1)));
+    const prevDay = new Date(currentDate);
+    prevDay.setDate(prevDay.getDate() - 1);
+    setCurrentDate(prevDay);
   };
 
   const handleNextDay = () => {
-    setCurrentDate(new Date(currentDate.setDate(currentDate.getDate() + 1)));
+    const nextDay = new Date(currentDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    setCurrentDate(nextDay);
   };
 
   const handleExport = async () => {
@@ -65,6 +82,24 @@ const DailyLog: React.FC = () => {
 
   const handleCloseEditMetricsModal = () => {
     setIsEditMetricsModalOpen(false);
+  };
+
+  const handleOpenEditFoodModal = (meal: Meal, index: number) => {
+    setSelectedMeal(meal);
+    setSelectedMealIndex(index);
+    setIsEditFoodModalOpen(true);
+  };
+
+  const handleCloseEditFoodModal = () => {
+    setIsEditFoodModalOpen(false);
+    setSelectedMeal(null);
+    setSelectedMealIndex(null);
+  };
+
+  const handleUpdateMeal = (updatedMeal: Meal) => {
+    if (selectedMealIndex !== null) {
+      updateMeal(dateString, selectedMealIndex, updatedMeal);
+    }
   };
 
   return (
@@ -129,7 +164,7 @@ const DailyLog: React.FC = () => {
             </button>
           </div>
           <MetricsSection log={dailyLog} onEditMetrics={handleOpenEditMetricsModal} />
-          <FoodEntriesSection log={dailyLog} onAddFoodClick={() => navigate(`/log/add-food?date=${dateString}`)} />
+          <FoodEntriesSection log={dailyLog} onAddFoodClick={() => navigate(`/log/add-food?date=${dateString}`)} onEditFood={handleOpenEditFoodModal} dateString={dateString} />
           <WorkoutsSection log={dailyLog} onAddWorkoutClick={() => navigate(`/log/add-workout?date=${dateString}`)} fitbitActivities={fitbitActivities} />
         </main>
       </div>
@@ -138,6 +173,12 @@ const DailyLog: React.FC = () => {
         onClose={handleCloseEditMetricsModal}
         log={dailyLog}
         updateLog={updateLog}
+      />
+      <EditFoodModal
+        isOpen={isEditFoodModalOpen}
+        onClose={handleCloseEditFoodModal}
+        meal={selectedMeal}
+        updateMeal={handleUpdateMeal}
       />
     </div>
   );

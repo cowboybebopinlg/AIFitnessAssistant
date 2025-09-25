@@ -139,6 +139,7 @@ const WorkoutsCard = ({ workouts, fitbitActivities }) => {
 
 const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
     const parseSuggestion = (text) => {
+        if (!text || text === 'Loading...' || text === 'Generating new suggestion...') return [];
         try {
             // Clean the response to get only the JSON part
             const jsonText = text.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -190,6 +191,15 @@ const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
 
 
 
+const getLocalDateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+
+
 export const Dashboard: React.FC = () => {
     const { appData, isLoading, getTodaysLog, getLogForDate, geminiApiKey } = useAppContext();
     const [suggestion, setSuggestion] = useState('Loading...');
@@ -197,7 +207,7 @@ export const Dashboard: React.FC = () => {
 
     const todaysLog = getTodaysLog();
 
-    const todayDateString = new Date().toISOString().slice(0, 10);
+    const todayDateString = getLocalDateString(new Date());
 
     const todaysFitbitData = appData?.fitbitData?.[todayDateString];
 

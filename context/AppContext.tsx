@@ -433,6 +433,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }, []);
 
     const syncFitbitData = async (date: string) => {
+        alert(`Syncing for date: ${date}`);
         if (!fitbitAccessToken) return;
 
         try {

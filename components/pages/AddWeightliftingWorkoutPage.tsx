@@ -65,6 +65,18 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     setExercises(newExercises);
   };
 
+  const handleDeleteExercise = (exerciseIndex: number) => {
+    const newExercises = [...exercises];
+    newExercises.splice(exerciseIndex, 1);
+    setExercises(newExercises);
+  };
+
+  const handleDeleteSet = (exerciseIndex: number, setIndex: number) => {
+    const newExercises = [...exercises];
+    newExercises[exerciseIndex].sets.splice(setIndex, 1);
+    setExercises(newExercises);
+  };
+
   const handleExerciseChange = (exerciseIndex: number, field: string, value: string) => {
     const newExercises = [...exercises];
     newExercises[exerciseIndex][field] = value;
@@ -181,8 +193,8 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
             <div key={exercise.id} className="rounded-xl bg-background-light p-4 shadow-sm dark:bg-gray-800/20">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Exercise {exerciseIndex + 1}</h2>
-                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                  <span className="material-symbols-outlined"> more_vert </span>
+                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onClick={() => handleDeleteExercise(exerciseIndex)}>
+                  <span className="material-symbols-outlined">delete</span>
                 </button>
               </div>
               <div className="space-y-4">
@@ -214,13 +226,14 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-3 pt-2">
-                  <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-gray-400">
+                  <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-gray-400">
                     <span className="w-8">Set</span>
                     <span>Reps</span>
                     <span>Weight (lbs)</span>
+                    <span></span>
                   </div>
                   {exercise.sets.map((set, setIndex) => (
-                    <div key={setIndex} className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-4">
+                    <div key={setIndex} className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4">
                       <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-sm font-bold text-gray-200">{setIndex + 1}</span>
                       <div className="relative flex items-center">
                         <input 
@@ -238,6 +251,9 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                           onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'weight', e.target.value)}
                         />
                       </div>
+                      <button className="text-gray-400 hover:text-white" onClick={() => handleDeleteSet(exerciseIndex, setIndex)}>
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
                     </div>
                   ))}
                   <button 

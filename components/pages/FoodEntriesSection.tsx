@@ -1,12 +1,16 @@
 import React from 'react';
-import { DailyLog } from '../../types';
+import { DailyLog, Meal } from '../../types';
+import { useAppContext } from '../../context/AppContext';
 
 interface FoodEntriesSectionProps {
   log: DailyLog | undefined;
   onAddFoodClick: () => void;
+  onEditFood: (meal: Meal, index: number) => void;
+  dateString: string;
 }
 
-const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodClick }) => {
+const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodClick, onEditFood, dateString }) => {
+  const { deleteMeal } = useAppContext();
   const meals = log?.meals || [];
 
   const handleCopyFoodEntries = async () => {
@@ -21,6 +25,12 @@ const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodC
     } catch (err) {
       console.error('Failed to copy food entries: ', err);
       alert('Failed to copy food entries.');
+    }
+  };
+
+  const handleDeleteMeal = (index: number) => {
+    if (window.confirm('Are you sure you want to delete this meal?')) {
+      deleteMeal(dateString, index);
     }
   };
 
@@ -60,9 +70,14 @@ const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodC
                 <h3 className="font-bold text-white">{meal.name}</h3>
                 <p className="text-sm text-gray-400">{meal.calories} kcal, {meal.protein}g Protein</p>
               </div>
-              <button className="text-gray-400 hover:text-white">
-                <span className="material-symbols-outlined">more_vert</span>
-              </button>
+              <div className="flex gap-2">
+                <button className="text-gray-400 hover:text-white" onClick={() => onEditFood(meal, index)}>
+                  <span className="material-symbols-outlined">edit</span>
+                </button>
+                <button className="text-gray-400 hover:text-white" onClick={() => handleDeleteMeal(index)}>
+                  <span className="material-symbols-outlined">delete</span>
+                </button>
+              </div>
             </div>
           ))
         )}
