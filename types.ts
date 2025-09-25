@@ -47,19 +47,19 @@ export type WorkoutSession = {
 );
 
 export interface DailyLog {
-  date: string;
-  weight: number | null;
-  energy: number | null;
-  soreness: number | null;
-  sleepQuality: number | null;
-  yesterdayStress: number | null;
-  meals: Meal[];
-  workouts: WorkoutSession[];
-  notes: string;
-  hrv?: number;
-  rhr?: number;
-  calories?: number;
-  readiness?: number;
+    [key: string]: any;
+    date: string;
+    weight: number | null;
+    waist?: number;
+    chest?: number;
+    arms?: number;
+    meals: Meal[];
+    workouts: WorkoutSession[];
+    notes: string;
+    readiness?: number;
+    hrv?: number;
+    rhr?: number;
+    calories?: number;
 }
 
 export interface NutritionTargets {
@@ -155,6 +155,7 @@ export interface UserProfile {
   missionStatement: string;
   height: string;
   startingWeight: number;
+  currentWeight?: number;
   measurements: Measurement[];
   healthFactors: string;
   readinessModel: string;

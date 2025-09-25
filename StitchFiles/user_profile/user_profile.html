@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeminiFit User Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style type="text/tailwindcss">
+        :root {
+            --primary-500: #3b82f6; /* blue-500 */
+            --primary-600: #2563eb; /* blue-600 */
+        }
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #111827; /* gray-900 */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-500);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-600);
+        }
+        /* For the loading spinner */
+        .loader {
+            border: 4px solid #374151; /* gray-700 */
+            border-top: 4px solid var(--primary-500);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-[var(--primary-500)]">GeminiFit Profile</h1>
+            <p class="text-gray-400 mt-2">Your central source of truth for a data-driven fitness journey.</p>
+        </header>
+
+        <!-- Build with Gemini Section -->
+        <div class="bg-gray-800 p-6 rounded-lg mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                     <svg class="w-8 h-8 text-[var(--primary-500)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    <h2 class="text-2xl font-semibold">Build with Gemini</h2>
+                </div>
+                <button id="build-gemini-btn" class="w-full sm:w-auto bg-[var(--primary-500)] hover:bg-[var(--primary-600)] text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                    Start Building
+                </button>
+            </div>
+            <p class="text-gray-400 mt-2">Use natural language to fill in your profile. Click "Start Building" and describe your goals, stats, and protocols.</p>
+        </div>
+        
+        <!-- Profile Form -->
+        <form id="profile-form" class="space-y-6">
+
+            <!-- Section: Mission Control -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <button type="button" class="accordion-header w-full flex justify-between items-center p-4 text-left">
+                    <h3 class="text-xl font-bold">Mission Control</h3>
+                    <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-4 border-t border-gray-700" style="display: block;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="primary-goal" class="block text-sm font-medium text-gray-300 mb-1">Primary Goal</label>
+                            <select id="primary-goal" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <option>Body Recomposition</option>
+                                <option>Fat Loss</option>
+                                <option>Muscle Gain</option>
+                                <option>Performance Improvement</option>
+                                <option>Maintenance</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="target-date" class="block text-sm font-medium text-gray-300 mb-1">Target Date</label>
+                            <input type="date" id="target-date" value="2025-11-01" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="mission-statement" class="block text-sm font-medium text-gray-300 mb-1">Mission Statement / Mantra</label>
+                        <textarea id="mission-statement" rows="3" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">Consistency over perfection. Work Smarter, Not Harder.</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section: Biometrics & Measurements -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <button type="button" class="accordion-header w-full flex justify-between items-center p-4 text-left">
+                    <h3 class="text-xl font-bold">Biometrics & Measurements</h3>
+                    <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-4 border-t border-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                            <label for="height" class="block text-sm font-medium text-gray-300 mb-1">Height</label>
+                            <input type="text" id="height" value="5'6&quot;" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                        </div>
+                        <div>
+                            <label for="starting-weight" class="block text-sm font-medium text-gray-300 mb-1">Starting Weight (lbs)</label>
+                            <input type="number" step="0.1" id="starting-weight" value="257.4" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                        </div>
+                    </div>
+                    <div id="measurements-container" class="mt-4 space-y-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Body Measurements</label>
+                    </div>
+                    <button type="button" id="add-measurement-btn" class="mt-2 text-[var(--primary-500)] hover:text-[var(--primary-600)] text-sm font-medium">+ Add Measurement</button>
+                </div>
+            </div>
+
+            <!-- Section: Health & Performance Context -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <button type="button" class="accordion-header w-full flex justify-between items-center p-4 text-left">
+                    <h3 class="text-xl font-bold">Health & Performance Context</h3>
+                    <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                 <div class="accordion-content p-4 border-t border-gray-700">
+                     <div>
+                        <label for="health-factors" class="block text-sm font-medium text-gray-300 mb-1">Key Health Factors</label>
+                        <textarea id="health-factors" rows="3" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">History of Diverticulitis, on TRT, requires therapeutic phlebotomy.</textarea>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Section: Training Protocol -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <button type="button" class="accordion-header w-full flex justify-between items-center p-4 text-left">
+                    <h3 class="text-xl font-bold">Training Protocol</h3>
+                    <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                 <div class="accordion-content p-4 border-t border-gray-700">
+                    <div>
+                        <label for="readiness-model" class="block text-sm font-medium text-gray-300 mb-1">Readiness Model</label>
+                        <select id="readiness-model" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                            <option>Objective Priority</option>
+                            <option selected>Subjective Priority</option>
+                            <option>Balanced</option>
+                        </select>
+                    </div>
+                    <div class="mt-4">
+                        <label for="training-split" class="block text-sm font-medium text-gray-300 mb-1">Weekly Training Split</label>
+                        <textarea id="training-split" rows="3" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">4 on, 3 off (Mon-Thu training, Fri-Sun recovery). Mon: Chest, Tue: Shoulders, Wed: Back, Thu: Arms.</textarea>
+                    </div>
+                     <div class="mt-4">
+                        <label for="cardio-targets" class="block text-sm font-medium text-gray-300 mb-1">Cardio Targets</label>
+                        <textarea id="cardio-targets" rows="2" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">Training Days: Avg HR 125-128 bpm. Recovery Days: Avg HR <120-125 bpm.</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Nutrition Protocol -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <button type="button" class="accordion-header w-full flex justify-between items-center p-4 text-left">
+                    <h3 class="text-xl font-bold">Nutrition Protocol</h3>
+                    <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content p-4 border-t border-gray-700">
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-200 mb-2">Training Day Targets</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <input type="number" id="train-cal" placeholder="Calories" value="2200" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="train-pro" placeholder="Protein (g)" value="205" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="train-fat" placeholder="Fat (g)" value="55" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="train-fib" placeholder="Fiber (g)" value="25" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-200 mb-2">Recovery Day Targets</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <input type="number" id="rest-cal" placeholder="Calories" value="2000" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="rest-pro" placeholder="Protein (g)" value="205" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="rest-fat" placeholder="Fat (g)" value="55" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                                <input type="number" id="rest-fib" placeholder="Fiber (g)" value="25" class="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button type="submit" class="bg-[var(--primary-500)] text-white font-bold py-3 px-6 rounded-lg hover:bg-[var(--primary-600)] transition-colors duration-300">
+                    Save Profile
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Gemini Modal -->
+    <div id="gemini-modal" class="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-2xl transform transition-all scale-95 opacity-0" id="gemini-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-[var(--primary-500)]">Build Your Profile with Gemini</h2>
+                <button id="close-gemini-modal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+            <p class="text-gray-400 mb-4">Describe your profile in your own words. Include your goals, stats, health notes, and nutrition/training strategies. Gemini will do the rest.</p>
+            <textarea id="gemini-prompt" rows="10" class="w-full bg-gray-700 border-none rounded-md p-3 focus:ring-2 focus:ring-[var(--primary-500)]" placeholder="e.g., 'My goal is fat loss. I'm 6 feet tall and currently 220 lbs. I lift 3 times a week... My training day calories are 2000.'"></textarea>
+            <div id="gemini-status" class="mt-4 text-center"></div>
+            <div class="flex justify-end space-x-4 mt-4">
+                <button id="cancel-gemini" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
+                <button id="generate-profile-btn" class="bg-[var(--primary-500)] hover:bg-[var(--primary-600)] text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    Generate Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- Accordion Logic ---
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('svg');
+                
+                if (content.style.display === 'block') {
+                    content.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    content.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+            // Initially close all but the first
+            if (header !== accordionHeaders[0]) {
+                 header.click();
+            }
+        });
+
+        // --- Dynamic Measurements Logic ---
+        const measurementsContainer = document.getElementById('measurements-container');
+        const addMeasurementBtn = document.getElementById('add-measurement-btn');
+        let measurementCount = 0;
+
+        const initialMeasurements = [
+            { name: "Chest", value: "49", unit: "in" },
+            { name: "Waist", value: "48.5", unit: "in" },
+            { name: "Bicep", value: "18.5", unit: "in" },
+            { name: "Neck", value: "16", unit: "in" },
+            { name: "Thigh", value: "24", unit: "in" }
+        ];
+        
+        const addMeasurementField = (name = '', value = '', unit = 'in') => {
+            measurementCount++;
+            const div = document.createElement('div');
+            div.className = 'flex items-center space-x-2 measurement-row';
+            div.innerHTML = `
+                <input type="text" placeholder="Name (e.g., Waist)" value="${name}" class="w-1/3 bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                <input type="number" step="0.1" placeholder="Value" value="${value}" class="w-1/3 bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                <select class="w-1/4 bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-[var(--primary-500)]">
+                    <option ${unit === 'in' ? 'selected' : ''}>in</option>
+                    <option ${unit === 'cm' ? 'selected' : ''}>cm</option>
+                </select>
+                <button type="button" class="text-red-500 hover:text-red-400 remove-measurement-btn text-2xl font-bold">&times;</button>
+            `;
+            measurementsContainer.appendChild(div);
+        };
+
+        addMeasurementBtn.addEventListener('click', () => addMeasurementField());
+        measurementsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-measurement-btn')) {
+                e.target.closest('.measurement-row').remove();
+            }
+        });
+        
+        // Populate initial measurements
+        initialMeasurements.forEach(m => addMeasurementField(m.name, m.value, m.unit));
+
+        // --- Save Profile Logic ---
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const saveButton = e.target.querySelector('button[type="submit"]');
+            saveButton.textContent = 'Saved!';
+            setTimeout(() => {
+                saveButton.textContent = 'Save Profile';
+            }, 2000);
+        });
+
+        // --- Gemini Modal Logic ---
+        const geminiModal = document.getElementById('gemini-modal');
+        const geminiModalContent = document.getElementById('gemini-modal-content');
+        const buildGeminiBtn = document.getElementById('build-gemini-btn');
+        const closeGeminiModalBtn = document.getElementById('close-gemini-modal');
+        const cancelGeminiBtn = document.getElementById('cancel-gemini');
+        const generateProfileBtn = document.getElementById('generate-profile-btn');
+        const geminiStatus = document.getElementById('gemini-status');
+        const geminiPrompt = document.getElementById('gemini-prompt');
+
+        const openModal = () => {
+            geminiModal.classList.remove('hidden');
+            setTimeout(() => {
+                geminiModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        };
+
+        const closeModal = () => {
+            geminiModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                geminiModal.classList.add('hidden');
+            }, 200);
+        };
+
+        buildGeminiBtn.addEventListener('click', openModal);
+        closeGeminiModalBtn.addEventListener('click', closeModal);
+        cancelGeminiBtn.addEventListener('click', closeModal);
+        geminiModal.addEventListener('click', (e) => {
+            if (e.target === geminiModal) {
+                closeModal();
+            }
+        });
+        
+        // Gemini API call logic
+        generateProfileBtn.addEventListener('click', async () => {
+            const userPrompt = geminiPrompt.value;
+            if (!userPrompt.trim()) {
+                geminiStatus.innerHTML = `<p class="text-red-400">Please enter a description of your profile.</p>`;
+                return;
+            }
+
+            geminiStatus.innerHTML = `<div class="flex justify-center items-center"><div class="loader"></div><p class="ml-4 text-[var(--primary-500)]">Gemini is building your profile...</p></div>`;
+            generateProfileBtn.disabled = true;
+
+            const apiKey = ""; // API key is handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: {
+                    parts: [{ text: "You are an expert fitness assistant. Your task is to parse the user's unstructured text and extract structured information to populate a user profile form. Fill in every field of the provided JSON schema based on the user's text. If a piece of information is not provided, use a reasonable default or leave the string empty. Today's date is July 6, 2025." }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            primaryGoal: { type: "STRING" },
+                            targetDate: { type: "STRING", description: "YYYY-MM-DD format" },
+                            missionStatement: { type: "STRING" },
+                            height: { type: "STRING" },
+                            startingWeight: { type: "NUMBER" },
+                            healthFactors: { type: "STRING" },
+                            readinessModel: { type: "STRING" },
+                            trainingSplit: { type: "STRING" },
+                            cardioTargets: { type: "STRING" },
+                            trainingDayTargets: {
+                                type: "OBJECT",
+                                properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" } }
+                            },
+                            recoveryDayTargets: {
+                                type: "OBJECT",
+                                properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" } }
+                            },
+                             measurements: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: { name: { type: "STRING" }, value: { type: "NUMBER" }, unit: { type: "STRING" } }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (jsonText) {
+                    const profileData = JSON.parse(jsonText);
+                    populateForm(profileData);
+                    geminiStatus.innerHTML = `<p class="text-green-400">Profile generated successfully!</p>`;
+                    setTimeout(() => {
+                        closeModal();
+                        geminiStatus.innerHTML = '';
+                    }, 1500);
+                } else {
+                     throw new Error("No content received from API.");
+                }
+
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                geminiStatus.innerHTML = `<p class="text-red-400">Failed to generate profile. Please try again.</p>`;
+            } finally {
+                generateProfileBtn.disabled = false;
+            }
+        });
+
+        function populateForm(data) {
+            if (!data) return;
+
+            document.getElementById('primary-goal').value = data.primaryGoal || 'Body Recomposition';
+            document.getElementById('target-date').value = data.targetDate || '';
+            document.getElementById('mission-statement').value = data.missionStatement || '';
+            document.getElementById('height').value = data.height || '';
+            document.getElementById('starting-weight').value = data.startingWeight || '';
+            document.getElementById('health-factors').value = data.healthFactors || '';
+            document.getElementById('readiness-model').value = data.readinessModel || 'Subjective Priority';
+            document.getElementById('training-split').value = data.trainingSplit || '';
+            document.getElementById('cardio-targets').value = data.cardioTargets || '';
+
+            if (data.trainingDayTargets) {
+                document.getElementById('train-cal').value = data.trainingDayTargets.calories || '';
+                document.getElementById('train-pro').value = data.trainingDayTargets.protein || '';
+                document.getElementById('train-fat').value = data.trainingDayTargets.fat || '';
+                document.getElementById('train-fib').value = data.trainingDayTargets.fiber || '';
+            }
+            if (data.recoveryDayTargets) {
+                document.getElementById('rest-cal').value = data.recoveryDayTargets.calories || '';
+                document.getElementById('rest-pro').value = data.recoveryDayTargets.protein || '';
+                document.getElementById('rest-fat').value = data.recoveryDayTargets.fat || '';
+                document.getElementById('rest-fib').value = data.recoveryDayTargets.fiber || '';
+            }
+            
+            if(data.measurements && Array.isArray(data.measurements)) {
+                measurementsContainer.innerHTML = '<label class="block text-sm font-medium text-gray-300 mb-1">Body Measurements</label>';
+                data.measurements.forEach(m => addMeasurementField(m.name, m.value, m.unit));
+            }
+        }
+    });
+    </script>
+</body>
+</html>
+

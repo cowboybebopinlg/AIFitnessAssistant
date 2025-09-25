@@ -11,7 +11,7 @@ import { Meal } from '../../types';
 import { getLocalDateString } from '../../services/utils';
 
 const DailyLog: React.FC = () => {
-  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateLog, updateMeal } = useAppContext();
+  const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateMeal } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -167,7 +167,6 @@ const DailyLog: React.FC = () => {
         isOpen={isEditMetricsModalOpen}
         onClose={handleCloseEditMetricsModal}
         log={dailyLog}
-        updateLog={updateLog}
       />
       <EditFoodModal
         isOpen={isEditFoodModalOpen}

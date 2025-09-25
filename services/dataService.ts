@@ -16,10 +16,6 @@ const PREFERENCES_KEY = 'geminiFitData';
 const createNewLog = (date: string): DailyLog => ({
     date,
     weight: null,
-    energy: null,
-    soreness: null,
-    sleepQuality: null,
-    yesterdayStress: null,
     meals: [],
     workouts: [],
     notes: '',
@@ -59,10 +55,6 @@ export const loadData = async (): Promise<AppData> => {
                 parsedData.logs[today] = createNewLog(today);
             }
             // Backward compatibility for new fields
-            Object.values(parsedData.logs).forEach(log => {
-                if (log.sleepQuality === undefined) log.sleepQuality = null;
-                if (log.yesterdayStress === undefined) log.yesterdayStress = null;
-            });
             if (!parsedData.commonFoods) {
                 parsedData.commonFoods = [];
             }

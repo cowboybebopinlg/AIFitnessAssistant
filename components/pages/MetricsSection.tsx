@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import MetricInput from './MetricInput';
 import { useAppContext } from '../../context/AppContext';
 import { DailyLog } from '../../types';
+import MetricCard from './MetricCard';
+import AddMeasurementModal from './AddMeasurementModal';
 
 interface MetricsSectionProps {
   log: DailyLog | undefined;
@@ -9,62 +10,40 @@ interface MetricsSectionProps {
 }
 
 const MetricsSection: React.FC<MetricsSectionProps> = ({ log, onEditMetrics }) => {
-  const { updateLog, isFitbitAuthenticated } = useAppContext();
+  const { isFitbitAuthenticated, getLogForDate, appData } = useAppContext();
+  const [isAddMeasurementModalOpen, setIsAddMeasurementModalOpen] = useState(false);
+  const [editingMeasurement, setEditingMeasurement] = useState<string | null>(null);
 
-  const [energyLevel, setEnergyLevel] = useState(log?.energy || 0);
-  const [sleepQuality, setSleepQuality] = useState(log?.sleepQuality || 0);
-  const [muscleSoreness, setMuscleSoreness] = useState(log?.soreness || 0);
-  const [stressLevel, setStressLevel] = useState(log?.yesterdayStress || 0);
-
-  useEffect(() => {
-    setEnergyLevel(log?.energy || 0);
-    setSleepQuality(log?.sleepQuality || 0);
-    setMuscleSoreness(log?.soreness || 0);
-    setStressLevel(log?.yesterdayStress || 0);
-  }, [log]);
-
-  const handleSave = () => {
-    if (log) {
-      updateLog(log.date, {
-        energy: energyLevel,
-        sleepQuality: sleepQuality,
-        soreness: muscleSoreness,
-        yesterdayStress: stressLevel,
-      });
-      alert('Metrics saved!');
-    }
+  const getPreviousMeasurement = (date: string, measurement: keyof DailyLog) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() - 1);
+    const prevDate = d.toISOString().split('T')[0];
+    const prevLog = getLogForDate(prevDate);
+    return prevLog ? prevLog[measurement] : undefined;
   };
 
-  const handleCopy = async () => {
-    const metricsText = `
-Metrics:
-Energy Level: ${energyLevel}/5
-Sleep Quality: ${sleepQuality}/5
-Muscle Soreness: ${muscleSoreness}/5
-Stress Level: ${stressLevel}/5
-    `.trim();
+  const getMetric = (name: string, unit: string, value: number | null | undefined, prevValue: number | null | undefined) => {
+    const change = value && prevValue ? value - prevValue : 0;
+    return {
+      name,
+      unit,
+      value: value?.toString() || 'N/A',
+      change: change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1),
+    };
+  };
 
-    try {
-      await navigator.clipboard.writeText(metricsText);
-      alert('Metrics copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy metrics: ', err);
-      alert('Failed to copy metrics.');
-    }
+  const handleOpenAddMeasurementModal = (measurementName: string | null = null) => {
+    setEditingMeasurement(measurementName);
+    setIsAddMeasurementModalOpen(true);
+  };
+
+  const handleCloseAddMeasurementModal = () => {
+    setEditingMeasurement(null);
+    setIsAddMeasurementModalOpen(false);
   };
 
   return (
     <section className="space-y-4 rounded-lg bg-gray-900 p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">Metrics</h2>
-        <button
-          className="flex items-center gap-2 rounded-full bg-gray-800 px-3 py-1.5 text-xs font-medium text-white"
-          onClick={handleCopy}
-        >
-          <span className="material-symbols-outlined text-sm">content_copy</span>
-          Copy
-        </button>
-      </div>
       {isFitbitAuthenticated && (
         <div className="space-y-2 pt-4">
           <div className="flex items-center justify-between">
@@ -95,38 +74,37 @@ Stress Level: ${stressLevel}/5
           </div>
         </div>
       )}
-      <div className="space-y-4">
-        <MetricInput
-          label="Energy Level"
-          color="bg-green-500"
-          value={energyLevel || 0}
-          onChange={setEnergyLevel}
-        />
-        <MetricInput
-          label="Sleep Quality"
-          color="bg-green-500"
-          value={sleepQuality || 0}
-          onChange={setSleepQuality}
-        />
-        <MetricInput
-          label="Muscle Soreness"
-          color="bg-yellow-500"
-          value={muscleSoreness || 0}
-          onChange={setMuscleSoreness}
-        />
-        <MetricInput
-          label="Stress Level"
-          color="bg-red-500"
-          value={stressLevel || 0}
-          onChange={setStressLevel}
-        />
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white">Metrics</h2>
       </div>
-      <button
-        className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
-        onClick={handleSave}
-      >
-        Save
-      </button>
+
+      <div className="grid grid-cols-2 gap-4">
+        {appData?.userProfile?.measurements?.map(m => {
+          if (log?.[m.name.toLowerCase()]) {
+            return (
+              <div key={m.name} onClick={() => handleOpenAddMeasurementModal(m.name)}>
+                <MetricCard metric={getMetric(m.name, m.unit, log?.[m.name.toLowerCase()], getPreviousMeasurement(log?.date || '', m.name.toLowerCase()))} />
+              </div>
+            )
+          }
+          return null;
+        })}
+        <div className="bg-slate-800 rounded-lg border border-dashed border-slate-700 p-4 flex flex-col justify-center items-center">
+          <button onClick={() => handleOpenAddMeasurementModal()} className="text-slate-400 hover:text-white">
+            <span className="material-symbols-outlined text-4xl">add</span>
+            <p className="text-sm">Add New</p>
+          </button>
+        </div>
+      </div>
+
+      <AddMeasurementModal
+        isOpen={isAddMeasurementModalOpen}
+        onClose={handleCloseAddMeasurementModal}
+        date={log?.date || ''}
+        measurementName={editingMeasurement}
+        userProfile={appData?.userProfile}
+      />
     </section>
   );
 };

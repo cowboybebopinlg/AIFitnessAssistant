@@ -8,7 +8,8 @@ interface AppContextType {
     appData: AppData | null;
     isLoading: boolean;
     getTodaysLog: () => DailyLog | undefined;
-    updateLog: (date: string, updatedLog: Partial<DailyLog>) => void;
+    saveTodaysMeasurements: (date: string, measurements: Partial<DailyLog>) => void;
+    updateWeight: (date: string, weight: number) => void;
     addMeal: (date: string, meal: Meal) => void;
     updateMeal: (date: string, mealIndex: number, meal: Meal) => void;
     deleteMeal: (date: string, mealIndex: number) => void;
@@ -140,30 +141,6 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         if (!appData) return undefined;
         return appData.logs[date];
     }, [appData]);
-    
-    const updateLog = (date: string, updatedLog: Partial<DailyLog>) => {
-        setAppData(prevData => {
-            if (!prevData) return null;
-            const newLogs = { ...prevData.logs };
-            if (newLogs[date]) {
-                newLogs[date] = { ...newLogs[date], ...updatedLog };
-            } else {
-                newLogs[date] = {
-                    date,
-                    weight: null,
-                    energy: null,
-                    soreness: null,
-                    sleepQuality: null,
-                    yesterdayStress: null,
-                    meals: [],
-                    workouts: [],
-                    notes: '',
-                    ...updatedLog,
-                }
-            }
-            return { ...prevData, logs: newLogs };
-        });
-    };
 
     const addMeal = (date: string, meal: Meal) => {
         setAppData(prevData => {
@@ -518,11 +495,46 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    const saveTodaysMeasurements = (date: string, measurements: Partial<DailyLog>) => {
+        setAppData(prevData => {
+            if (!prevData) return null;
+            const newLogs = { ...prevData.logs };
+            if (newLogs[date]) {
+                newLogs[date] = { ...newLogs[date], ...measurements };
+            } else {
+                newLogs[date] = {
+                    date,
+                    weight: null,
+                    meals: [],
+                    workouts: [],
+                    notes: '',
+                    ...measurements,
+                }
+            }
+            return { ...prevData, logs: newLogs };
+        });
+    };
+
+    const updateWeight = (date: string, weight: number) => {
+        saveTodaysMeasurements(date, { weight });
+        setAppData(prevData => {
+            if (!prevData) return null;
+            return {
+                ...prevData,
+                userProfile: {
+                    ...prevData.userProfile,
+                    currentWeight: weight,
+                },
+            };
+        });
+    };
+
     const value = {
         appData,
         isLoading,
         getTodaysLog,
-        updateLog,
+        saveTodaysMeasurements,
+        updateWeight,
         addMeal,
         updateMeal,
         deleteMeal,

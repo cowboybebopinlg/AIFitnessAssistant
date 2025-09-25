@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { DailyLog } from '../../types';
+import { useAppContext } from '../../context/AppContext';
 
 interface EditMetricsModalProps {
   isOpen: boolean;
   onClose: () => void;
   log: DailyLog | undefined;
-  updateLog: (date: string, updatedLog: Partial<DailyLog>) => void;
 }
 
-const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, log, updateLog }) => {
+const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, log }) => {
+  const { saveTodaysMeasurements } = useAppContext();
   const [hrv, setHrv] = useState(log?.hrv || '');
   const [rhr, setRhr] = useState(log?.rhr || '');
   const [calories, setCalories] = useState(log?.calories || '');
@@ -24,7 +25,7 @@ const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, lo
 
   const handleSave = () => {
     if (log) {
-      updateLog(log.date, {
+      saveTodaysMeasurements(log.date, {
         hrv: hrv ? parseInt(hrv.toString(), 10) : undefined,
         rhr: rhr ? parseInt(rhr.toString(), 10) : undefined,
         calories: calories ? parseInt(calories.toString(), 10) : undefined,
