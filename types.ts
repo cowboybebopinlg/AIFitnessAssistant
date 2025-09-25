@@ -5,6 +5,7 @@ export interface Meal {
   fat: number;
   carbs: number;
   fiber?: number;
+  sodium?: number;
 }
 
 export type CommonFood = Meal;
@@ -67,6 +68,7 @@ export interface NutritionTargets {
   fat: number;
   carbs: number;
   fiber: number;
+  sodium?: number;
 }
 
 export interface LibraryItem {

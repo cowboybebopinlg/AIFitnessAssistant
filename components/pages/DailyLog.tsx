@@ -8,12 +8,7 @@ import EditMetricsModal from './EditMetricsModal';
 import EditFoodModal from './EditFoodModal';
 import { Meal } from '../../types';
 
-const getLocalDateString = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+import { getLocalDateString } from '../../services/utils';
 
 const DailyLog: React.FC = () => {
   const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateLog, updateMeal } = useAppContext();

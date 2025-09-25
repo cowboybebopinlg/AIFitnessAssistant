@@ -6,6 +6,8 @@ import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
 import LoadingIndicator from '../LoadingIndicator';
 
+import { getLocalDateString } from '../../services/utils';
+
 const AddFoodPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -17,7 +19,7 @@ const AddFoodPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
+  const dateString = searchParams.get('date') || getLocalDateString(new Date());
 
   const [activeTab, setActiveTab] = useState('saved'); // 'saved' or 'recent'
   const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
@@ -28,6 +30,7 @@ const AddFoodPage: React.FC = () => {
   const [fat, setFat] = useState<number | ''>('');
   const [carbs, setCarbs] = useState<number | ''>('');
   const [fiber, setFiber] = useState<number | ''>('');
+  const [sodium, setSodium] = useState<number | ''>('');
   const [saveAsFavorite, setSaveAsFavorite] = useState(false);
 
   const handleClose = () => {
@@ -47,6 +50,7 @@ const AddFoodPage: React.FC = () => {
       fat: Number(fat),
       carbs: Number(carbs),
       fiber: Number(fiber),
+      sodium: Number(sodium),
     };
 
     addMeal(dateString, newMeal);
@@ -205,6 +209,13 @@ const AddFoodPage: React.FC = () => {
                   type="number"
                   value={carbs}
                   onChange={(e) => setCarbs(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+                <input
+                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
+                  placeholder="Sodium (mg)"
+                  type="number"
+                  value={sodium}
+                  onChange={(e) => setSodium(e.target.value === '' ? '' : Number(e.target.value))}
                 />
               </div>
               <input

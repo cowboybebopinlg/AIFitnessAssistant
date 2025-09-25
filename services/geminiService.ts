@@ -71,7 +71,7 @@ export const getNutritionInfoFromText = async (text: string, apiKey: string): Pr
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
-            Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber".
+            Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber", "sodium".
             If a value is not present, set it to 0.
 
             Input text: "${text}"
