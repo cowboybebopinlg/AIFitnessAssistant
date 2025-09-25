@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { UserProfile, Measurement } from '../../types';
@@ -106,6 +105,7 @@ const ProfilePage: React.FC = () => {
             missionStatement,
             height,
             startingWeight: Number(startingWeight),
+            currentWeight: Number(currentWeight),
             measurements,
             healthFactors,
             readinessModel,
@@ -271,55 +271,6 @@ const ProfilePage: React.FC = () => {
                         </div>
                     </AccordionSection>
 
-
-
-    return (
-        <div className="bg-gray-900 text-white font-['Noto_Sans']">
-            <div className="container mx-auto p-4 md:p-8 max-w-4xl">
-                <header className="text-center mb-10">
-                    <h1 className="text-4xl md:text-5xl font-bold text-blue-500 font-['Space_Grotesk']">GeminiFit Profile</h1>
-                    <p className="text-gray-400 mt-2">Your central source of truth for a data-driven fitness journey.</p>
-                </header>
-
-                {/* Build with Gemini Section */}
-                <div className="bg-gray-800 p-6 rounded-lg mb-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex items-center space-x-4">
-                            <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                            <h2 className="text-2xl font-semibold font-['Space_Grotesk']">Build with Gemini</h2>
-                        </div>
-                        <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                            Start Building
-                        </button>
-                    </div>
-                    <p className="text-gray-400 mt-2">Use natural language to fill in your profile. Click "Start Building" and describe your goals, stats, and protocols.</p>
-                </div>
-                
-                {/* Profile Form */}
-                <form onSubmit={handleSaveProfile} className="space-y-6">
-                    <AccordionSection title="Mission Control" isOpen={openSections.mission} onToggle={() => handleToggleSection('mission')}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="primary-goal" className="block text-sm font-medium text-gray-300 mb-1">Primary Goal</label>
-                                <select id="primary-goal" value={primaryGoal} onChange={e => setPrimaryGoal(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500">
-                                    <option>Body Recomposition</option>
-                                    <option>Fat Loss</option>
-                                    <option>Muscle Gain</option>
-                                    <option>Performance Improvement</option>
-                                    <option>Maintenance</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label htmlFor="target-date" className="block text-sm font-medium text-gray-300 mb-1">Target Date</label>
-                                <input type="date" id="target-date" value={targetDate} onChange={e => setTargetDate(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <label htmlFor="mission-statement" className="block text-sm font-medium text-gray-300 mb-1">Mission Statement / Mantra</label>
-                            <textarea id="mission-statement" value={missionStatement} onChange={e => setMissionStatement(e.target.value)} rows={3} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                    </AccordionSection>
-
                     <AccordionSection title="Biometrics & Measurements" isOpen={openSections.biometrics} onToggle={() => handleToggleSection('biometrics')}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -351,135 +302,6 @@ const ProfilePage: React.FC = () => {
                         </div>
                         <button type="button" onClick={handleAddMeasurement} className="mt-2 text-blue-500 hover:text-blue-600 text-sm font-medium">+ Add Measurement</button>
                     </AccordionSection>
-
-                    <AccordionSection title="Health & Performance Context" isOpen={openSections.health} onToggle={() => handleToggleSection('health')}>
-                        <p className="text-gray-400 mb-4">Note any chronic conditions, injuries, allergies, or other factors that influence your training and nutrition.</p>
-                        <div>
-                            <label htmlFor="health-factors" className="block text-sm font-medium text-gray-300 mb-1">Key Health Factors</label>
-                            <textarea id="health-factors" value={healthFactors} onChange={e => setHealthFactors(e.target.value)} rows={3} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                    </AccordionSection>
-
-                    <AccordionSection title="Training Protocol" isOpen={openSections.training} onToggle={() => handleToggleSection('training')}>
-                        <p className="text-gray-400 mb-4">Define your high-level training plan and readiness assessment model.</p>
-                        <div>
-                            <label htmlFor="readiness-model" className="block text-sm font-medium text-gray-300 mb-1">Readiness Model</label>
-                            <select id="readiness-model" value={readinessModel} onChange={e => setReadinessModel(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500">
-                                <option>Objective Priority</option>
-                                <option>Subjective Priority</option>
-                                <option>Balanced</option>
-                            </select>
-                        </div>
-                        <div className="mt-4">
-                            <label htmlFor="training-split" className="block text-sm font-medium text-gray-300 mb-1">Weekly Training Split</label>
-                            <textarea id="training-split" value={trainingSplit} onChange={e => setTrainingSplit(e.target.value)} rows={3} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        <div className="mt-4">
-                            <label htmlFor="cardio-targets" className="block text-sm font-medium text-gray-300 mb-1">Cardio Targets</label>
-                            <textarea id="cardio-targets" value={cardioTargets} onChange={e => setCardioTargets(e.target.value)} rows={2} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                    </AccordionSection>
-
-                    <AccordionSection title="Nutrition Protocol" isOpen={openSections.nutrition} onToggle={() => handleToggleSection('nutrition')}>
-                        <p className="text-gray-400 mb-4">Set your daily macronutrient and calorie targets for training and recovery days.</p>
-                        <div className="space-y-4">
-                            <div>
-                                <h4 className="font-semibold text-gray-200 mb-2">Training Day Targets</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                    <div>
-                                        <label htmlFor="training-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
-                                        <input id="training-calories" type="number" placeholder="Calories" value={trainingDayTargets.calories} onChange={e => setTrainingDayTargets({...trainingDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
-                                        <input id="training-protein" type="number" placeholder="Protein (g)" value={trainingDayTargets.protein} onChange={e => setTrainingDayTargets({...trainingDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
-                                        <input id="training-fat" type="number" placeholder="Fat (g)" value={trainingDayTargets.fat} onChange={e => setTrainingDayTargets({...trainingDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
-                                        <input id="training-fiber" type="number" placeholder="Fiber (g)" value={trainingDayTargets.fiber} onChange={e => setTrainingDayTargets({...trainingDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
-                                        <input id="training-sodium" type="number" placeholder="Sodium (mg)" value={trainingDayTargets.sodium} onChange={e => setTrainingDayTargets({...trainingDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold text-gray-200 mb-2">Recovery Day Targets</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                    <div>
-                                        <label htmlFor="recovery-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
-                                        <input id="recovery-calories" type="number" placeholder="Calories" value={recoveryDayTargets.calories} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
-                                        <input id="recovery-protein" type="number" placeholder="Protein (g)" value={recoveryDayTargets.protein} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
-                                        <input id="recovery-fat" type="number" placeholder="Fat (g)" value={recoveryDayTargets.fat} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
-                                        <input id="recovery-fiber" type="number" placeholder="Fiber (g)" value={recoveryDayTargets.fiber} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
-                                        <input id="recovery-sodium" type="number" placeholder="Sodium (mg)" value={recoveryDayTargets.sodium} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </AccordionSection>
-
-                    <div className="flex justify-end pt-4">
-                        <button type="submit" className="bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors duration-300">
-                            Save Profile
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {/* Gemini Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold text-.blue-500 font-['Space_Grotesk']">Build Your Profile with Gemini</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white text-3xl">&times;</button>
-                        </div>
-                        <p className="text-gray-400 mb-4">Describe your profile in your own words. Include your goals, stats, health notes, and nutrition/training strategies. Gemini will do the rest.</p>
-                        <textarea value={geminiPrompt} onChange={e => setGeminiPrompt(e.target.value)} rows={10} className="w-full bg-gray-700 border-none rounded-md p-3 focus:ring-2 focus:ring-blue-500" placeholder="e.g., 'My goal is fat loss. I'm 6 feet tall and currently 220 lbs. I lift 3 times a week... My training day calories are 2000.'"></textarea>
-                        
-                        {geminiStatus && (
-                            <div className="mt-4 text-center">
-                                {isLoadingGemini ? (
-                                    <div className="flex justify-center items-center">
-                                        <div className="loader border-t-blue-500 border-4 border-gray-700 rounded-full w-10 h-10 animate-spin"></div>
-                                        <p className="ml-4 text-blue-500">{geminiStatus}</p>
-                                    </div>
-                                ) : (
-                                    <p className={geminiStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}>{geminiStatus}</p>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="flex justify-end space-x-4 mt-4">
-                            <button onClick={() => setIsModalOpen(false)} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
-                            <button onClick={handleGenerateProfile} disabled={isLoadingGemini} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center disabled:opacity-50">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                                {isLoadingGemini ? 'Generating...' : 'Generate Profile'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
 
                     <AccordionSection title="Health & Performance Context" isOpen={openSections.health} onToggle={() => handleToggleSection('health')}>
                         <p className="text-gray-400 mb-4">Note any chronic conditions, injuries, allergies, or other factors that influence your training and nutrition.</p>

@@ -7,9 +7,10 @@ import AddMeasurementModal from './AddMeasurementModal';
 interface MetricsSectionProps {
   log: DailyLog | undefined;
   onEditMetrics: () => void;
+  onMeasurementUpdate: () => void;
 }
 
-const MetricsSection: React.FC<MetricsSectionProps> = ({ log, onEditMetrics }) => {
+const MetricsSection: React.FC<MetricsSectionProps> = ({ log, onEditMetrics, onMeasurementUpdate }) => {
   const { isFitbitAuthenticated, getLogForDate, appData } = useAppContext();
   const [isAddMeasurementModalOpen, setIsAddMeasurementModalOpen] = useState(false);
   const [editingMeasurement, setEditingMeasurement] = useState<string | null>(null);
@@ -100,7 +101,10 @@ const MetricsSection: React.FC<MetricsSectionProps> = ({ log, onEditMetrics }) =
 
       <AddMeasurementModal
         isOpen={isAddMeasurementModalOpen}
-        onClose={handleCloseAddMeasurementModal}
+        onClose={() => {
+          handleCloseAddMeasurementModal();
+          onMeasurementUpdate();
+        }}
         date={log?.date || ''}
         measurementName={editingMeasurement}
         userProfile={appData?.userProfile}
