@@ -11,6 +11,7 @@ const AddCardioWorkoutPage: React.FC = () => {
   const { addWorkout, updateWorkout, getLogForDate, geminiApiKey } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
+  const prefillWorkout = location.state?.prefillWorkout as WorkoutSession | undefined;
 
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
   const workoutIndex = searchParams.get('workoutIndex');
@@ -40,6 +41,12 @@ const AddCardioWorkoutPage: React.FC = () => {
         setAverageHeartRate(String(workout.averageHeartRate || ''));
         setNotes(workout.notes || '');
       }
+    } else if (prefillWorkout) {
+        setActivityType(prefillWorkout.name || '');
+        setDuration(String(prefillWorkout.duration || ''));
+        setCaloriesBurned(String(prefillWorkout.caloriesBurned || ''));
+        setAverageHeartRate(String(prefillWorkout.averageHeartRate || ''));
+        setNotes(prefillWorkout.notes || '');
     } else if (fitbitActivity) {
       setActivityType(fitbitActivity.activityName || fitbitActivity.activityParentName || 'Cardio Workout'); // Added 'Cardio Workout' fallback
       setDuration(String(Math.floor(fitbitActivity.duration / 60000))); // Convert ms to minutes
@@ -47,7 +54,7 @@ const AddCardioWorkoutPage: React.FC = () => {
       setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
       setNotes(`Synced from Fitbit. Distance: ${fitbitActivity.distance} miles, Steps: ${fitbitActivity.steps}`);
     }
-  }, [fitbitActivity, isEditMode, workoutIndex, dateString, getLogForDate]);
+  }, [fitbitActivity, isEditMode, workoutIndex, dateString, getLogForDate, prefillWorkout]);
 
   const handleSaveWorkout = () => {
     if (!activityType || !duration) {

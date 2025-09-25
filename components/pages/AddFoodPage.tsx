@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 import { useAppContext } from '../../context/AppContext';
 import { Meal } from '../../types';
@@ -11,13 +11,26 @@ import { getLocalDateString } from '../../services/utils';
 const AddFoodPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { appData, addMeal, getTodaysLog, geminiApiKey, addCommonFood } = useAppContext();
   const todayLog = getTodaysLog();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  const prefillItems = location.state?.prefillItems; // Get prefill items from navigation state
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    if (prefillItems && prefillItems.length > 0) {
+      const firstItem = prefillItems[0];
+      setFoodName(firstItem.name || '');
+      setCalories(firstItem.calories || '');
+      setProtein(firstItem.protein || '');
+      setFat(firstItem.fat || '');
+      setCarbs(firstItem.carbs || '');
+      setFiber(firstItem.fiber || '');
+      setSodium(firstItem.sodium || '');
+    }
+  }, [prefillItems]);
 
   const dateString = searchParams.get('date') || getLocalDateString(new Date());
 

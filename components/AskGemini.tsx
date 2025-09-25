@@ -20,7 +20,7 @@ type AskGeminiModalProps = {
 
 // --- THE MODAL COMPONENT ---
 const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
-  const { geminiApiKey, appData } = useAppContext();
+  const { geminiApiKey, appData, addMeal, addWorkout } = useAppContext();
   const navigate = useNavigate();
 
   const [textareaContent, setTextareaContent] = useState('');
@@ -77,15 +77,25 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   };
   
   const handleActionClick = (response?: AskGeminiResponse) => {
-      if (!response) return;
+      if (!response || !appData) return;
       onClose(); 
       const parsedData = response.data ? JSON.parse(response.data as string) : {};
+      const todayDateString = new Date().toISOString().split('T')[0]; // Get today's date
+
       switch (response.intent) {
           case 'LOG_FOOD':
-              navigate('/log/add-food', { state: { prefillItems: parsedData.items, summary: response.summary } });
+              if (parsedData.items && Array.isArray(parsedData.items)) {
+                  parsedData.items.forEach(item => {
+                      addMeal(todayDateString, item);
+                  });
+                  alert(`Logged ${parsedData.items.length} food item(s)!`);
+              }
               break;
           case 'LOG_WORKOUT':
-              navigate('/log/add-workout', { state: { prefillWorkout: parsedData, summary: response.summary } });
+              if (parsedData) {
+                  addWorkout(todayDateString, { ...parsedData, date: todayDateString });
+                  alert(`Logged workout: ${parsedData.name || 'Unnamed Workout'}!`);
+              }
               break;
       }
   };
