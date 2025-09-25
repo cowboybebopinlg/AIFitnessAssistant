@@ -33,6 +33,7 @@ const getInitialData = (): AppData => ({
         fat: 70,
         carbs: 250,
         fiber: 30,
+        sodium: 2300,
     },
     logs: {
         [getTodayDateString()]: createNewLog(getTodayDateString()),

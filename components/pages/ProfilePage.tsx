@@ -69,8 +69,8 @@ const ProfilePage: React.FC = () => {
             setReadinessModel(userProfile.readinessModel || 'Subjective Priority');
             setTrainingSplit(userProfile.trainingSplit || '');
             setCardioTargets(userProfile.cardioTargets || '');
-            setTrainingDayTargets(userProfile.trainingDayTargets || { calories: '', protein: '', fat: '', fiber: '' });
-            setRecoveryDayTargets(userProfile.recoveryDayTargets || { calories: '', protein: '', fat: '', fiber: '' });
+            setTrainingDayTargets(userProfile.trainingDayTargets || { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
+            setRecoveryDayTargets(userProfile.recoveryDayTargets || { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
         }
     }, [userProfile]);
 
@@ -110,12 +110,14 @@ const ProfilePage: React.FC = () => {
                 protein: Number(trainingDayTargets.protein),
                 fat: Number(trainingDayTargets.fat),
                 fiber: Number(trainingDayTargets.fiber),
+                sodium: Number(trainingDayTargets.sodium),
             },
             recoveryDayTargets: {
                 calories: Number(recoveryDayTargets.calories),
                 protein: Number(recoveryDayTargets.protein),
                 fat: Number(recoveryDayTargets.fat),
                 fiber: Number(recoveryDayTargets.fiber),
+                sodium: Number(recoveryDayTargets.sodium),
             },
         };
         updateUserProfile(profileData);
@@ -154,11 +156,11 @@ const ProfilePage: React.FC = () => {
                         cardioTargets: { type: "STRING" },
                         trainingDayTargets: {
                             type: "OBJECT",
-                            properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" } }
+                            properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" }, sodium: { type: "NUMBER" } }
                         },
                         recoveryDayTargets: {
                             type: "OBJECT",
-                            properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" } }
+                            properties: { calories: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, fiber: { type: "NUMBER" }, sodium: { type: "NUMBER" } }
                         },
                          measurements: {
                             type: "ARRAY",
@@ -197,8 +199,8 @@ const ProfilePage: React.FC = () => {
                 setReadinessModel(data.readinessModel || '');
                 setTrainingSplit(data.trainingSplit || '');
                 setCardioTargets(data.cardioTargets || '');
-                setTrainingDayTargets(data.trainingDayTargets ? { ...data.trainingDayTargets, calories: String(data.trainingDayTargets.calories || ''), protein: String(data.trainingDayTargets.protein || ''), fat: String(data.trainingDayTargets.fat || ''), fiber: String(data.trainingDayTargets.fiber || '') } : { calories: '', protein: '', fat: '', fiber: '' });
-                setRecoveryDayTargets(data.recoveryDayTargets ? { ...data.recoveryDayTargets, calories: String(data.recoveryDayTargets.calories || ''), protein: String(data.recoveryDayTargets.protein || ''), fat: String(data.recoveryDayTargets.fat || ''), fiber: String(data.recoveryDayTargets.fiber || '') } : { calories: '', protein: '', fat: '', fiber: '' });
+                setTrainingDayTargets(data.trainingDayTargets ? { ...data.trainingDayTargets, calories: String(data.trainingDayTargets.calories || ''), protein: String(data.trainingDayTargets.protein || ''), fat: String(data.trainingDayTargets.fat || ''), fiber: String(data.trainingDayTargets.fiber || ''), sodium: String(data.trainingDayTargets.sodium || '') } : { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
+                setRecoveryDayTargets(data.recoveryDayTargets ? { ...data.recoveryDayTargets, calories: String(data.recoveryDayTargets.calories || ''), protein: String(data.recoveryDayTargets.protein || ''), fat: String(data.recoveryDayTargets.fat || ''), fiber: String(data.recoveryDayTargets.fiber || ''), sodium: String(data.recoveryDayTargets.sodium || '') } : { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
 
                 setGeminiStatus('Profile generated successfully!');
                 setTimeout(() => {
@@ -292,6 +294,7 @@ const ProfilePage: React.FC = () => {
                     </AccordionSection>
 
                     <AccordionSection title="Health & Performance Context" isOpen={openSections.health} onToggle={() => handleToggleSection('health')}>
+                        <p className="text-gray-400 mb-4">Note any chronic conditions, injuries, allergies, or other factors that influence your training and nutrition.</p>
                         <div>
                             <label htmlFor="health-factors" className="block text-sm font-medium text-gray-300 mb-1">Key Health Factors</label>
                             <textarea id="health-factors" value={healthFactors} onChange={e => setHealthFactors(e.target.value)} rows={3} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500"></textarea>
@@ -299,6 +302,7 @@ const ProfilePage: React.FC = () => {
                     </AccordionSection>
 
                     <AccordionSection title="Training Protocol" isOpen={openSections.training} onToggle={() => handleToggleSection('training')}>
+                        <p className="text-gray-400 mb-4">Define your high-level training plan and readiness assessment model.</p>
                         <div>
                             <label htmlFor="readiness-model" className="block text-sm font-medium text-gray-300 mb-1">Readiness Model</label>
                             <select id="readiness-model" value={readinessModel} onChange={e => setReadinessModel(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500">
@@ -318,23 +322,56 @@ const ProfilePage: React.FC = () => {
                     </AccordionSection>
 
                     <AccordionSection title="Nutrition Protocol" isOpen={openSections.nutrition} onToggle={() => handleToggleSection('nutrition')}>
+                        <p className="text-gray-400 mb-4">Set your daily macronutrient and calorie targets for training and recovery days.</p>
                         <div className="space-y-4">
                             <div>
                                 <h4 className="font-semibold text-gray-200 mb-2">Training Day Targets</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    <input type="number" placeholder="Calories" value={trainingDayTargets.calories} onChange={e => setTrainingDayTargets({...trainingDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Protein (g)" value={trainingDayTargets.protein} onChange={e => setTrainingDayTargets({...trainingDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Fat (g)" value={trainingDayTargets.fat} onChange={e => setTrainingDayTargets({...trainingDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Fiber (g)" value={trainingDayTargets.fiber} onChange={e => setTrainingDayTargets({...trainingDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label htmlFor="training-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
+                                        <input id="training-calories" type="number" placeholder="Calories" value={trainingDayTargets.calories} onChange={e => setTrainingDayTargets({...trainingDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="training-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
+                                        <input id="training-protein" type="number" placeholder="Protein (g)" value={trainingDayTargets.protein} onChange={e => setTrainingDayTargets({...trainingDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="training-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
+                                        <input id="training-fat" type="number" placeholder="Fat (g)" value={trainingDayTargets.fat} onChange={e => setTrainingDayTargets({...trainingDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="training-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
+                                        <input id="training-fiber" type="number" placeholder="Fiber (g)" value={trainingDayTargets.fiber} onChange={e => setTrainingDayTargets({...trainingDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="training-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
+                                        <input id="training-sodium" type="number" placeholder="Sodium (mg)" value={trainingDayTargets.sodium} onChange={e => setTrainingDayTargets({...trainingDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
                                 </div>
                             </div>
                             <div>
                                 <h4 className="font-semibold text-gray-200 mb-2">Recovery Day Targets</h4>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    <input type="number" placeholder="Calories" value={recoveryDayTargets.calories} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Protein (g)" value={recoveryDayTargets.protein} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Fat (g)" value={recoveryDayTargets.fat} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    <input type="number" placeholder="Fiber (g)" value={recoveryDayTargets.fiber} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label htmlFor="recovery-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
+                                        <input id="recovery-calories" type="number" placeholder="Calories" value={recoveryDayTargets.calories} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="recovery-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
+                                        <input id="recovery-protein" type="number" placeholder="Protein (g)" value={recoveryDayTargets.protein} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="recovery-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
+                                        <input id="recovery-fat" type="number" placeholder="Fat (g)" value={recoveryDayTargets.fat} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="recovery-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
+                                        <input id="recovery-fiber" type="number" placeholder="Fiber (g)" value={recoveryDayTargets.fiber} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="recovery-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
+                                        <input id="recovery-sodium" type="number" placeholder="Sodium (mg)" value={recoveryDayTargets.sodium} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

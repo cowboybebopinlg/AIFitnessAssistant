@@ -18,7 +18,7 @@ const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodC
       alert("No food entries to copy.");
       return;
     }
-    const foodText = meals.map(meal => `${meal.name}: ${meal.calories} kcal, ${meal.protein}g Protein`).join('\n');
+    const foodText = meals.map(meal => `${meal.name}: ${meal.calories} kcal, ${meal.protein}g P, ${meal.fiber}g F, ${meal.sodium}mg S`).join('\n');
     try {
       await navigator.clipboard.writeText(foodText);
       alert('Food entries copied to clipboard!');
@@ -68,7 +68,7 @@ const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodC
               ></div>
               <div className="flex-grow">
                 <h3 className="font-bold text-white">{meal.name}</h3>
-                <p className="text-sm text-gray-400">{meal.calories} kcal, {meal.protein}g Protein</p>
+                <p className="text-sm text-gray-400">{meal.calories} kcal, {meal.protein}g P, {meal.fiber}g F, {meal.sodium}mg S</p>
               </div>
               <div className="flex gap-2">
                 <button className="text-gray-400 hover:text-white" onClick={() => onEditFood(meal, index)}>

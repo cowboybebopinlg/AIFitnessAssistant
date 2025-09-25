@@ -49,7 +49,7 @@ const MorningMetricsCard = ({ data, fitbitData }) => {
 };
 
 const GlowingProgressBar: React.FC<{ value: number; max: number; label: string }> = ({ value, max, label }) => {
-    const percentage = max > 0 ? (value / max) * 100 : 0;
+    const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
     return (
         <div>
             <div className="flex justify-between items-center text-white text-sm mb-1">
@@ -78,6 +78,7 @@ const NutritionCard = ({ data, targets }) => {
                 <GlowingProgressBar value={data.fat} max={targets.fat} label="Fat" />
                 <GlowingProgressBar value={data.carbs} max={targets.carbs} label="Carbs" />
                 <GlowingProgressBar value={data.fiber} max={targets.fiber} label="Fiber" />
+                <GlowingProgressBar value={data.sodium} max={targets.sodium} label="Sodium" />
             </div>
         </div>
     );
@@ -210,13 +211,14 @@ export const Dashboard: React.FC = () => {
     const fitbitActivities = todaysFitbitData?.activities || [];
 
     const nutritionTotals = useMemo(() => {
-        const totals = { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 };
+        const totals = { calories: 0, protein: 0, fat: 0, carbs: 0, fiber: 0, sodium: 0 };
         todaysLog?.meals.forEach(meal => {
             totals.calories += meal.calories;
             totals.protein += meal.protein;
             totals.fat += meal.fat;
             totals.carbs += meal.carbs;
             totals.fiber += meal.fiber || 0;
+            totals.sodium += meal.sodium || 0;
         });
         return totals;
     }, [todaysLog]);
