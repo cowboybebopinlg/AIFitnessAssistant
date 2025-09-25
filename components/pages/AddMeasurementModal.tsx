@@ -57,8 +57,7 @@ const AddMeasurementModal: React.FC<AddMeasurementModalProps> = ({ isOpen, onClo
           className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500 mb-4"
           disabled={!!measurementName}
         >
-          <option value="weight">Weight</option>
-          {userProfile?.measurements?.filter(m => m.name.toLowerCase() !== 'weight').map(m => (
+          {userProfile?.measurements?.map(m => (
             <option key={m.name} value={m.name.toLowerCase()}>{m.name}</option>
           ))}
         </select>

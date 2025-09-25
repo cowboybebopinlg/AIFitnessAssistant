@@ -21,20 +21,13 @@ const DailyLog: React.FC = () => {
   const [selectedMealIndex, setSelectedMealIndex] = useState<number | null>(null);
 
 
-
-  const [lastMeasurementUpdate, setLastMeasurementUpdate] = useState(0);
-
-  const handleUpdateLastMeasurement = () => {
-    setLastMeasurementUpdate(Date.now());
-  };
-
   const dateString = useMemo(() => {
     return getLocalDateString(currentDate);
   }, [currentDate]);
 
   const dailyLog = useMemo(() => {
     return getLogForDate(dateString);
-  }, [getLogForDate, dateString, appData, lastMeasurementUpdate]);
+  }, [getLogForDate, dateString]);
 
   const fitbitActivities = useMemo(() => {
     return appData?.fitbitData?.[dateString]?.activities || [];
@@ -165,7 +158,7 @@ const DailyLog: React.FC = () => {
               Import Data
             </button>
           </div>
-          <MetricsSection log={dailyLog} onEditMetrics={handleOpenEditMetricsModal} onMeasurementUpdate={handleUpdateLastMeasurement} />
+          <MetricsSection log={dailyLog} onEditMetrics={handleOpenEditMetricsModal} />
           <FoodEntriesSection log={dailyLog} onAddFoodClick={() => navigate(`/log/add-food?date=${dateString}`)} onEditFood={handleOpenEditFoodModal} dateString={dateString} />
           <WorkoutsSection log={dailyLog} onAddWorkoutClick={() => navigate(`/log/add-workout?date=${dateString}`)} fitbitActivities={fitbitActivities} />
         </main>
