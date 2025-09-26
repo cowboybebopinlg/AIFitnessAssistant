@@ -440,7 +440,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
             const rhrValue = heartRateData?.["activities-heart"]?.[0]?.value?.restingHeartRate;
             const caloriesValue = caloriesData?.['activities-calories']?.[0]?.value;
 
-            updateLog(date, {
+            saveTodaysMeasurements(date, {
                 hrv: hrvValue,
                 rhr: rhrValue,
                 calories: caloriesValue ? parseInt(caloriesValue) : undefined
