@@ -5,9 +5,18 @@ import { useAppContext } from '../../context/AppContext';
 import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
 import LoadingIndicator from '../LoadingIndicator';
-
 import { getLocalDateString } from '../../services/utils';
 
+/**
+ * A page component for adding food to the daily log.
+ * It provides multiple ways to add a food item:
+ * 1. From a list of saved (common) foods.
+ * 2. From a list of recent foods from the current day.
+ * 3. By parsing a natural language description using Gemini.
+ * 4. By entering the nutritional information manually.
+ * The manual entry form can be pre-filled with data passed via navigation state.
+ * @returns {JSX.Element} The rendered Add Food page component.
+ */
 const AddFoodPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
-import { Exercise, WorkoutSession, FitbitActivity } from '../../types';
+import { WorkoutSession, FitbitActivity } from '../../types';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 
+/**
+ * A page component for adding or editing a cardio workout session.
+ * It provides a form for manual input and an option to use Gemini for natural language parsing.
+ * The form can be pre-filled with data from a Fitbit activity or an existing workout for editing.
+ * @returns {JSX.Element} The rendered page component.
+ */
 const AddCardioWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

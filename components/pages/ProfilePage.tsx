@@ -2,7 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { UserProfile, Measurement } from '../../types';
 
-// Sub-component for Accordion sections for better organization
+/**
+ * A reusable accordion component for creating collapsible sections within the profile page.
+ * @param {object} props - The component props.
+ * @param {string} props.title - The title to be displayed in the accordion header.
+ * @param {boolean} props.isOpen - A boolean indicating whether the accordion section is currently open.
+ * @param {() => void} props.onToggle - The callback function to be executed when the accordion header is clicked.
+ * @param {React.ReactNode} props.children - The content to be displayed inside the collapsible area of the accordion.
+ * @returns {JSX.Element} The rendered accordion section component.
+ */
 const AccordionSection: React.FC<{
     title: string;
     isOpen: boolean;
@@ -24,6 +32,13 @@ const AccordionSection: React.FC<{
     </div>
 );
 
+/**
+ * The main component for the user profile page.
+ * It allows users to view, edit, and save their profile information, which includes
+ * mission statements, biometrics, health context, and training/nutrition protocols.
+ * It also integrates with Gemini to allow users to generate their profile from natural language.
+ * @returns {JSX.Element} The rendered profile page component.
+ */
 const ProfilePage: React.FC = () => {
     const { userProfile, updateUserProfile, geminiApiKey } = useAppContext();
 

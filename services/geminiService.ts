@@ -2,8 +2,14 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 import type { Meal, WorkoutSession, AppData, AskGeminiResponse } from '../types';
 import { generateMCP } from './mcpService';
 
+/**
+ * The name of the Gemini model used for generating content.
+ */
 const MODEL_NAME = "gemini-2.5-flash";
 
+/**
+ * Configuration for content safety settings, blocking content with medium or high harm potential.
+ */
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
@@ -12,7 +18,10 @@ const safetySettings = [
 ];
 
 /**
- * Gets a structured suggestion for the dashboard.
+ * Generates a structured suggestion for the user's dashboard based on their data.
+ * @param {AppData} appData - The complete application data for the user.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @returns {Promise<string>} A promise that resolves to a JSON string containing suggestions for food, activity, and other areas. Returns an error message if the API key is not set or if the request fails.
  */
 export const getDashboardSuggestion = async (appData: AppData, apiKey: string): Promise<string> => {
     if (!apiKey) {
@@ -55,8 +64,13 @@ export const getDashboardSuggestion = async (appData: AppData, apiKey: string): 
 
 
 /**
- * Gets a structured response with intent from the Gemini model.
- * This is the primary function for the "Ask Gemini" feature.
+ * Analyzes a user's prompt to determine their intent and extracts relevant data using the Gemini model.
+ * This is the core function for the "Ask Gemini" feature, supporting conversational interactions.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @param {string} userPrompt - The natural language input from the user.
+ * @param {AppData} appData - The complete application data to provide context.
+ * @param {any[]} conversationHistory - The history of the current conversation.
+ * @returns {Promise<AskGeminiResponse>} A promise that resolves to an object containing the intent, a user-facing summary, and extracted data.
  */
 export const getIntentfulResponse = async (
     apiKey: string, 
@@ -138,7 +152,12 @@ export const getIntentfulResponse = async (
 
 
 /**
- * A generic function to get a conversational response from the Gemini model.
+ * Generates a conversational response from the Gemini model based on user data and a prompt.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @param {string} userPrompt - The natural language input from the user.
+ * @param {AppData} appData - The complete application data to provide context.
+ * @param {string} [customInstructions=""] - Optional custom instructions to prepend to the system prompt.
+ * @returns {Promise<string>} A promise that resolves to the text-based response from the AI.
  */
 export const getConversationalResponse = async (
     apiKey: string,
@@ -174,7 +193,12 @@ export const getConversationalResponse = async (
 };
 
 /**
- * Parses natural language text to extract structured nutrition information.
+ * Parses natural language text to extract structured nutrition information for a meal.
+ * @param {string} text - The user's text input describing a meal (e.g., "I had a chicken salad for lunch").
+ * @param {AppData} appData - The complete application data for context.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @returns {Promise<Partial<Meal>>} A promise that resolves to a meal object with extracted nutritional information.
+ * @throws {Error} Throws an error if the API call fails or the response cannot be parsed.
  */
 export const getNutritionInfoFromText = async (text: string, appData: AppData, apiKey: string): Promise<Partial<Meal>> => {
     const mcp = generateMCP(appData);
@@ -218,6 +242,11 @@ export const getNutritionInfoFromText = async (text: string, appData: AppData, a
 
 /**
  * Parses natural language text to extract structured workout information.
+ * @param {string} text - The user's text input describing a workout (e.g., "ran 3 miles in 30 minutes").
+ * @param {AppData} appData - The complete application data for context.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @returns {Promise<Partial<WorkoutSession>>} A promise that resolves to a workout session object with extracted details.
+ * @throws {Error} Throws an error if the API call fails or the response cannot be parsed.
  */
 export const getWorkoutInfoFromText = async (text: string, appData: AppData, apiKey: string): Promise<Partial<WorkoutSession>> => {
     const mcp = generateMCP(appData);

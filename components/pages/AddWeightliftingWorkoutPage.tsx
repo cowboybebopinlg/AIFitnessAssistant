@@ -5,6 +5,13 @@ import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 
+/**
+ * A page component for adding or editing a weightlifting workout session.
+ * It allows users to build a workout by adding multiple exercises, each with multiple sets of reps and weight.
+ * The form supports both manual entry and natural language parsing via Gemini.
+ * It can be pre-filled with data from a Fitbit activity or an existing workout for editing.
+ * @returns {JSX.Element} The rendered page component.
+ */
 const AddWeightliftingWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

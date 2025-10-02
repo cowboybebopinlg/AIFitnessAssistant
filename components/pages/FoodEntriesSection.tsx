@@ -2,13 +2,26 @@ import React from 'react';
 import { DailyLog, Meal } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Defines the props for the FoodEntriesSection component.
+ */
 interface FoodEntriesSectionProps {
+  /** The daily log data for the day being displayed. */
   log: DailyLog | undefined;
+  /** A function to be called when the "Add Food" button is clicked. */
   onAddFoodClick: () => void;
+  /** A function to be called when a meal's edit button is clicked. */
   onEditFood: (meal: Meal, index: number) => void;
+  /** The date string for the current day, used for deleting meals. */
   dateString: string;
 }
 
+/**
+ * A component that displays a list of food entries for a given day.
+ * It provides functionality to add, edit, delete, and copy food entries.
+ * @param {FoodEntriesSectionProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered food entries section.
+ */
 const FoodEntriesSection: React.FC<FoodEntriesSectionProps> = ({ log, onAddFoodClick, onEditFood, dateString }) => {
   const { deleteMeal } = useAppContext();
   const meals = log?.meals || [];

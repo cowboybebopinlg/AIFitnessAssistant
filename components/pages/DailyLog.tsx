@@ -7,9 +7,14 @@ import { useAppContext } from '../../context/AppContext';
 import EditMetricsModal from './EditMetricsModal';
 import EditFoodModal from './EditFoodModal';
 import { Meal } from '../../types';
-
 import { getLocalDateString } from '../../services/utils';
 
+/**
+ * The main page for viewing and managing a user's daily log.
+ * It displays metrics, food entries, and workouts for a selected date.
+ * Users can navigate between days, sync with Fitbit, and import/export their data.
+ * @returns {JSX.Element} The rendered Daily Log page component.
+ */
 const DailyLog: React.FC = () => {
   console.log("Displaying DailyLog page");
   const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateMeal } = useAppContext();
