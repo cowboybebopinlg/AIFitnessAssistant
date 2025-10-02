@@ -1,14 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { DailyLog } from '../../types';
 import MetricCard from './MetricCard';
 import AddMeasurementModal from './AddMeasurementModal';
 
+/**
+ * Defines the props for the MetricsSection component.
+ */
 interface MetricsSectionProps {
+  /** The daily log data for the day being displayed. */
   log: DailyLog | undefined;
+  /** A function to be called when the "Edit" button for Fitbit metrics is clicked. */
   onEditMetrics: () => void;
 }
 
+/**
+ * A component that displays a user's daily metrics, including Fitbit data and manual measurements.
+ * It provides functionality to add new measurements or edit existing ones.
+ * @param {MetricsSectionProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered metrics section.
+ */
 const MetricsSection: React.FC<MetricsSectionProps> = ({ log, onEditMetrics }) => {
   const { isFitbitAuthenticated, getLogForDate, appData } = useAppContext();
   const [isAddMeasurementModalOpen, setIsAddMeasurementModalOpen] = useState(false);

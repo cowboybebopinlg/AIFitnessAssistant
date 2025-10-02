@@ -2,6 +2,12 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { DashboardIcon, DailyLogIcon, TrendsIcon, LibraryIcon, SettingsIcon } from './icons';
 
+/**
+ * A navigation component that displays at the bottom of the screen.
+ * It provides links to the main sections of the application: Dashboard, Daily Log, Trends, Library, and Settings.
+ * The active link is highlighted.
+ * @returns {JSX.Element} The rendered bottom navigation component.
+ */
 const BottomNav: React.FC = () => {
     const navItems = [
         { path: '/dashboard', icon: DashboardIcon, label: 'Dashboard' },

@@ -1,12 +1,27 @@
 import React from 'react';
 
+/**
+ * Defines the structure for a metric object used in the MetricCard component.
+ */
 export type Metric = {
+  /** The name of the metric (e.g., "Weight", "Body Fat"). */
   name: string;
+  /** The current value of the metric. */
   value: string;
+  /** The unit for the metric's value (e.g., "lbs", "%"). */
   unit: string;
+  /** A string representing the change from the previous measurement (e.g., "+1.2", "-0.5"). */
   change: string;
 };
 
+/**
+ * A card component for displaying a single user metric, such as weight or body fat percentage.
+ * It shows the metric's name, current value, unit, and the change from the last measurement.
+ * The color of the change indicator is determined by the metric type and whether the change is positive or negative.
+ * @param {object} props - The component props.
+ * @param {Metric} props.metric - The metric data to display.
+ * @returns {JSX.Element} The rendered metric card component.
+ */
 const MetricCard: React.FC<{ metric: Metric }> = ({ metric }) => {
   const { name, value, unit, change } = metric;
 

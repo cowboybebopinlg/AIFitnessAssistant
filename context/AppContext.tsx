@@ -4,39 +4,77 @@ import type { AppData, DailyLog, Meal, WorkoutSession, CommonFood, DailyFitbitDa
 import { loadData, saveData } from '../services/dataService';
 import { refreshAccessToken, getDailyActivity, getDailyHRV, getDailyHeartRate, getCalories } from '../services/fitbitService';
 
+/**
+ * Defines the shape of the application's context, including state and action dispatchers.
+ */
 interface AppContextType {
+    /** The main data object for the application. */
     appData: AppData | null;
+    /** A boolean indicating if the initial data is being loaded. */
     isLoading: boolean;
+    /** A function to retrieve the log for the current day. */
     getTodaysLog: () => DailyLog | undefined;
+    /** A function to save daily measurements like HRV, RHR, etc. */
     saveTodaysMeasurements: (date: string, measurements: Partial<DailyLog>) => void;
+    /** A function to update the user's weight for a specific day. */
     updateWeight: (date: string, weight: number) => void;
+    /** A function to add a new meal to a specific day's log. */
     addMeal: (date: string, meal: Meal) => void;
+    /** A function to update an existing meal in a specific day's log. */
     updateMeal: (date: string, mealIndex: number, meal: Meal) => void;
+    /** A function to delete a meal from a specific day's log. */
     deleteMeal: (date: string, mealIndex: number) => void;
+    /** A function to add a new workout to a specific day's log. */
     addWorkout: (date: string, workout: WorkoutSession) => void;
+    /** A function to update an existing workout in a specific day's log. */
     updateWorkout: (date: string, workoutIndex: number, workout: WorkoutSession) => void;
+    /** A function to delete a workout from a specific day's log. */
     deleteWorkout: (date: string, workoutIndex: number) => void;
+    /** A function to import application data from a JSON string. */
     importData: (jsonString: string) => Promise<void>;
+    /** A function to export application data to a JSON string. */
     exportData: () => Promise<string>;
+    /** A function to retrieve the log for a specific date. */
     getLogForDate: (date: string) => DailyLog | undefined;
+    /** The user's Gemini API key. */
     geminiApiKey: string | null;
+    /** A function to set the Gemini API key. */
     setGeminiApiKey: (key: string | null) => void;
+    /** A function to add a food item to the common foods list. */
     addCommonFood: (food: CommonFood) => void;
+    /** The user's profile data. */
     userProfile: UserProfile | undefined;
+    /** A function to update the user's profile. */
     updateUserProfile: (profile: UserProfile) => void;
-    // Fitbit specific state and functions
+    /** A boolean indicating if the user is authenticated with Fitbit. */
     isFitbitAuthenticated: boolean;
+    /** The user's Fitbit access token. */
     fitbitAccessToken: string | null;
+    /** A function to handle Fitbit authentication and store tokens. */
     authenticateFitbit: (tokens: { access_token: string; refresh_token: string; expires_in: number }) => Promise<void>;
+    /** A function to log the user out from Fitbit. */
     logoutFitbit: () => Promise<void>;
+    /** A function to set Fitbit data for a specific date. */
     setFitbitData: (date: string, data: Partial<DailyFitbitData>) => void;
+    /** A function for injecting dummy Fitbit data for testing purposes. */
     injectDummyFitbitData: () => void;
+    /** A function to delete all Fitbit data. */
     deleteFitbitData: () => void;
+    /** A function to sync data from the Fitbit API for a specific date. */
     syncFitbitData: (date: string) => Promise<void>;
 }
 
+/**
+ * The React context for providing application state throughout the component tree.
+ */
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+/**
+ * The provider component that encapsulates the state logic and provides the AppContext to its children.
+ * @param {object} props - The component props.
+ * @param {ReactNode} props.children - The child components to render.
+ * @returns {JSX.Element} The AppProvider component.
+ */
 const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [appData, setAppData] = useState<AppData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +83,13 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     const isFitbitAuthenticated = !!fitbitAccessToken;
 
-    // Function to handle Fitbit authentication
+    /**
+     * Handles Fitbit authentication by storing access and refresh tokens in preferences.
+     * @param {object} tokens - The token object received from Fitbit.
+     * @param {string} tokens.access_token - The access token.
+     * @param {string} tokens.refresh_token - The refresh token.
+     * @param {number} tokens.expires_in - The token's time to expiration in seconds.
+     */
     const authenticateFitbit = async (tokens: { access_token: string; refresh_token: string; expires_in: number }) => {
         const expirationTime = Date.now() + tokens.expires_in * 1000;
         await Preferences.set({ key: 'fitbit_access_token', value: tokens.access_token });
@@ -55,7 +99,9 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         console.log('Fitbit authenticated and tokens stored.');
     };
 
-    // Function to log out from Fitbit
+    /**
+     * Logs the user out from Fitbit by removing tokens from preferences.
+     */
     const logoutFitbit = async () => {
         await Preferences.remove({ key: 'fitbit_access_token' });
         await Preferences.remove({ key: 'fitbit_refresh_token' });
@@ -64,17 +110,16 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         console.log('Fitbit logged out.');
     };
 
+    // Effect to load initial data and check for existing Fitbit tokens on app start.
     useEffect(() => {
         const initLoad = async () => {
             setIsLoading(true);
-            // Load app data
             const data = await loadData();
             setAppData(data);
             if (data?.settings?.geminiApiKey) {
                 setGeminiApiKeyState(data.settings.geminiApiKey);
             }
 
-            // Check for Fitbit tokens
             const { value: accessToken } = await Preferences.get({ key: 'fitbit_access_token' });
             const { value: refreshToken } = await Preferences.get({ key: 'fitbit_refresh_token' });
             const { value: expiresAtStr } = await Preferences.get({ key: 'fitbit_token_expires_at' });
@@ -82,16 +127,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
             if (accessToken && refreshToken && expiresAtStr) {
                 const expiresAt = parseInt(expiresAtStr, 10);
                 if (Date.now() < expiresAt) {
-                    // Token is still valid
                     setFitbitAccessToken(accessToken);
-                    console.log('Fitbit token loaded from storage.');
                 } else {
-                    // Token is expired, try to refresh it
-                    console.log('Fitbit token expired, attempting to refresh...');
                     try {
                         const newTokens = await refreshAccessToken(refreshToken);
                         await authenticateFitbit(newTokens);
-                        console.log('Fitbit token refreshed successfully.');
                     } catch (error) {
                         console.error('Failed to refresh Fitbit token, logging out.', error);
                         await logoutFitbit();
@@ -103,12 +143,17 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         initLoad();
     }, []);
 
+    // Effect to save app data to preferences whenever it changes.
     useEffect(() => {
         if (appData && !isLoading) {
             saveData(appData);
         }
     }, [appData, isLoading]);
 
+    /**
+     * Sets the Gemini API key in the application state and persists it.
+     * @param {string | null} key - The Gemini API key.
+     */
     const setGeminiApiKey = (key: string | null) => {
         setGeminiApiKeyState(key);
         setAppData(prevData => {
@@ -123,6 +168,10 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
     
+    /**
+     * Gets the current date as a string in 'YYYY-MM-DD' format.
+     * @returns {string} The formatted date string.
+     */
     const getTodayDateString = (): string => {
         const today = new Date();
         const year = today.getFullYear();
@@ -131,17 +180,31 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         return `${year}-${month}-${day}`;
     };
 
+    /**
+     * Retrieves the daily log for the current day.
+     * @returns {DailyLog | undefined} The log for today, or undefined if not available.
+     */
     const getTodaysLog = useCallback((): DailyLog | undefined => {
         if (!appData) return undefined;
         const today = getTodayDateString();
         return appData.logs[today];
     }, [appData]);
 
+    /**
+     * Retrieves the daily log for a specific date.
+     * @param {string} date - The date of the log to retrieve.
+     * @returns {DailyLog | undefined} The log for the specified date, or undefined if not available.
+     */
     const getLogForDate = useCallback((date: string): DailyLog | undefined => {
         if (!appData) return undefined;
         return appData.logs[date];
     }, [appData]);
 
+    /**
+     * Adds a new meal to the log for a specific date.
+     * @param {string} date - The date to add the meal to.
+     * @param {Meal} meal - The meal object to add.
+     */
     const addMeal = (date: string, meal: Meal) => {
         setAppData(prevData => {
             if (!prevData || !prevData.logs[date]) {
@@ -165,6 +228,12 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Updates an existing meal in the log for a specific date.
+     * @param {string} date - The date of the meal to update.
+     * @param {number} mealIndex - The index of the meal to update.
+     * @param {Meal} meal - The updated meal object.
+     */
     const updateMeal = (date: string, mealIndex: number, meal: Meal) => {
         setAppData(prevData => {
             if (!prevData || !prevData.logs[date]) return prevData;
@@ -176,6 +245,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Deletes a meal from the log for a specific date.
+     * @param {string} date - The date of the meal to delete.
+     * @param {number} mealIndex - The index of the meal to delete.
+     */
     const deleteMeal = (date: string, mealIndex: number) => {
         setAppData(prevData => {
             if (!prevData || !prevData.logs[date]) return prevData;
@@ -186,6 +260,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Adds a new workout session to the log for a specific date.
+     * @param {string} date - The date to add the workout to.
+     * @param {WorkoutSession} workout - The workout session object to add.
+     */
     const addWorkout = (date: string, workout: WorkoutSession) => {
         setAppData(prevData => {
             if (!prevData) return null;
@@ -209,6 +288,12 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Updates an existing workout session in the log for a specific date.
+     * @param {string} date - The date of the workout to update.
+     * @param {number} workoutIndex - The index of the workout to update.
+     * @param {WorkoutSession} workout - The updated workout session object.
+     */
     const updateWorkout = (date: string, workoutIndex: number, workout: WorkoutSession) => {
         setAppData(prevData => {
             if (!prevData || !prevData.logs[date]) return prevData;
@@ -220,6 +305,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Deletes a workout session from the log for a specific date.
+     * @param {string} date - The date of the workout to delete.
+     * @param {number} workoutIndex - The index of the workout to delete.
+     */
     const deleteWorkout = (date: string, workoutIndex: number) => {
         setAppData(prevData => {
             if (!prevData || !prevData.logs[date]) return prevData;
@@ -230,6 +320,10 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Adds a food item to the list of common foods.
+     * @param {CommonFood} food - The common food item to add.
+     */
     const addCommonFood = (food: CommonFood) => {
         setAppData(prevData => {
             if (!prevData) return null;
@@ -238,10 +332,14 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Imports application data from a JSON string, replacing existing data.
+     * @param {string} jsonString - The JSON string representing the application data.
+     * @throws {Error} Throws an error if the import fails or the data format is invalid.
+     */
     const importData = async (jsonString: string): Promise<void> => {
         try {
             const data = JSON.parse(jsonString);
-            // Basic validation
             if (data.targets && data.logs) {
                 setAppData(data);
                 await saveData(data);
@@ -254,6 +352,10 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     };
 
+    /**
+     * Exports the current application data as a JSON file.
+     * @returns {Promise<string>} A promise that resolves with a success or failure message.
+     */
     const exportData = async (): Promise<string> => {
         if (!appData) {
             return "No data to export.";
@@ -276,12 +378,16 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     };
     
+    /**
+     * Sets or updates Fitbit data for a specific date.
+     * @param {string} date - The date for the Fitbit data.
+     * @param {Partial<DailyFitbitData>} data - The Fitbit data to set.
+     */
     const setFitbitData = useCallback((date: string, data: Partial<DailyFitbitData>) => {
         setAppData(prevData => {
             if (!prevData) return null;
             const newFitbitData = { ...prevData.fitbitData };
             newFitbitData[date] = { ...newFitbitData[date], ...data };
-            console.log('setFitbitData: newFitbitData[date].summary', newFitbitData[date].summary);
             return {
                 ...prevData,
                 fitbitData: newFitbitData,
@@ -289,6 +395,9 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     }, []);
 
+    /**
+     * Injects dummy Fitbit data for the current day, for testing purposes.
+     */
     const injectDummyFitbitData = useCallback(() => {
         const today = new Date().toISOString().slice(0, 10);
         setAppData(prevData => {
@@ -299,99 +408,14 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
                     ...prevData.fitbitData,
                     [today]: {
                         summary: {
-                            caloriesOut: 2500,
-                            activityCalories: 1000,
-                            caloriesBMR: 1500,
-                            activeScore: 100,
-                            steps: 10000,
-                            floors: 10,
-                            elevation: 30,
-                            sedentaryMinutes: 300,
-                            lightlyActiveMinutes: 120,
-                            fairlyActiveMinutes: 60,
-                            veryActiveMinutes: 30,
-                            marginalCalories: 500,
-                            restingHeartRate: 55,
-                            heartRateZones: [],
-                            hrv: 65,
+                            caloriesOut: 2500, activityCalories: 1000, caloriesBMR: 1500, activeScore: 100,
+                            steps: 10000, floors: 10, elevation: 30, sedentaryMinutes: 300,
+                            lightlyActiveMinutes: 120, fairlyActiveMinutes: 60, veryActiveMinutes: 30,
+                            marginalCalories: 500, restingHeartRate: 55, heartRateZones: [], hrv: 65,
                         },
                         activities: [
-                            {
-                                logId: 1,
-                                activityId: 20001,
-                                activityParentId: 20001,
-                                activityParentName: 'Run',
-                                name: 'Morning Jog',
-                                description: '',
-                                calories: 350,
-                                distance: 3.5,
-                                steps: 4500,
-                                duration: 1800000, // 30 mins
-                                lastModified: new Date().toISOString(),
-                                startTime: '07:00',
-                                isFavorite: false,
-                                hasActiveZoneMinutes: true,
-                                startDate: today,
-                                hasStartTime: true,
-                                averageHeartRate: 130,
-                            },
-                            {
-                                logId: 2,
-                                activityId: 20002,
-                                activityParentId: 20002,
-                                activityParentName: 'Walk',
-                                name: 'Evening Stroll',
-                                description: '',
-                                calories: 150,
-                                distance: 2.0,
-                                steps: 3000,
-                                duration: 1200000, // 20 mins
-                                lastModified: new Date().toISOString(),
-                                startTime: '19:00',
-                                isFavorite: false,
-                                hasActiveZoneMinutes: false,
-                                startDate: today,
-                                hasStartTime: true,
-                                averageHeartRate: 90,
-                            },
-                            {
-                                logId: 3,
-                                activityId: 20003,
-                                activityParentId: 20003,
-                                activityParentName: 'Weight Training',
-                                name: 'Upper Body Workout',
-                                description: '',
-                                calories: 400,
-                                distance: 0,
-                                steps: 0,
-                                duration: 3600000, // 60 mins
-                                lastModified: new Date().toISOString(),
-                                startTime: '10:00',
-                                isFavorite: false,
-                                hasActiveZoneMinutes: false,
-                                startDate: today,
-                                hasStartTime: true,
-                                averageHeartRate: 110,
-                            },
-                            {
-                                logId: 4,
-                                activityId: 20004,
-                                activityParentId: 20004,
-                                activityParentName: 'Elliptical',
-                                name: 'Gym Cardio',
-                                description: '',
-                                calories: 450,
-                                distance: 4.0,
-                                steps: 5000,
-                                duration: 2400000, // 40 mins
-                                lastModified: new Date().toISOString(),
-                                startTime: '16:00',
-                                isFavorite: false,
-                                hasActiveZoneMinutes: true,
-                                startDate: today,
-                                hasStartTime: true,
-                                averageHeartRate: 145,
-                            },
+                            { logId: 1, activityId: 20001, activityParentId: 20001, activityParentName: 'Run', name: 'Morning Jog', description: '', calories: 350, distance: 3.5, steps: 4500, duration: 1800000, lastModified: new Date().toISOString(), startTime: '07:00', isFavorite: false, hasActiveZoneMinutes: true, startDate: today, hasStartTime: true, averageHeartRate: 130 },
+                            { logId: 2, activityId: 20002, activityParentId: 20002, activityParentName: 'Walk', name: 'Evening Stroll', description: '', calories: 150, distance: 2.0, steps: 3000, duration: 1200000, lastModified: new Date().toISOString(), startTime: '19:00', isFavorite: false, hasActiveZoneMinutes: false, startDate: today, hasStartTime: true, averageHeartRate: 90 },
                         ],
                     },
                 },
@@ -399,6 +423,9 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     }, []);
 
+    /**
+     * Deletes all Fitbit data from the application state.
+     */
     const deleteFitbitData = useCallback(() => {
         setAppData(prevData => {
             if (!prevData) return null;
@@ -409,8 +436,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     }, []);
 
+    /**
+     * Syncs data from the Fitbit API for a given date, updating the application state.
+     * @param {string} date - The date to sync data for.
+     */
     const syncFitbitData = async (date: string) => {
-        alert(`Syncing for date: ${date}`);
         if (!fitbitAccessToken) return;
 
         try {
@@ -419,13 +449,6 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
             const heartRateData = await getDailyHeartRate(fitbitAccessToken, date);
             const caloriesData = await getCalories(fitbitAccessToken, date);
 
-            console.log('Fitbit API Data:', {
-                activityData,
-                hrvData,
-                heartRateData,
-                caloriesData
-            });
-
             const fitbitData: DailyFitbitData = {
                 summary: activityData?.summary,
                 activities: activityData?.activities,
@@ -433,53 +456,23 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
                 rhr: heartRateData?.["activities-heart"]?.[0]?.value?.restingHeartRate,
                 calories: caloriesData?.['activities-calories']?.[0]?.value
             };
-
             setFitbitData(date, fitbitData);
 
             const hrvValue = hrvData?.hrv?.[0]?.value?.dailyRmssd;
             const rhrValue = heartRateData?.["activities-heart"]?.[0]?.value?.restingHeartRate;
             const caloriesValue = caloriesData?.['activities-calories']?.[0]?.value;
-
             saveTodaysMeasurements(date, {
-                hrv: hrvValue,
-                rhr: rhrValue,
+                hrv: hrvValue, rhr: rhrValue,
                 calories: caloriesValue ? parseInt(caloriesValue) : undefined
             });
 
             const existingWorkouts = getLogForDate(date)?.workouts || [];
             const fitbitActivities = activityData.activities || [];
-            console.log('syncFitbitData: fitbitActivities', fitbitActivities);
-
             fitbitActivities.forEach((activity: FitbitActivity) => {
-                const existingWorkout = existingWorkouts.find(w => w.fitbitLogId === activity.logId);
-
-                if (!existingWorkout) {
-                    let newWorkout: WorkoutSession;
-                    if (activity.activityParentName === 'Weight Training') {
-                        newWorkout = {
-                            type: 'weightlifting',
-                            fitbitLogId: activity.logId,
-                            name: activity.name,
-                            date: activity.startDate,
-                            duration: activity.duration / 60000, // convert ms to minutes
-                            caloriesBurned: activity.calories,
-                            notes: activity.description,
-                            exercises: [],
-                        };
-                    } else {
-                        newWorkout = {
-                            type: 'cardio',
-                            fitbitLogId: activity.logId,
-                            name: activity.name,
-                            date: activity.startDate,
-                            duration: activity.duration / 60000, // convert ms to minutes
-                            caloriesBurned: activity.calories,
-                            notes: activity.description,
-                            distance: activity.distance,
-                            pace: 0,
-                            exercises: [],
-                        };
-                    }
+                if (!existingWorkouts.find(w => w.fitbitLogId === activity.logId)) {
+                    const newWorkout: WorkoutSession = activity.activityParentName === 'Weight Training'
+                        ? { type: 'weightlifting', fitbitLogId: activity.logId, name: activity.name, date: activity.startDate, duration: activity.duration / 60000, caloriesBurned: activity.calories, notes: activity.description, exercises: [] }
+                        : { type: 'cardio', fitbitLogId: activity.logId, name: activity.name, date: activity.startDate, duration: activity.duration / 60000, caloriesBurned: activity.calories, notes: activity.description, distance: activity.distance, pace: 0, exercises: [] };
                     addWorkout(date, newWorkout);
                 }
             });
@@ -488,6 +481,10 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         }
     };
 
+    /**
+     * Updates the user's profile information.
+     * @param {UserProfile} profile - The new profile data.
+     */
     const updateUserProfile = (profile: UserProfile) => {
         setAppData(prevData => {
             if (!prevData) return null;
@@ -495,6 +492,11 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         });
     };
 
+    /**
+     * Saves daily measurements to the log for a specific date.
+     * @param {string} date - The date to save measurements for.
+     * @param {Partial<DailyLog>} measurements - The measurements to save.
+     */
     const saveTodaysMeasurements = (date: string, measurements: Partial<DailyLog>) => {
         setAppData(prevData => {
             if (!prevData) return null;
@@ -503,18 +505,18 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
                 newLogs[date] = { ...newLogs[date], ...measurements };
             } else {
                 newLogs[date] = {
-                    date,
-                    weight: null,
-                    meals: [],
-                    workouts: [],
-                    notes: '',
-                    ...measurements,
+                    date, weight: null, meals: [], workouts: [], notes: '', ...measurements,
                 }
             }
             return { ...prevData, logs: newLogs };
         });
     };
 
+    /**
+     * Updates the user's weight for a specific date and in their profile.
+     * @param {string} date - The date of the weight measurement.
+     * @param {number} weight - The new weight value.
+     */
     const updateWeight = (date: string, weight: number) => {
         saveTodaysMeasurements(date, { weight });
         setAppData(prevData => {
@@ -530,34 +532,12 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     };
 
     const value = {
-        appData,
-        isLoading,
-        getTodaysLog,
-        saveTodaysMeasurements,
-        updateWeight,
-        addMeal,
-        updateMeal,
-        deleteMeal,
-        addWorkout,
-        updateWorkout,
-        deleteWorkout,
-        importData,
-        exportData,
-        getLogForDate,
-        geminiApiKey,
-        setGeminiApiKey,
-        addCommonFood,
-        userProfile: appData?.userProfile,
-        updateUserProfile,
-        // Fitbit
-        isFitbitAuthenticated,
-        fitbitAccessToken,
-        authenticateFitbit,
-        logoutFitbit,
-        setFitbitData,
-        injectDummyFitbitData,
-        deleteFitbitData,
-        syncFitbitData,
+        appData, isLoading, getTodaysLog, saveTodaysMeasurements, updateWeight, addMeal,
+        updateMeal, deleteMeal, addWorkout, updateWorkout, deleteWorkout, importData,
+        exportData, getLogForDate, geminiApiKey, setGeminiApiKey, addCommonFood,
+        userProfile: appData?.userProfile, updateUserProfile, isFitbitAuthenticated,
+        fitbitAccessToken, authenticateFitbit, logoutFitbit, setFitbitData,
+        injectDummyFitbitData, deleteFitbitData, syncFitbitData,
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
@@ -565,6 +545,12 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
 export default AppProvider;
 
+/**
+ * A custom hook to consume the AppContext.
+ * Provides easy access to the application's state and actions.
+ * @returns {AppContextType} The application context value.
+ * @throws {Error} Throws an error if used outside of an AppProvider.
+ */
 export const useAppContext = () => {
     const context = useContext(AppContext);
     if (context === undefined) {

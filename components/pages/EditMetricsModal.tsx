@@ -3,12 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { DailyLog } from '../../types';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Defines the props for the EditMetricsModal component.
+ */
 interface EditMetricsModalProps {
+  /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
+  /** A function to be called when the modal is requested to be closed. */
   onClose: () => void;
+  /** The daily log data for the day being edited. */
   log: DailyLog | undefined;
 }
 
+/**
+ * A modal component for editing the user's daily metrics.
+ * It provides a form to manually input or update values for HRV, RHR, calories, and readiness score.
+ * @param {EditMetricsModalProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
+ */
 const EditMetricsModal: React.FC<EditMetricsModalProps> = ({ isOpen, onClose, log }) => {
   const { saveTodaysMeasurements } = useAppContext();
   const [hrv, setHrv] = useState(log?.hrv || '');

@@ -1,17 +1,34 @@
 
 import React, { useState } from 'react';
 
+/**
+ * Defines the props for the AddWithGeminiModal component.
+ */
 interface AddWithGeminiModalProps {
+  /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
+  /** A function to be called when the modal is requested to be closed. */
   onClose: () => void;
+  /** The title to be displayed at the top of the modal. */
   title: string;
+  /** A descriptive text displayed below the title. */
   description: string;
+  /** The placeholder text for the textarea input field. */
   placeholder: string;
+  /** The function to be called when the user clicks the analyze button, passing the text from the textarea. */
   onAnalyze: (text: string) => void;
+  /** Optional text for the main action button. Defaults to 'Analyze'. */
   buttonText?: string;
+  /** Optional CSS class names for the main action button. */
   buttonClassName?: string;
 }
 
+/**
+ * A modal component that allows users to add data by typing text, which is then processed by Gemini.
+ * It features a textarea for input, along with options to upload or take a photo.
+ * @param {AddWithGeminiModalProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
+ */
 const AddWithGeminiModal: React.FC<AddWithGeminiModalProps> = ({
   isOpen,
   onClose,

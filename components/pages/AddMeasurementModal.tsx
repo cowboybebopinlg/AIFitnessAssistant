@@ -2,14 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { UserProfile } from '../../types';
 
+/**
+ * Defines the props for the AddMeasurementModal component.
+ */
 interface AddMeasurementModalProps {
+  /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
+  /** A function to be called when the modal is requested to be closed. */
   onClose: () => void;
+  /** The date for which the measurement is being added or edited. */
   date: string;
+  /** The name of the measurement to be edited. If null, the modal is in "add" mode. */
   measurementName: string | null;
+  /** The user's profile data, used to get the list of available measurement types. */
   userProfile: UserProfile | undefined;
 }
 
+/**
+ * A modal component for adding or editing a user's body measurements for a specific day.
+ * It allows selecting a measurement type and entering a value.
+ * @param {AddMeasurementModalProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
+ */
 const AddMeasurementModal: React.FC<AddMeasurementModalProps> = ({ isOpen, onClose, date, measurementName, userProfile }) => {
   const { saveTodaysMeasurements, updateUserProfile, getLogForDate, updateWeight } = useAppContext();
   const [measurementType, setMeasurementType] = useState('');

@@ -1,8 +1,10 @@
 import { Preferences } from '@capacitor/preferences';
 import type { AppData, DailyLog } from '../types';
 
-import type { AppData, DailyLog, DailyFitbitData } from '../types';
-
+/**
+ * Gets the current date as a string in 'YYYY-MM-DD' format.
+ * @returns {string} The formatted date string.
+ */
 const getTodayDateString = (): string => {
     const today = new Date();
     const year = today.getFullYear();
@@ -11,8 +13,16 @@ const getTodayDateString = (): string => {
     return `${year}-${month}-${day}`;
 };
 
+/**
+ * The key used to store app data in Capacitor Preferences.
+ */
 const PREFERENCES_KEY = 'geminiFitData';
 
+/**
+ * Creates a new, empty daily log for a given date.
+ * @param {string} date - The date for the log in 'YYYY-MM-DD' format.
+ * @returns {DailyLog} A new daily log object.
+ */
 const createNewLog = (date: string): DailyLog => ({
     date,
     weight: null,
@@ -21,7 +31,11 @@ const createNewLog = (date: string): DailyLog => ({
     notes: '',
 });
 
-
+/**
+ * Generates the initial data structure for the application.
+ * This is used when no existing data is found.
+ * @returns {AppData} The default application data.
+ */
 const getInitialData = (): AppData => ({
     targets: {
         calories: 2500,
@@ -44,6 +58,12 @@ const getInitialData = (): AppData => ({
     fitbitData: {}, // Initialize as empty object
 });
 
+/**
+ * Loads application data from Capacitor Preferences.
+ * If no data is found, it returns the initial default data.
+ * It also handles data migration for backward compatibility.
+ * @returns {Promise<AppData>} A promise that resolves to the loaded application data.
+ */
 export const loadData = async (): Promise<AppData> => {
     try {
         const { value } = await Preferences.get({ key: PREFERENCES_KEY });
@@ -72,7 +92,12 @@ export const loadData = async (): Promise<AppData> => {
     return getInitialData();
 };
 
-export const saveData = async (data: AppData) => {
+/**
+ * Saves the application data to Capacitor Preferences.
+ * @param {AppData} data - The application data to save.
+ * @returns {Promise<void>} A promise that resolves when the data has been saved.
+ */
+export const saveData = async (data: AppData): Promise<void> => {
     try {
         const dataString = JSON.stringify(data);
         await Preferences.set({ key: PREFERENCES_KEY, value: dataString });
