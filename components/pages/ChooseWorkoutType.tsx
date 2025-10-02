@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+/**
+ * A page component that prompts the user to choose between a "Cardio" or "Weights" workout.
+ * Based on the selection, it navigates to the appropriate workout logging page.
+ * @returns {JSX.Element} The rendered page component.
+ */
 const ChooseWorkoutType: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

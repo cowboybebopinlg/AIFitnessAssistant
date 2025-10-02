@@ -2,10 +2,16 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { SettingsIcon, ClipboardIcon, DumbbellIcon, RunningIcon, RefreshCwIcon } from '../icons';
 import { getDashboardSuggestion } from '../../services/geminiService';
-import { getDailyActivity, getDailyHRV } from '../../services/fitbitService';
+import { getLocalDateString } from '../../services/utils';
 
-
-
+/**
+ * A card component that displays the user's key morning metrics.
+ * This includes readiness, resting heart rate (RHR), heart rate variability (HRV), steps, and calories.
+ * @param {object} props - The component props.
+ * @param {object} props.data - The daily log data.
+ * @param {object} props.fitbitData - The Fitbit data for the day.
+ * @returns {JSX.Element} The rendered Morning Metrics card.
+ */
 const MorningMetricsCard = ({ data, fitbitData }) => {
     const fitbitSummary = fitbitData?.summary;
     const readiness = data?.readiness > 0 ? data.readiness : 'N/A';
@@ -48,6 +54,15 @@ const MorningMetricsCard = ({ data, fitbitData }) => {
     );
 };
 
+/**
+ * A progress bar component with a glowing effect.
+ * It visually represents a value relative to a maximum, such as daily nutrient intake.
+ * @param {object} props - The component props.
+ * @param {number} props.value - The current value.
+ * @param {number} props.max - The maximum value.
+ * @param {string} props.label - The label to display for the progress bar.
+ * @returns {JSX.Element} The rendered progress bar.
+ */
 const GlowingProgressBar: React.FC<{ value: number; max: number; label: string }> = ({ value, max, label }) => {
     const percentage = max > 0 ? Math.min((value / max) * 100, 100) : 0;
     return (
@@ -63,6 +78,14 @@ const GlowingProgressBar: React.FC<{ value: number; max: number; label: string }
     );
 };
 
+/**
+ * A card component that displays the user's progress towards their daily nutrition targets.
+ * It uses the GlowingProgressBar component to show progress for various nutrients.
+ * @param {object} props - The component props.
+ * @param {object} props.data - The user's current nutrition totals for the day.
+ * @param {object} props.targets - The user's nutrition targets.
+ * @returns {JSX.Element} The rendered Nutrition card.
+ */
 const NutritionCard = ({ data, targets }) => {
     return (
         <div className="bg-gray-800 rounded-xl p-4 shadow-lg">
@@ -84,6 +107,14 @@ const NutritionCard = ({ data, targets }) => {
     );
 };
 
+/**
+ * A card component that displays the workouts logged for the day.
+ * It combines manually logged workouts with workouts synced from Fitbit.
+ * @param {object} props - The component props.
+ * @param {Array} props.workouts - The array of manually logged workouts.
+ * @param {Array} props.fitbitActivities - The array of activities synced from Fitbit.
+ * @returns {JSX.Element} The rendered Workouts card.
+ */
 const WorkoutsCard = ({ workouts, fitbitActivities }) => {
     const combinedWorkouts = useMemo(() => {
         const existingWorkouts = workouts || [];
@@ -138,6 +169,14 @@ const WorkoutsCard = ({ workouts, fitbitActivities }) => {
     );
 };
 
+/**
+ * A card component that displays AI-generated smart suggestions for the user.
+ * It parses a JSON string of suggestions and displays them in sections.
+ * @param {object} props - The component props.
+ * @param {string} props.suggestion - The raw suggestion string (potentially JSON) from the AI.
+ * @param {Function} props.onRefresh - The function to call to fetch a new suggestion.
+ * @returns {JSX.Element} The rendered Smart Suggestions card.
+ */
 const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
     const parseSuggestion = (text) => {
         if (!text || text === 'Loading...' || text === 'Generating new suggestion...') return [];
@@ -190,12 +229,11 @@ const SmartSuggestionsCard = ({ suggestion, onRefresh }) => {
     );
 };
 
-
-
-import { getLocalDateString } from '../../services/utils';
-
-
-
+/**
+ * The main dashboard component that serves as the home screen of the application.
+ * It provides a high-level overview of the user's daily metrics, nutrition, workouts, and AI-driven suggestions.
+ * @returns {JSX.Element} The rendered Dashboard page.
+ */
 export const Dashboard: React.FC = () => {
     const { appData, isLoading, getTodaysLog, getLogForDate, geminiApiKey } = useAppContext();
     const [suggestion, setSuggestion] = useState('Loading...');

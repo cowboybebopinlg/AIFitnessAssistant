@@ -4,21 +4,48 @@ import { useAppContext } from '../context/AppContext';
 import { getIntentfulResponse } from '../services/geminiService';
 import type { AskGeminiResponse } from '../types';
 
-// --- TYPE DEFINITIONS ---
+/**
+ * @file This file defines the "Ask Gemini" feature, including the floating action button (FAB)
+ * and the chat modal for interacting with the Gemini API.
+ */
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
+import { getIntentfulResponse } from '../services/geminiService';
+import type { AskGeminiResponse } from '../types';
+
+/**
+ * Represents a single message in the chat conversation.
+ */
 type Message = {
+  /** The sender of the message, either the user or the Gemini model. */
   sender: 'user' | 'gemini';
+  /** The text content of the message. */
   text: string;
+  /** An optional URL for a preview of an image sent by the user. */
   imagePreview?: string;
+  /** An optional base64 encoded string of an image sent by the user. */
   base64Image?: string;
-  response?: AskGeminiResponse; // Store the full response for actions
+  /** The full, structured response from the Gemini API, if applicable. */
+  response?: AskGeminiResponse;
 };
 
+/**
+ * Defines the props for the AskGeminiModal component.
+ */
 type AskGeminiModalProps = {
+  /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
+  /** A function to be called when the modal is requested to be closed. */
   onClose: () => void;
 };
 
-// --- THE MODAL COMPONENT ---
+/**
+ * A modal component that provides a chat interface for users to interact with the Gemini model.
+ * It handles sending user prompts, displaying the conversation, and processing actions based on the AI's response.
+ * @param {AskGeminiModalProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
+ */
 const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   const { geminiApiKey, appData, addMeal, addWorkout } = useAppContext();
   const navigate = useNavigate();
@@ -171,7 +198,11 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 };
 
 
-// --- THE MAIN COMPONENT EXPORT (FAB + MODAL LOGIC) ---
+/**
+ * The main feature component that includes the Floating Action Button (FAB) to open the AskGeminiModal.
+ * The FAB is conditionally rendered based on the current route.
+ * @returns {JSX.Element} The rendered feature component.
+ */
 const AskGeminiFeature = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const location = useLocation();

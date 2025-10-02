@@ -9,7 +9,11 @@ const FITBIT_AUTH_BASE_URL = 'https://www.fitbit.com/oauth2/authorize';
 const FITBIT_TOKEN_URL = 'https://api.fitbit.com/oauth2/token';
 const FITBIT_REVOKE_URL = 'https://api.fitbit.com/oauth2/revoke';
 
-// Helper function to get local date in YYYY-MM-DD format
+/**
+ * Formats a Date object into a 'YYYY-MM-DD' string.
+ * @param {Date} date - The date to format.
+ * @returns {string} The formatted date string.
+ */
 const getLocalDateString = (date: Date): string => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -18,9 +22,10 @@ const getLocalDateString = (date: Date): string => {
 };
 
 /**
- * Revokes a Fitbit token (access token or refresh token).
- * @param token - The token to revoke.
- * @returns A promise that resolves when the token is revoked.
+ * Revokes a Fitbit access or refresh token.
+ * This invalidates the token, requiring the user to re-authenticate.
+ * @param {string} token - The access token or refresh token to be revoked.
+ * @returns {Promise<any>} A promise that resolves with the response from the Fitbit API.
  */
 export const revokeToken = async (token: string): Promise<any> => {
   const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
@@ -40,9 +45,9 @@ export const revokeToken = async (token: string): Promise<any> => {
 };
 
 /**
- * Generates the Fitbit authorization URL.
- * @param scope - An array of scopes you are requesting access to.
- * @returns The full URL for the authorization endpoint.
+ * Generates the Fitbit authorization URL to initiate the OAuth 2.0 flow.
+ * @param {string[]} scope - An array of scopes for which to request permission.
+ * @returns {string} The complete URL for the Fitbit authorization endpoint.
  */
 export const getAuthorizationUrl = (scope: string[]): string => {
   // Add default scopes if not already present
@@ -60,9 +65,9 @@ export const getAuthorizationUrl = (scope: string[]): string => {
 };
 
 /**
- * Exchanges the authorization code for an access token and refresh token.
- * @param code - The authorization code received from the Fitbit redirect.
- * @returns A promise that resolves with the token data.
+ * Exchanges an authorization code for an access token and a refresh token.
+ * @param {string} code - The authorization code received from the Fitbit redirect.
+ * @returns {Promise<any>} A promise that resolves with the token data from the Fitbit API, including access_token and refresh_token.
  */
 export const exchangeCodeForTokens = async (code: string): Promise<any> => {
   const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
@@ -85,8 +90,8 @@ export const exchangeCodeForTokens = async (code: string): Promise<any> => {
 
 /**
  * Refreshes an expired access token using a refresh token.
- * @param refreshToken - The refresh token.
- * @returns A promise that resolves with the new token data.
+ * @param {string} refreshToken - The refresh token used to obtain a new access token.
+ * @returns {Promise<any>} A promise that resolves with the new token data from the Fitbit API.
  */
 export const refreshAccessToken = async (refreshToken: string): Promise<any> => {
   const credentials = btoa(`${CLIENT_ID}:${CLIENT_SECRET}`);
@@ -107,10 +112,10 @@ export const refreshAccessToken = async (refreshToken: string): Promise<any> => 
 };
 
 /**
- * Fetches daily activity data using the native Capacitor HTTP plugin to avoid CORS.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21' or 'today').
- * @returns A promise that resolves with the activity data.
+ * Fetches a user's daily activity summary from the Fitbit API.
+ * @param {string} accessToken - The user's Fitbit access token.
+ * @param {string} [date=getLocalDateString(new Date())] - The date for which to fetch data in 'YYYY-MM-DD' format. Defaults to the current day.
+ * @returns {Promise<any>} A promise that resolves with the daily activity data.
  */
 export const getDailyActivity = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
@@ -125,6 +130,12 @@ export const getDailyActivity = async (accessToken: string, date: string = getLo
   return response.data;
 };
 
+/**
+ * Fetches a user's daily Heart Rate Variability (HRV) data from the Fitbit API.
+ * @param {string} accessToken - The user's Fitbit access token.
+ * @param {string} [date=getLocalDateString(new Date())] - The date for which to fetch data in 'YYYY-MM-DD' format. Defaults to the current day.
+ * @returns {Promise<any>} A promise that resolves with the daily HRV data.
+ */
 export const getDailyHRV = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
     url: `https://api.fitbit.com/1/user/-/hrv/date/${date}.json`,
@@ -139,10 +150,10 @@ export const getDailyHRV = async (accessToken: string, date: string = getLocalDa
 };
 
 /**
- * Fetches daily heart rate data, including resting heart rate.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21').
- * @returns A promise that resolves with the heart rate data.
+ * Fetches a user's daily heart rate data, including resting heart rate, from the Fitbit API.
+ * @param {string} accessToken - The user's Fitbit access token.
+ * @param {string} [date=getLocalDateString(new Date())] - The date for which to fetch data in 'YYYY-MM-DD' format. Defaults to the current day.
+ * @returns {Promise<any>} A promise that resolves with the heart rate data.
  */
 export const getDailyHeartRate = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {
@@ -158,10 +169,10 @@ export const getDailyHeartRate = async (accessToken: string, date: string = getL
 }
 
 /**
- * Fetches daily calorie expenditure.
- * @param accessToken - The user's access token.
- * @param date - The date for which to fetch data (e.g., '2025-09-21').
- * @returns A promise that resolves with the calorie data.
+ * Fetches a user's daily calorie expenditure from the Fitbit API.
+ * @param {string} accessToken - The user's Fitbit access token.
+ * @param {string} [date=getLocalDateString(new Date())] - The date for which to fetch data in 'YYYY-MM-DD' format. Defaults to the current day.
+ * @returns {Promise<any>} A promise that resolves with the calorie data.
  */
 export const getCalories = async (accessToken: string, date: string = getLocalDateString(new Date())): Promise<any> => {
   const options = {

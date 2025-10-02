@@ -4,12 +4,25 @@ import { RunningIcon } from '../icons';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 
+/**
+ * Defines the props for the WorkoutsSection component.
+ */
 interface WorkoutsSectionProps {
+  /** The daily log data for the day being displayed. */
   log: DailyLog | undefined;
+  /** A function to be called when the "Add Workout" button is clicked. */
   onAddWorkoutClick: () => void;
+  /** An array of Fitbit activities for the day, used to display synced workouts. */
   fitbitActivities: FitbitActivity[];
 }
 
+/**
+ * A component that displays a list of workouts for a given day.
+ * It provides functionality to add, edit, and delete workouts.
+ * It also displays workouts synced from Fitbit.
+ * @param {WorkoutsSectionProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered workouts section.
+ */
 const WorkoutsSection: React.FC<WorkoutsSectionProps> = ({ log, onAddWorkoutClick, fitbitActivities }) => {
   const workouts = log?.workouts || [];
   const navigate = useNavigate();

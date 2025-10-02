@@ -1,13 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Meal } from '../../types';
 
+/**
+ * Defines the props for the EditFoodModal component.
+ */
 interface EditFoodModalProps {
+  /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
+  /** A function to be called when the modal is requested to be closed. */
   onClose: () => void;
+  /** The meal object to be edited. If null, the modal will not render correctly. */
   meal: Meal | null;
+  /** A function to call with the updated meal data when the user saves the changes. */
   updateMeal: (meal: Meal) => void;
 }
 
+/**
+ * A modal component for editing the details of a food entry.
+ * It provides a form pre-filled with the meal's current nutritional information,
+ * allowing the user to make and save changes.
+ * @param {EditFoodModalProps} props - The props for the component.
+ * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
+ */
 const EditFoodModal: React.FC<EditFoodModalProps> = ({ isOpen, onClose, meal, updateMeal }) => {
   const [foodName, setFoodName] = useState('');
   const [calories, setCalories] = useState<number | ''>('');

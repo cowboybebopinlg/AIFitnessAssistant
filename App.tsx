@@ -19,14 +19,22 @@ const ProfilePage = lazy(() => import('./components/pages/ProfilePage'));
 
 import { SafeArea } from '@capacitor-community/safe-area';
 
+/**
+ * The main content component of the application.
+ * It sets up the routing, navigation, and core UI layout.
+ * It also handles Capacitor-specific functionalities like the hardware back button and safe area insets.
+ * @returns {JSX.Element} The rendered application content.
+ */
 const AppContent: React.FC = () => {
   useEffect(() => {
+    // Handles the Android hardware back button. Exits the app if there's no history.
     CapacitorApp.addListener('backButton', ({ canGoBack }) => {
       if (!canGoBack) {
         CapacitorApp.exitApp();
       }
     });
 
+    // Sets CSS custom properties for safe area insets to handle notches and system bars.
     const setSafeArea = () => {
       SafeArea.getSafeAreaInsets().then(({ insets }) => {
         for (const [key, value] of Object.entries(insets)) {
@@ -75,6 +83,12 @@ const AppContent: React.FC = () => {
   );
 };
 
+/**
+ * The root component of the application.
+ * It wraps the main AppContent with the AppProvider to supply global state
+ * via React Context to all child components.
+ * @returns {JSX.Element} The root application component.
+ */
 const App: React.FC = () => {
   return (
     <AppProvider>

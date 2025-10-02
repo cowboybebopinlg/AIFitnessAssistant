@@ -8,6 +8,12 @@ import { Capacitor } from '@capacitor/core';
 import { WebViewCache } from 'capacitor-plugin-webview-cache';
 import { Preferences } from '@capacitor/preferences';
 
+/**
+ * The settings page component for the application.
+ * It allows users to manage their Gemini API key, connect or disconnect from Fitbit,
+ * and perform data management actions like injecting dummy data or clearing saved data.
+ * @returns {JSX.Element} The rendered settings page component.
+ */
 const Settings: React.FC = () => {
     const { geminiApiKey, setGeminiApiKey, injectDummyFitbitData, deleteFitbitData, authenticateFitbit } = useAppContext();
     const [apiKey, setApiKey] = useState(geminiApiKey || '');
