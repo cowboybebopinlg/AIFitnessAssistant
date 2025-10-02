@@ -21,14 +21,21 @@ const AddFoodPage: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     if (prefillItems && prefillItems.length > 0) {
-      const firstItem = prefillItems[0];
-      setFoodName(firstItem.name || '');
-      setCalories(firstItem.calories || '');
-      setProtein(firstItem.protein || '');
-      setFat(firstItem.fat || '');
-      setCarbs(firstItem.carbs || '');
-      setFiber(firstItem.fiber || '');
-      setSodium(firstItem.sodium || '');
+      const combinedName = prefillItems.map(item => item.name).join(', ');
+      const totalCalories = prefillItems.reduce((sum, item) => sum + (item.calories || 0), 0);
+      const totalProtein = prefillItems.reduce((sum, item) => sum + (item.protein || 0), 0);
+      const totalFat = prefillItems.reduce((sum, item) => sum + (item.fat || 0), 0);
+      const totalCarbs = prefillItems.reduce((sum, item) => sum + (item.carbs || 0), 0);
+      const totalFiber = prefillItems.reduce((sum, item) => sum + (item.fiber || 0), 0);
+      const totalSodium = prefillItems.reduce((sum, item) => sum + (item.sodium || 0), 0);
+
+      setFoodName(combinedName);
+      setCalories(totalCalories > 0 ? totalCalories : '');
+      setProtein(totalProtein > 0 ? totalProtein : '');
+      setFat(totalFat > 0 ? totalFat : '');
+      setCarbs(totalCarbs > 0 ? totalCarbs : '');
+      setFiber(totalFiber > 0 ? totalFiber : '');
+      setSodium(totalSodium > 0 ? totalSodium : '');
     }
   }, [prefillItems]);
 
@@ -50,7 +57,7 @@ const AddFoodPage: React.FC = () => {
     navigate(-1); // Go back to the previous page (Daily Log)
   };
 
-  const handleAddFoodManually = () => {
+  const handleAddFoodManually = async () => {
     if (!foodName || !calories || !protein || !fat || !carbs) {
       alert("Please fill in all manual entry fields.");
       return;
@@ -66,21 +73,10 @@ const AddFoodPage: React.FC = () => {
       sodium: Number(sodium),
     };
 
-    addMeal(dateString, newMeal);
+    console.log('Adding meal:', newMeal, 'on date:', dateString);
+    await addMeal(dateString, newMeal);
 
-    if (saveAsFavorite) {
-      addCommonFood(newMeal);
-    }
-
-    alert(`Manually added: ${foodName}`);
-    // Clear form
-    setFoodName('');
-    setCalories('');
-    setProtein('');
-    setFat('');
-    setCarbs('');
-    setFiber('');
-    setSaveAsFavorite(false);
+    navigate('/log');
   };
 
   const handleAnalyzeFoodWithGemini = async (text: string) => {

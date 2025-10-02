@@ -11,7 +11,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   const { addWorkout, geminiApiKey, updateWorkout, getLogForDate } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
-  const prefillWorkout = location.state?.prefillWorkout as WorkoutSession | undefined;
+  const prefillData = location.state?.prefillData as WorkoutSession | undefined;
 
   const dateString = searchParams.get('date') || new Date().toISOString().split('T')[0];
   const workoutIndex = searchParams.get('workoutIndex');
@@ -35,12 +35,12 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
         setAverageHeartRate(String(workout.averageHeartRate || ''));
         setCaloriesBurned(String(workout.caloriesBurned || ''));
       }
-    } else if (prefillWorkout) {
-        setExercises(prefillWorkout.exercises || []);
-        setAverageHeartRate(String(prefillWorkout.averageHeartRate || ''));
-        setCaloriesBurned(String(prefillWorkout.caloriesBurned || ''));
+    } else if (prefillData) {
+        setExercises(prefillData.exercises || []);
+        setAverageHeartRate(String(prefillData.averageHeartRate || ''));
+        setCaloriesBurned(String(prefillData.caloriesBurned || ''));
     }
-  }, [isEditMode, workoutIndex, dateString, getLogForDate, prefillWorkout]);
+  }, [isEditMode, workoutIndex, dateString, getLogForDate, prefillData]);
 
   useEffect(() => {
     if (fitbitActivity) {

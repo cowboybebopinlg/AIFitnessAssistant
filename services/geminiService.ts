@@ -74,6 +74,13 @@ export const getIntentfulResponse = async (
     const mcp = generateMCP(appData);
     const systemInstruction = `
         You are an intelligent assistant for the GeminiFit app. Your job is to analyze the user's input, determine their intent, and provide a helpful response in a structured JSON format.
+        If you are unable to determine the answer from the context, you can use Google Search to find the information.
+        Always return your response as a JSON object with the following schema:
+        {
+            "intent": "LOG_FOOD" | "LOG_WORKOUT" | "ASK_QUESTION" | "ANALYZE_MEAL_IMAGE" | "GENERATE_WORKOUT" | "SUMMARIZE_WEEK" | "UNKNOWN",
+            "data": "A JSON string containing extracted entities or generated content.",
+            "summary": "A user-facing summary or the full text response for questions/summaries."
+        }
         ${mcp}
     `;
 
@@ -81,31 +88,50 @@ export const getIntentfulResponse = async (
         model: MODEL_NAME,
         safetySettings,
         systemInstruction,
-        generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "OBJECT",
-              properties: {
-                intent: { type: "STRING", enum: ["LOG_FOOD", "LOG_WORKOUT", "ASK_QUESTION", "ANALYZE_MEAL_IMAGE", "GENERATE_WORKOUT", "SUMMARIZE_WEEK", "UNKNOWN"] },
-                data: { type: "STRING", description: "Contains extracted entities or generated content, as a JSON string." },
-                summary: { type: "STRING", description: "A user-facing summary or the full text response for questions/summaries." }
-              }
-            }
-        }
+        tools: [{googleSearch: {}}],
     });
 
     try {
         const chat = model.startChat({ history: conversationHistory });
         const result = await chat.sendMessage(userPrompt);
         const response = await result.response;
-        const jsonText = response.text();
-        return JSON.parse(jsonText) as AskGeminiResponse;
+        const responseText = await response.text();
+        console.log("Gemini API Response for intent:", responseText);
+
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+
+        if (jsonStart === -1 || jsonEnd === -1) {
+            return {
+                intent: 'UNKNOWN',
+                summary: responseText, // Return the raw text if no JSON is found
+                data: {},
+            };
+        }
+
+        const jsonText = responseText.substring(jsonStart, jsonEnd + 1);
+        const parsedResponse = JSON.parse(jsonText.replace(/undefined/g, 'null')) as AskGeminiResponse;
+
+        if (typeof parsedResponse.data === 'string') {
+            try {
+                parsedResponse.data = JSON.parse(parsedResponse.data);
+            } catch (e) {
+                console.error("Failed to parse data string in response:", e);
+                // Keep data as a string if it's not valid JSON
+            }
+        }
+
+        if (!parsedResponse.data) {
+            parsedResponse.data = {};
+        }
+        
+        return parsedResponse;
     } catch (error) {
         console.error("Error in getIntentfulResponse:", error);
         return {
             intent: 'UNKNOWN',
             summary: "Sorry, I encountered an error. Please try again.",
-            data: {},
+            data: "{}",
         };
     }
 };
@@ -153,7 +179,7 @@ export const getConversationalResponse = async (
 export const getNutritionInfoFromText = async (text: string, appData: AppData, apiKey: string): Promise<Partial<Meal>> => {
     const mcp = generateMCP(appData);
     const instruction = `
-        You are an expert nutrition data parser. Your task is to extract nutritional information from the user's text input and return it as a clean JSON object.
+        You are an expert nutrition data parser. Your task is to extract nutritional information from the user\'s text input and return it as a clean JSON object.
         Use the context provided in the Model Context Protocol (MCP) to understand user-specific terms (e.g., "my usual shake").
 
         Return the data as a JSON object with the following keys: "name", "calories", "protein", "fat", "carbs", "fiber", "sodium".
@@ -172,9 +198,18 @@ export const getNutritionInfoFromText = async (text: string, appData: AppData, a
         const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
+        console.log("Gemini API Response for nutrition:", responseText);
         
-        const jsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(jsonText);
+        // Find the start and end of the JSON block
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        
+        if (jsonStart === -1 || jsonEnd === -1) {
+            throw new Error("No JSON object found in the response.");
+        }
+        
+        const jsonText = responseText.substring(jsonStart, jsonEnd + 1);
+        return JSON.parse(jsonText.replace(/undefined/g, 'null'));
     } catch (error) {
         console.error("Error parsing nutrition info:", error);
         throw new Error("Failed to parse nutrition info from text.");
@@ -207,8 +242,17 @@ export const getWorkoutInfoFromText = async (text: string, appData: AppData, api
         const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
+        console.log("Gemini API Response for workout:", responseText);
         
-        const jsonText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+        // Find the start and end of the JSON block
+        const jsonStart = responseText.indexOf('{');
+        const jsonEnd = responseText.lastIndexOf('}');
+        
+        if (jsonStart === -1 || jsonEnd === -1) {
+            throw new Error("No JSON object found in the response.");
+        }
+        
+        const jsonText = responseText.substring(jsonStart, jsonEnd + 1);
         const workout = JSON.parse(jsonText.replace(/undefined/g, 'null'));
 
         if (workout.exercises) {

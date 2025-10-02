@@ -11,6 +11,7 @@ import { Meal } from '../../types';
 import { getLocalDateString } from '../../services/utils';
 
 const DailyLog: React.FC = () => {
+  console.log("Displaying DailyLog page");
   const { appData, exportData, importData, getLogForDate, isFitbitAuthenticated, syncFitbitData, updateMeal } = useAppContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -26,7 +27,9 @@ const DailyLog: React.FC = () => {
   }, [currentDate]);
 
   const dailyLog = useMemo(() => {
-    return getLogForDate(dateString);
+    const log = getLogForDate(dateString);
+    console.log(`Log for date ${dateString}:`, log);
+    return log;
   }, [getLogForDate, dateString]);
 
   const fitbitActivities = useMemo(() => {

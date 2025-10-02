@@ -60,6 +60,7 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
     const history = conversation
         .filter(msg => !(msg.sender === 'gemini' && conversation.indexOf(msg) === 0)) // Filter out initial Gemini greeting
+        .filter(msg => msg.text && msg.text.trim() !== '') // Filter out empty messages
         .map(msg => ({
             role: msg.sender === 'user' ? 'user' : 'model',
             parts: [{ text: msg.text }]
@@ -77,28 +78,37 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   };
   
   const handleActionClick = (response?: AskGeminiResponse) => {
-      if (!response || !appData) return;
-      onClose(); 
-      const parsedData = response.data ? JSON.parse(response.data as string) : {};
-      const todayDateString = new Date().toISOString().split('T')[0]; // Get today's date
+    if (!response || !appData) return;
+    console.log('handleActionClick response:', response);
+    onClose();
+    const parsedData = response.data ? response.data : {};
+    const todayDateString = new Date().toISOString().split('T')[0];
 
-      switch (response.intent) {
-          case 'LOG_FOOD':
-              if (parsedData.items && Array.isArray(parsedData.items)) {
-                  parsedData.items.forEach(item => {
-                      addMeal(todayDateString, item);
-                  });
-                  alert(`Logged ${parsedData.items.length} food item(s)!`);
-              }
-              break;
-          case 'LOG_WORKOUT':
-              if (parsedData) {
-                  addWorkout(todayDateString, { ...parsedData, date: todayDateString });
-                  alert(`Logged workout: ${parsedData.name || 'Unnamed Workout'}!`);
-              }
-              break;
-      }
-  };
+    switch (response.intent) {
+        case 'LOG_FOOD':
+            if (parsedData) {
+                // Navigate to AddFoodPage with prefill data
+                navigate(`/log/add-food?date=${todayDateString}`, { state: { prefillItems: [parsedData] } });
+            }
+            break;
+        case 'LOG_WORKOUT':
+            if (parsedData) {
+                // Assuming you have a route like '/add-workout' that can handle this
+                // You might need to adjust the route and how you pass data based on your router setup
+                const workoutType = parsedData.type || 'generic'; // e.g., 'cardio', 'weightlifting'
+                if (workoutType.toLowerCase() === 'cardio') {
+                    navigate(`/log/add-workout/cardio?date=${todayDateString}`, { state: { prefillData: parsedData } });
+                } else if (workoutType.toLowerCase() === 'weightlifting') {
+                    navigate(`/log/add-workout/weights?date=${todayDateString}`, { state: { prefillData: parsedData } });
+                } else {
+                    // Fallback or generic workout page
+                    addWorkout(todayDateString, { ...parsedData, date: todayDateString });
+                    alert(`Logged workout: ${parsedData.name || 'Unnamed Workout'}!`);
+                }
+            }
+            break;
+    }
+};
 
   if (!isOpen) return null;
 

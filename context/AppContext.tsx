@@ -10,18 +10,18 @@ interface AppContextType {
     getTodaysLog: () => DailyLog | undefined;
     saveTodaysMeasurements: (date: string, measurements: Partial<DailyLog>) => void;
     updateWeight: (date: string, weight: number) => void;
-    addMeal: (date: string, meal: Meal) => void;
-    updateMeal: (date: string, mealIndex: number, meal: Meal) => void;
-    deleteMeal: (date: string, mealIndex: number) => void;
-    addWorkout: (date: string, workout: WorkoutSession) => void;
-    updateWorkout: (date: string, workoutIndex: number, workout: WorkoutSession) => void;
-    deleteWorkout: (date: string, workoutIndex: number) => void;
+    addMeal: (date: string, meal: Meal) => Promise<void>;
+    updateMeal: (date: string, mealIndex: number, meal: Meal) => Promise<void>;
+    deleteMeal: (date: string, mealIndex: number) => Promise<void>;
+    addWorkout: (date: string, workout: WorkoutSession) => Promise<void>;
+    updateWorkout: (date: string, workoutIndex: number, workout: WorkoutSession) => Promise<void>;
+    deleteWorkout: (date: string, workoutIndex: number) => Promise<void>;
     importData: (jsonString: string) => Promise<void>;
     exportData: () => Promise<string>;
     getLogForDate: (date: string) => DailyLog | undefined;
     geminiApiKey: string | null;
     setGeminiApiKey: (key: string | null) => void;
-    addCommonFood: (food: CommonFood) => void;
+    addCommonFood: (food: CommonFood) => Promise<void>;
     userProfile: UserProfile | undefined;
     updateUserProfile: (profile: UserProfile) => void;
     // Fitbit specific state and functions
@@ -103,11 +103,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         initLoad();
     }, []);
 
-    useEffect(() => {
-        if (appData && !isLoading) {
-            saveData(appData);
-        }
-    }, [appData, isLoading]);
+
 
     const setGeminiApiKey = (key: string | null) => {
         setGeminiApiKeyState(key);
@@ -142,100 +138,107 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         return appData.logs[date];
     }, [appData]);
 
-    const addMeal = (date: string, meal: Meal) => {
-        setAppData(prevData => {
-            if (!prevData || !prevData.logs[date]) {
-                const newLogs = { ...(prevData?.logs || {}) };
-                newLogs[date] = {
-                    date,
-                    weight: null,
-                    energy: null,
-                    soreness: null,
-                    sleepQuality: null,
-                    yesterdayStress: null,
-                    meals: [meal],
-                    workouts: [],
-                    notes: '',
-                };
-                return { ...prevData, logs: newLogs } as AppData;
-            }
-            const newLogs = { ...prevData.logs };
+    const updateAppData = async (newAppData: AppData) => {
+        console.log('Saving new app data:', newAppData);
+        setAppData(newAppData);
+        await saveData(newAppData);
+    };
+
+    const addMeal = async (date: string, meal: Meal) => {
+        if (!appData) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        if (newLogs[date]) {
             newLogs[date] = { ...newLogs[date], meals: [...newLogs[date].meals, meal] };
-            return { ...prevData, logs: newLogs };
-        });
+        } else {
+            newLogs[date] = {
+                date,
+                weight: null,
+                energy: null,
+                soreness: null,
+                sleepQuality: null,
+                yesterdayStress: null,
+                meals: [meal],
+                workouts: [],
+                notes: '',
+            };
+        }
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const updateMeal = (date: string, mealIndex: number, meal: Meal) => {
-        setAppData(prevData => {
-            if (!prevData || !prevData.logs[date]) return prevData;
-            const newLogs = { ...prevData.logs };
-            const newMeals = [...newLogs[date].meals];
-            newMeals[mealIndex] = meal;
-            newLogs[date] = { ...newLogs[date], meals: newMeals };
-            return { ...prevData, logs: newLogs };
-        });
+    const updateMeal = async (date: string, mealIndex: number, meal: Meal) => {
+        if (!appData || !appData.logs[date]) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        const newMeals = [...newLogs[date].meals];
+        newMeals[mealIndex] = meal;
+        newLogs[date] = { ...newLogs[date], meals: newMeals };
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const deleteMeal = (date: string, mealIndex: number) => {
-        setAppData(prevData => {
-            if (!prevData || !prevData.logs[date]) return prevData;
-            const newLogs = { ...prevData.logs };
-            const newMeals = newLogs[date].meals.filter((_, index) => index !== mealIndex);
-            newLogs[date] = { ...newLogs[date], meals: newMeals };
-            return { ...prevData, logs: newLogs };
-        });
+    const deleteMeal = async (date: string, mealIndex: number) => {
+        if (!appData || !appData.logs[date]) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        const newMeals = newLogs[date].meals.filter((_, index) => index !== mealIndex);
+        newLogs[date] = { ...newLogs[date], meals: newMeals };
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const addWorkout = (date: string, workout: WorkoutSession) => {
-        setAppData(prevData => {
-            if (!prevData) return null;
-            const newLogs = { ...prevData.logs };
-            if (newLogs[date]) {
-                newLogs[date] = { ...newLogs[date], workouts: [...newLogs[date].workouts, workout] };
-            } else {
-                newLogs[date] = {
-                    date,
-                    weight: null,
-                    energy: null,
-                    soreness: null,
-                    sleepQuality: null,
-                    yesterdayStress: null,
-                    meals: [],
-                    workouts: [workout],
-                    notes: '',
-                }
-            }
-            return { ...prevData, logs: newLogs };
-        });
+    const addWorkout = async (date: string, workout: WorkoutSession) => {
+        if (!appData) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        if (newLogs[date]) {
+            newLogs[date] = { ...newLogs[date], workouts: [...newLogs[date].workouts, workout] };
+        } else {
+            newLogs[date] = {
+                date,
+                weight: null,
+                energy: null,
+                soreness: null,
+                sleepQuality: null,
+                yesterdayStress: null,
+                meals: [],
+                workouts: [workout],
+                notes: '',
+            };
+        }
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const updateWorkout = (date: string, workoutIndex: number, workout: WorkoutSession) => {
-        setAppData(prevData => {
-            if (!prevData || !prevData.logs[date]) return prevData;
-            const newLogs = { ...prevData.logs };
-            const newWorkouts = [...newLogs[date].workouts];
-            newWorkouts[workoutIndex] = workout;
-            newLogs[date] = { ...newLogs[date], workouts: newWorkouts };
-            return { ...prevData, logs: newLogs };
-        });
+    const updateWorkout = async (date: string, workoutIndex: number, workout: WorkoutSession) => {
+        if (!appData || !appData.logs[date]) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        const newWorkouts = [...newLogs[date].workouts];
+        newWorkouts[workoutIndex] = workout;
+        newLogs[date] = { ...newLogs[date], workouts: newWorkouts };
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const deleteWorkout = (date: string, workoutIndex: number) => {
-        setAppData(prevData => {
-            if (!prevData || !prevData.logs[date]) return prevData;
-            const newLogs = { ...prevData.logs };
-            const newWorkouts = newLogs[date].workouts.filter((_, index) => index !== workoutIndex);
-            newLogs[date] = { ...newLogs[date], workouts: newWorkouts };
-            return { ...prevData, logs: newLogs };
-        });
+    const deleteWorkout = async (date: string, workoutIndex: number) => {
+        if (!appData || !appData.logs[date]) return;
+        const newAppData = { ...appData };
+        const newLogs = { ...newAppData.logs };
+        const newWorkouts = newLogs[date].workouts.filter((_, index) => index !== workoutIndex);
+        newLogs[date] = { ...newLogs[date], workouts: newWorkouts };
+        newAppData.logs = newLogs;
+        await updateAppData(newAppData);
     };
 
-    const addCommonFood = (food: CommonFood) => {
-        setAppData(prevData => {
-            if (!prevData) return null;
-            const newCommonFoods = [...(prevData.commonFoods || []), food];
-            return { ...prevData, commonFoods: newCommonFoods };
-        });
+    const addCommonFood = async (food: CommonFood) => {
+        if (!appData) return;
+        const newAppData = {
+            ...appData,
+            commonFoods: [...(appData.commonFoods || []), food],
+        };
+        await updateAppData(newAppData);
     };
 
     const importData = async (jsonString: string): Promise<void> => {
