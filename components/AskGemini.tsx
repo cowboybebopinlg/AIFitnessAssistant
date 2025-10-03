@@ -8,11 +8,6 @@ import type { AskGeminiResponse } from '../types';
  * @file This file defines the "Ask Gemini" feature, including the floating action button (FAB)
  * and the chat modal for interacting with the Gemini API.
  */
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
-import { getIntentfulResponse } from '../services/geminiService';
-import type { AskGeminiResponse } from '../types';
 
 /**
  * Represents a single message in the chat conversation.

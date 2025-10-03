@@ -14,7 +14,7 @@ import AddWithGeminiModal from '../AddWithGeminiModal';
 const AddCardioWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { addWorkout, updateWorkout, getLogForDate, geminiApiKey } = useAppContext();
+  const { addWorkout, updateWorkout, getLogForDate, geminiApiKey, appData } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
   const prefillData = location.state?.prefillData as WorkoutSession | undefined;
@@ -128,19 +128,17 @@ const AddCardioWorkoutPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
-        <button className="text-white" onClick={() => navigate(-1)}>
+        <button className="text-neutral-800 dark:text-neutral-200" onClick={() => navigate(-1)}>
           <span className="material-symbols-outlined"> close </span>
         </button>
-        <h1 className="text-lg font-bold text-white text-center absolute left-1/2 -translate-x-1/2">{isEditMode ? 'Edit Cardio Workout' : 'Add Cardio Workout'}</h1>
-        <div className="w-8"></div>
+        <h1 className="text-lg font-bold text-center flex-1 pr-6">{isEditMode ? 'Edit Cardio Workout' : 'Add Cardio Workout'}</h1>
       </header>
-      <main className="p-2 space-y-4">
-        <div className="space-y-2">
+      <main className="p-4 space-y-4">
+        <div className="space-y-4">
           <div>
-            <label htmlFor="activity-type" className="block text-sm font-medium text-gray-400 mb-1">Activity Type</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Activity Type</label>
             <input
-              id="activity-type"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
               placeholder="e.g., Running"
               type="text"
               value={activityType}
@@ -149,22 +147,20 @@ const AddCardioWorkoutPage: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="duration" className="block text-sm font-medium text-gray-400 mb-1">Duration</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Duration (minutes)</label>
             <input
-              id="duration"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
-              placeholder="e.g., 30 mins"
-              type="text"
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
+              placeholder="e.g., 30"
+              type="number"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               disabled={!!fitbitActivity}
             />
           </div>
           <div>
-            <label htmlFor="average-heart-rate" className="block text-sm font-medium text-gray-400 mb-1">Average Heart Rate (bpm)</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Average Heart Rate (bpm)</label>
             <input
-              id="average-heart-rate"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
               placeholder="e.g., 140"
               type="number"
               value={averageHeartRate}
@@ -173,10 +169,9 @@ const AddCardioWorkoutPage: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="calories-burned" className="block text-sm font-medium text-gray-400 mb-1">Calories Burned</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Calories Burned</label>
             <input
-              id="calories-burned"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary"
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
               placeholder="e.g., 300"
               type="number"
               value={caloriesBurned}
@@ -185,36 +180,30 @@ const AddCardioWorkoutPage: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-400 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Notes</label>
             <textarea
-              id="notes"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-primary"
+              className="w-full h-20 p-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 resize-none"
               placeholder="e.g., felt strong, new PR)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             ></textarea>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="h-px bg-white/10 flex-grow"></div>
-          <span className="text-sm font-bold text-white">OR</span>
-          <div className="h-px bg-white/10 flex-grow"></div>
-        </div>
         {geminiApiKey && (
-          <div className="space-y-2 p-3 rounded-xl bg-primary/10">
+          <section className="py-4">
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/20 py-3 font-bold text-primary hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+              className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               onClick={() => setIsGeminiModalOpen(true)}
             >
               <span className="material-symbols-outlined"> auto_awesome </span>
               <span>Add with Gemini</span>
             </button>
-          </div>
+          </section>
         )}
       </main>
       <footer className="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
         <button
-          className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
+          className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={handleSaveWorkout}
           disabled={!!fitbitActivity || isLoadingGemini}
         >

@@ -15,7 +15,7 @@ import AddWithGeminiModal from '../AddWithGeminiModal';
 const AddWeightliftingWorkoutPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { addWorkout, geminiApiKey, updateWorkout, getLogForDate } = useAppContext();
+  const { addWorkout, geminiApiKey, updateWorkout, getLogForDate, appData } = useAppContext();
   const location = useLocation();
   const fitbitActivity = location.state?.fitbitActivity as FitbitActivity | undefined;
   const prefillData = location.state?.prefillData as WorkoutSession | undefined;
@@ -170,19 +170,18 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
           <p className="text-white text-lg mt-4">Gemini is analyzing your workout...</p>
         </div>
       )}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200/10 bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:bg-background-dark/80">
-        <button className="flex h-10 w-10 items-center justify-center rounded-full text-gray-600 dark:text-gray-300" onClick={() => navigate(-1)}>
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:bg-background-dark/80">
+        <button className="text-neutral-800 dark:text-neutral-200" onClick={() => navigate(-1)}>
           <span className="material-symbols-outlined"> close </span>
         </button>
-        <h1 className="text-lg font-bold text-gray-900 dark:text-white">{isEditMode ? 'Edit Workout' : 'Add Workout'}</h1>
-        <div className="w-10"></div>
+        <h1 className="text-lg font-bold text-center flex-1 pr-6">{isEditMode ? 'Edit Workout' : 'Add Workout'}</h1>
       </header>
-      <main className="p-2 space-y-4">
-        <div>
-            <label htmlFor="average-heart-rate" className="block text-sm font-medium text-gray-400 mb-1">Average Heart Rate (bpm)</label>
-            <input 
-              id="average-heart-rate"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+      <main className="p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Avg. Heart Rate (bpm)</label>
+            <input
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
               placeholder="e.g., 120"
               type="number"
               value={averageHeartRate}
@@ -190,46 +189,44 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
             />
           </div>
           <div>
-            <label htmlFor="calories-burned" className="block text-sm font-medium text-gray-400 mb-1">Calories Burned</label>
-            <input 
-              id="calories-burned"
-              className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-3 focus:ring-2 focus:ring-primary" 
+            <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Calories Burned</label>
+            <input
+              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
               placeholder="e.g., 250"
               type="number"
               value={caloriesBurned}
               onChange={(e) => setCaloriesBurned(e.target.value)}
             />
           </div>
+        </div>
         <div className="space-y-6">
           {exercises.map((exercise, exerciseIndex) => (
-            <div key={exercise.id} className="rounded-xl bg-background-light p-4 shadow-sm dark:bg-gray-800/20">
+            <div key={exercise.id} className="rounded-xl bg-neutral-200/50 dark:bg-neutral-800/50 p-4 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Exercise {exerciseIndex + 1}</h2>
-                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" onClick={() => handleDeleteExercise(exerciseIndex)}>
+                <h2 className="text-xl font-bold">Exercise {exerciseIndex + 1}</h2>
+                <button className="text-neutral-400 dark:text-neutral-500" onClick={() => handleDeleteExercise(exerciseIndex)}>
                   <span className="material-symbols-outlined">delete</span>
                 </button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor={`exercise-name-${exerciseIndex}`} className="block text-sm font-medium text-gray-400 mb-1">Exercise Name</label>
-                  <input 
-                    id={`exercise-name-${exerciseIndex}`}
-                    className="w-full bg-gray-800/50 text-white placeholder-gray-400/50 border-none rounded-lg p-4 focus:ring-2 focus:ring-primary"
-                    placeholder="e.g., Barbell Bench Press" 
+                  <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Exercise Name</label>
+                  <input
+                    className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
+                    placeholder="e.g., Barbell Bench Press"
                     type="text"
                     value={exercise.name}
                     onChange={(e) => handleExerciseChange(exerciseIndex, 'name', e.target.value)}
                   />
                 </div>
                 <div>
-                  <label htmlFor={`body-part-${exerciseIndex}`} className="block text-sm font-medium text-gray-400 mb-1">Body Part Targeted</label>
-                  <select 
-                    id={`body-part-${exerciseIndex}`}
-                    className="w-full appearance-none rounded-lg p-4 bg-gray-800/50 text-white placeholder-gray-400/50 border-none focus:ring-2 focus:ring-primary"
+                  <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Body Part Targeted</label>
+                  <select
+                    className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
                     value={exercise.bodyPart}
                     onChange={(e) => handleExerciseChange(exerciseIndex, 'bodyPart', e.target.value)}
                   >
-                    <option>Body Part Targeted</option>
+                    <option>Select Body Part</option>
                     <option>Chest</option>
                     <option>Back</option>
                     <option>Legs</option>
@@ -238,7 +235,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-3 pt-2">
-                  <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-gray-400">
+                  <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-neutral-600 dark:text-neutral-400">
                     <span className="w-8">Set</span>
                     <span>Reps</span>
                     <span>Weight (lbs)</span>
@@ -246,30 +243,26 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                   </div>
                   {exercise.sets.map((set, setIndex) => (
                     <div key={setIndex} className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-sm font-bold text-gray-200">{setIndex + 1}</span>
-                      <div className="relative flex items-center">
-                        <input 
-                          className="w-full rounded-lg p-4 bg-gray-800/50 text-white placeholder-gray-400/50 border-none text-center focus:ring-2 focus:ring-primary"
-                          type="number"
-                          value={set.reps}
-                          onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'reps', e.target.value)}
-                        />
-                      </div>
-                      <div className="relative flex items-center">
-                        <input 
-                          className="w-full rounded-lg p-4 bg-gray-800/50 text-white placeholder-gray-400/50 border-none text-center focus:ring-2 focus:ring-primary"
-                          type="number"
-                          value={set.weight}
-                          onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'weight', e.target.value)}
-                        />
-                      </div>
-                      <button className="text-gray-400 hover:text-white" onClick={() => handleDeleteSet(exerciseIndex, setIndex)}>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-300 dark:bg-neutral-700 text-sm font-bold">{setIndex + 1}</span>
+                      <input
+                        className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 text-center"
+                        type="number"
+                        value={set.reps}
+                        onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'reps', e.target.value)}
+                      />
+                      <input
+                        className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 text-center"
+                        type="number"
+                        value={set.weight}
+                        onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'weight', e.target.value)}
+                      />
+                      <button className="text-neutral-400 dark:text-neutral-500" onClick={() => handleDeleteSet(exerciseIndex, setIndex)}>
                         <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   ))}
-                  <button 
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-700 py-3 text-sm font-semibold text-gray-400 hover:border-primary hover:text-primary"
+                  <button
+                    className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                     onClick={() => handleAddSet(exerciseIndex)}
                   >
                     <span className="material-symbols-outlined"> add </span> Add Set
@@ -279,9 +272,9 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
             </div>
           ))}
         </div>
-        <div>
-          <button 
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/20 py-3 font-bold text-primary hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+        <div className="pt-4">
+          <button
+            className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             onClick={handleAddExercise}
           >
             <span className="material-symbols-outlined"> add_circle </span>
@@ -289,20 +282,20 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
           </button>
         </div>
         {geminiApiKey && (
-            <div className="space-y-2 p-3 rounded-xl bg-primary/10">
+            <section className="py-4">
                 <button
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/20 py-3 font-bold text-primary hover:bg-primary/30 dark:bg-primary/30 dark:hover:bg-primary/40"
+                className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 onClick={() => setIsGeminiModalOpen(true)}
                 >
                 <span className="material-symbols-outlined"> auto_awesome </span>
                 <span>Add with Gemini</span>
                 </button>
-            </div>
+            </section>
         )}
       </main>
-      <footer className="sticky bottom-0 border-t border-gray-200/10 bg-background-light/80 py-2 backdrop-blur-sm dark:bg-background-dark/80">
-        <button 
-          className="mt-4 flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-base font-bold text-white"
+      <footer className="sticky bottom-0 bg-background-light/80 py-2 backdrop-blur-sm dark:bg-background-dark/80">
+        <button
+          className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           onClick={handleSaveWorkout}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}

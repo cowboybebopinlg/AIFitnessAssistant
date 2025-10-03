@@ -6,6 +6,7 @@ import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
 import LoadingIndicator from '../LoadingIndicator';
 import { getLocalDateString } from '../../services/utils';
+import FormInput from '../FormInput';
 
 /**
  * A page component for adding food to the daily log.
@@ -84,6 +85,10 @@ const AddFoodPage: React.FC = () => {
 
     console.log('Adding meal:', newMeal, 'on date:', dateString);
     await addMeal(dateString, newMeal);
+
+    if (saveAsFavorite) {
+        addCommonFood(newMeal);
+    }
 
     navigate('/log');
   };
@@ -181,7 +186,7 @@ const AddFoodPage: React.FC = () => {
           {geminiApiKey && (
             <section className="py-4">
               <button
-                className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base"
+                className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                 onClick={() => setIsGeminiModalOpen(true)}
               >
                 <span className="material-symbols-outlined text-xl">auto_awesome</span>
@@ -192,57 +197,56 @@ const AddFoodPage: React.FC = () => {
           <section>
             <h2 className="text-xl font-bold mb-4">Manual Entry</h2>
             <div className="space-y-4">
-              <input
-                className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                placeholder="Food Name"
-                type="text"
+              <FormInput
+                label="Food Name"
                 value={foodName}
                 onChange={(e) => setFoodName(e.target.value)}
+                placeholder="e.g., Chicken Breast"
               />
               <div className="grid grid-cols-2 gap-4">
-                <input
-                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                  placeholder="Calories"
+                <FormInput
+                  label="Calories"
                   type="number"
                   value={calories}
                   onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 165"
                 />
-                <input
-                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                  placeholder="Protein (g)"
+                <FormInput
+                  label="Protein (g)"
                   type="number"
                   value={protein}
                   onChange={(e) => setProtein(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 31"
                 />
-                <input
-                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                  placeholder="Fat (g)"
+                <FormInput
+                  label="Fat (g)"
                   type="number"
                   value={fat}
                   onChange={(e) => setFat(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 3.6"
                 />
-                <input
-                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                  placeholder="Carbs (g)"
+                <FormInput
+                  label="Carbs (g)"
                   type="number"
                   value={carbs}
                   onChange={(e) => setCarbs(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 0"
                 />
-                <input
-                  className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                  placeholder="Sodium (mg)"
+                <FormInput
+                  label="Sodium (mg)"
                   type="number"
                   value={sodium}
                   onChange={(e) => setSodium(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 74"
+                />
+                <FormInput
+                  label="Fiber (g)"
+                  type="number"
+                  value={fiber}
+                  onChange={(e) => setFiber(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="e.g., 0"
                 />
               </div>
-              <input
-                className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                placeholder="Fiber (g)"
-                type="number"
-                value={fiber}
-                onChange={(e) => setFiber(e.target.value === '' ? '' : Number(e.target.value))}
-              />
               <label className="flex items-center justify-between p-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50">
                 <span className="font-medium">Save as Favorite</span>
                 <div className="relative inline-flex items-center cursor-pointer">
@@ -259,7 +263,7 @@ const AddFoodPage: React.FC = () => {
           </section>
           <div className="pt-4">
             <button
-              className="w-full h-12 px-6 rounded-lg bg-primary/90 hover:bg-primary text-white font-bold text-base"
+              className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               onClick={handleAddFoodManually}
             >
               Add Food
