@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { UserProfile, Measurement } from '../../types';
+import FormInput from '../FormInput';
 
 /**
  * A reusable accordion component for creating collapsible sections within the profile page.
@@ -277,7 +278,11 @@ const ProfilePage: React.FC = () => {
                             </div>
                             <div>
                                 <label htmlFor="target-date" className="block text-sm font-medium text-gray-300 mb-1">Target Date</label>
-                                <input type="date" id="target-date" value={targetDate} onChange={e => setTargetDate(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <FormInput
+                                    type="date"
+                                    value={targetDate}
+                                    onChange={e => setTargetDate(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="mt-4">
@@ -289,16 +294,27 @@ const ProfilePage: React.FC = () => {
                     <AccordionSection title="Biometrics & Measurements" isOpen={openSections.biometrics} onToggle={() => handleToggleSection('biometrics')}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label htmlFor="height" className="block text-sm font-medium text-gray-300 mb-1">Height</label>
-                                <input type="text" id="height" value={height} onChange={e => setHeight(e.target.value)} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <FormInput
+                                    label="Height"
+                                    value={height}
+                                    onChange={e => setHeight(e.target.value)}
+                                />
                             </div>
                             <div>
-                                <label htmlFor="starting-weight" className="block text-sm font-medium text-gray-300 mb-1">Starting Weight (lbs)</label>
-                                <input type="number" step="0.1" id="starting-weight" value={startingWeight} onChange={e => setStartingWeight(Number(e.target.value))} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <FormInput
+                                    label="Starting Weight (lbs)"
+                                    type="number"
+                                    value={startingWeight}
+                                    onChange={e => setStartingWeight(Number(e.target.value))}
+                                />
                             </div>
                             <div>
-                                <label htmlFor="current-weight" className="block text-sm font-medium text-gray-300 mb-1">Current Weight (lbs)</label>
-                                <input type="number" step="0.1" id="current-weight" value={currentWeight} onChange={e => setCurrentWeight(Number(e.target.value))} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
+                                <FormInput
+                                    label="Current Weight (lbs)"
+                                    type="number"
+                                    value={currentWeight}
+                                    onChange={e => setCurrentWeight(Number(e.target.value))}
+                                />
                             </div>
                         </div>
                         <div className="mt-4 space-y-2">
@@ -352,51 +368,21 @@ const ProfilePage: React.FC = () => {
                             <div>
                                 <h4 className="font-semibold text-gray-200 mb-2">Training Day Targets</h4>
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                    <div>
-                                        <label htmlFor="training-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
-                                        <input id="training-calories" type="number" placeholder="Calories" value={trainingDayTargets.calories} onChange={e => setTrainingDayTargets({...trainingDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
-                                        <input id="training-protein" type="number" placeholder="Protein (g)" value={trainingDayTargets.protein} onChange={e => setTrainingDayTargets({...trainingDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
-                                        <input id="training-fat" type="number" placeholder="Fat (g)" value={trainingDayTargets.fat} onChange={e => setTrainingDayTargets({...trainingDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
-                                        <input id="training-fiber" type="number" placeholder="Fiber (g)" value={trainingDayTargets.fiber} onChange={e => setTrainingDayTargets({...trainingDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="training-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
-                                        <input id="training-sodium" type="number" placeholder="Sodium (mg)" value={trainingDayTargets.sodium} onChange={e => setTrainingDayTargets({...trainingDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
+                                    <FormInput label="Calories" type="number" placeholder="Calories" value={trainingDayTargets.calories} onChange={e => setTrainingDayTargets({...trainingDayTargets, calories: e.target.value})} />
+                                    <FormInput label="Protein (g)" type="number" placeholder="Protein (g)" value={trainingDayTargets.protein} onChange={e => setTrainingDayTargets({...trainingDayTargets, protein: e.target.value})} />
+                                    <FormInput label="Fat (g)" type="number" placeholder="Fat (g)" value={trainingDayTargets.fat} onChange={e => setTrainingDayTargets({...trainingDayTargets, fat: e.target.value})} />
+                                    <FormInput label="Fiber (g)" type="number" placeholder="Fiber (g)" value={trainingDayTargets.fiber} onChange={e => setTrainingDayTargets({...trainingDayTargets, fiber: e.target.value})} />
+                                    <FormInput label="Sodium (mg)" type="number" placeholder="Sodium (mg)" value={trainingDayTargets.sodium} onChange={e => setTrainingDayTargets({...trainingDayTargets, sodium: e.target.value})} />
                                 </div>
                             </div>
                             <div>
                                 <h4 className="font-semibold text-gray-200 mb-2">Recovery Day Targets</h4>
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                    <div>
-                                        <label htmlFor="recovery-calories" className="block text-sm font-medium text-gray-400 mb-1">Calories</label>
-                                        <input id="recovery-calories" type="number" placeholder="Calories" value={recoveryDayTargets.calories} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, calories: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-protein" className="block text-sm font-medium text-gray-400 mb-1">Protein (g)</label>
-                                        <input id="recovery-protein" type="number" placeholder="Protein (g)" value={recoveryDayTargets.protein} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, protein: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-fat" className="block text-sm font-medium text-gray-400 mb-1">Fat (g)</label>
-                                        <input id="recovery-fat" type="number" placeholder="Fat (g)" value={recoveryDayTargets.fat} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fat: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-fiber" className="block text-sm font-medium text-gray-400 mb-1">Fiber (g)</label>
-                                        <input id="recovery-fiber" type="number" placeholder="Fiber (g)" value={recoveryDayTargets.fiber} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fiber: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="recovery-sodium" className="block text-sm font-medium text-gray-400 mb-1">Sodium (mg)</label>
-                                        <input id="recovery-sodium" type="number" placeholder="Sodium (mg)" value={recoveryDayTargets.sodium} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, sodium: e.target.value})} className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500" />
-                                    </div>
+                                    <FormInput label="Calories" type="number" placeholder="Calories" value={recoveryDayTargets.calories} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, calories: e.target.value})} />
+                                    <FormInput label="Protein (g)" type="number" placeholder="Protein (g)" value={recoveryDayTargets.protein} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, protein: e.target.value})} />
+                                    <FormInput label="Fat (g)" type="number" placeholder="Fat (g)" value={recoveryDayTargets.fat} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fat: e.target.value})} />
+                                    <FormInput label="Fiber (g)" type="number" placeholder="Fiber (g)" value={recoveryDayTargets.fiber} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, fiber: e.target.value})} />
+                                    <FormInput label="Sodium (mg)" type="number" placeholder="Sodium (mg)" value={recoveryDayTargets.sodium} onChange={e => setRecoveryDayTargets({...recoveryDayTargets, sodium: e.target.value})} />
                                 </div>
                             </div>
                         </div>

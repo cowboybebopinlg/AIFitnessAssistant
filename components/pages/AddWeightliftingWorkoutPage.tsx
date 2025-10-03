@@ -4,6 +4,7 @@ import { useAppContext } from '../../context/AppContext';
 import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import AddWithGeminiModal from '../AddWithGeminiModal';
+import FormInput from '../FormInput';
 
 /**
  * A page component for adding or editing a weightlifting workout session.
@@ -47,7 +48,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
         setAverageHeartRate(String(prefillData.averageHeartRate || ''));
         setCaloriesBurned(String(prefillData.caloriesBurned || ''));
     }
-  }, [isEditMode, workoutIndex, dateString, getLogForDate, prefillData]);
+  }, [isEditMode, workoutIndex, dateString, prefillData]);
 
   useEffect(() => {
     if (fitbitActivity) {
@@ -178,26 +179,20 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
       </header>
       <main className="p-4 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Avg. Heart Rate (bpm)</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., 120"
-              type="number"
-              value={averageHeartRate}
-              onChange={(e) => setAverageHeartRate(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Calories Burned</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., 250"
-              type="number"
-              value={caloriesBurned}
-              onChange={(e) => setCaloriesBurned(e.target.value)}
-            />
-          </div>
+          <FormInput
+            label="Avg. Heart Rate (bpm)"
+            type="number"
+            value={averageHeartRate}
+            onChange={(e) => setAverageHeartRate(e.target.value)}
+            placeholder="e.g., 120"
+          />
+          <FormInput
+            label="Calories Burned"
+            type="number"
+            value={caloriesBurned}
+            onChange={(e) => setCaloriesBurned(e.target.value)}
+            placeholder="e.g., 250"
+          />
         </div>
         <div className="space-y-6">
           {exercises.map((exercise, exerciseIndex) => (
@@ -209,16 +204,12 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                 </button>
               </div>
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Exercise Name</label>
-                  <input
-                    className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-                    placeholder="e.g., Barbell Bench Press"
-                    type="text"
-                    value={exercise.name}
-                    onChange={(e) => handleExerciseChange(exerciseIndex, 'name', e.target.value)}
-                  />
-                </div>
+                <FormInput
+                  label="Exercise Name"
+                  value={exercise.name}
+                  onChange={(e) => handleExerciseChange(exerciseIndex, 'name', e.target.value)}
+                  placeholder="e.g., Barbell Bench Press"
+                />
                 <div>
                   <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Body Part Targeted</label>
                   <select

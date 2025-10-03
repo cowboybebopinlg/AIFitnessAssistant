@@ -4,6 +4,7 @@ import { useAppContext } from '../../context/AppContext';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import { WorkoutSession, FitbitActivity } from '../../types';
 import AddWithGeminiModal from '../AddWithGeminiModal';
+import FormInput from '../FormInput';
 
 /**
  * A page component for adding or editing a cardio workout session.
@@ -60,7 +61,7 @@ const AddCardioWorkoutPage: React.FC = () => {
       setAverageHeartRate(String(fitbitActivity.averageHeartRate || ''));
       setNotes(`Synced from Fitbit. Distance: ${fitbitActivity.distance} miles, Steps: ${fitbitActivity.steps}`);
     }
-  }, [fitbitActivity, isEditMode, workoutIndex, dateString, getLogForDate, prefillData]);
+  }, [fitbitActivity, isEditMode, workoutIndex, dateString, prefillData]);
 
   const handleSaveWorkout = () => {
     if (!activityType || !duration) {
@@ -135,50 +136,37 @@ const AddCardioWorkoutPage: React.FC = () => {
       </header>
       <main className="p-4 space-y-4">
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Activity Type</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., Running"
-              type="text"
-              value={activityType}
-              onChange={(e) => setActivityType(e.target.value)}
-              disabled={!!fitbitActivity}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Duration (minutes)</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., 30"
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              disabled={!!fitbitActivity}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Average Heart Rate (bpm)</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., 140"
-              type="number"
-              value={averageHeartRate}
-              onChange={(e) => setAverageHeartRate(e.target.value)}
-              disabled={!!fitbitActivity}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Calories Burned</label>
-            <input
-              className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
-              placeholder="e.g., 300"
-              type="number"
-              value={caloriesBurned}
-              onChange={(e) => setCaloriesBurned(e.target.value)}
-              disabled={!!fitbitActivity}
-            />
-          </div>
+          <FormInput
+            label="Activity Type"
+            value={activityType}
+            onChange={(e) => setActivityType(e.target.value)}
+            placeholder="e.g., Running"
+            disabled={!!fitbitActivity}
+          />
+          <FormInput
+            label="Duration (minutes)"
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            placeholder="e.g., 30"
+            disabled={!!fitbitActivity}
+          />
+          <FormInput
+            label="Average Heart Rate (bpm)"
+            type="number"
+            value={averageHeartRate}
+            onChange={(e) => setAverageHeartRate(e.target.value)}
+            placeholder="e.g., 140"
+            disabled={!!fitbitActivity}
+          />
+          <FormInput
+            label="Calories Burned"
+            type="number"
+            value={caloriesBurned}
+            onChange={(e) => setCaloriesBurned(e.target.value)}
+            placeholder="e.g., 300"
+            disabled={!!fitbitActivity}
+          />
           <div>
             <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Notes</label>
             <textarea
