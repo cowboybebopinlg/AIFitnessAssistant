@@ -51,7 +51,7 @@ const AddFoodPage: React.FC = () => {
 
   const dateString = searchParams.get('date') || getLocalDateString(new Date());
 
-  const [activeTab, setActiveTab] = useState('saved'); // 'saved' or 'recent'
+  const [activeTab, setActiveTab] = useState('manual'); // 'saved', 'recent', or 'manual'
   const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
 
   const [foodName, setFoodName] = useState('');
@@ -63,13 +63,15 @@ const AddFoodPage: React.FC = () => {
   const [sodium, setSodium] = useState<number | ''>('');
   const [saveAsFavorite, setSaveAsFavorite] = useState(false);
 
+  const canSave = foodName.trim() !== '' && calories !== '' && protein !== '' && fat !== '' && carbs !== '';
+
   const handleClose = () => {
     navigate(-1); // Go back to the previous page (Daily Log)
   };
 
   const handleAddFoodManually = async () => {
-    if (!foodName || !calories || !protein || !fat || !carbs) {
-      alert("Please fill in all manual entry fields.");
+    if (!canSave) {
+      alert("Please fill in all required manual entry fields.");
       return;
     }
 
@@ -130,148 +132,159 @@ const AddFoodPage: React.FC = () => {
     alert(`Added ${food.name} from list!`);
   };
 
-  return (
-    <div className="flex flex-col h-screen justify-between">
-      <div className="flex-grow overflow-y-auto">
-        <header className="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10">
-          <div className="flex items-center p-4">
-            <button className="text-neutral-800 dark:text-neutral-200" onClick={handleClose}>
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <h1 className="text-lg font-bold text-center flex-1 pr-6">Add Food</h1>
+  const renderContent = () => {
+    if (activeTab === 'manual') {
+      return (
+        <div className="space-y-4">
+          <FormInput
+            label="Food Name"
+            value={foodName}
+            onChange={(e) => setFoodName(e.target.value)}
+            placeholder="e.g., Chicken Breast"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormInput
+              label="Calories"
+              type="number"
+              value={calories}
+              onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 165"
+            />
+            <FormInput
+              label="Protein (g)"
+              type="number"
+              value={protein}
+              onChange={(e) => setProtein(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 31"
+            />
+            <FormInput
+              label="Fat (g)"
+              type="number"
+              value={fat}
+              onChange={(e) => setFat(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 3.6"
+            />
+            <FormInput
+              label="Carbs (g)"
+              type="number"
+              value={carbs}
+              onChange={(e) => setCarbs(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 0"
+            />
+            <FormInput
+              label="Sodium (mg)"
+              type="number"
+              value={sodium}
+              onChange={(e) => setSodium(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 74"
+            />
+            <FormInput
+              label="Fiber (g)"
+              type="number"
+              value={fiber}
+              onChange={(e) => setFiber(e.target.value === '' ? '' : Number(e.target.value))}
+              placeholder="e.g., 0"
+            />
           </div>
-          <div className="border-b border-neutral-200 dark:border-neutral-700 px-4">
-            <div className="flex">
-              <a
-                className={`flex-1 text-center py-3 text-sm font-bold border-b-2 ${activeTab === 'saved' ? 'border-primary text-primary' : 'border-transparent text-neutral-500 dark:text-neutral-400'}`}
-                href="#"
-                onClick={(e) => { e.preventDefault(); setActiveTab('saved'); }}
-              >
-                Saved
-              </a>
-              <a
-                className={`flex-1 text-center py-3 text-sm font-bold border-b-2 ${activeTab === 'recent' ? 'border-primary text-primary' : 'border-transparent text-neutral-500 dark:text-neutral-400'}`}
-                href="#"
-                onClick={(e) => { e.preventDefault(); setActiveTab('recent'); }}
-              >
-                Recent
-              </a>
-            </div>
-          </div>
-        </header>
-        <main className="p-4 space-y-4">
-          <section>
-            <div className="space-y-2">
-              {foodsToDisplay.length === 0 ? (
-                <p className="text-neutral-500 dark:text-neutral-400 text-center">No {activeTab} foods found.</p>
-              ) : (
-                foodsToDisplay.map((food, index) => (
-                  <div key={index} className="flex items-center gap-4 p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 cursor-pointer">
-                    <div
-                      className="w-14 h-14 rounded-lg bg-cover bg-center"
-                      style={{ backgroundImage: `url('${(food as any).imageUrl || 'https://via.placeholder.com/150?text=Food'}')` }}
-                    ></div>
-                    <div className="flex-1">
-                      <p className="font-medium">{food.name}</p>
-                      <p className="text-sm text-neutral-500 dark:text-neutral-400">{food.calories} kcal</p>
-                    </div>
-                    <button onClick={() => handleAddFoodFromList(food)}>
-                      <span className="material-symbols-outlined text-neutral-400 dark:text-neutral-500">add_circle_outline</span>
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-          {geminiApiKey && (
-            <section className="py-4">
-              <button
-                className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                onClick={() => setIsGeminiModalOpen(true)}
-              >
-                <span className="material-symbols-outlined text-xl">auto_awesome</span>
-                <span>Add with Gemini</span>
-              </button>
-            </section>
-          )}
-          <section>
-            <h2 className="text-xl font-bold mb-4">Manual Entry</h2>
-            <div className="space-y-4">
-              <FormInput
-                label="Food Name"
-                value={foodName}
-                onChange={(e) => setFoodName(e.target.value)}
-                placeholder="e.g., Chicken Breast"
+          <label className="flex items-center justify-between rounded-xl bg-neutral-800/50 p-4">
+            <span className="font-medium">Save as Favorite</span>
+            <div className="relative inline-flex cursor-pointer items-center">
+              <input
+                className="peer sr-only"
+                type="checkbox"
+                checked={saveAsFavorite}
+                onChange={(e) => setSaveAsFavorite(e.target.checked)}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormInput
-                  label="Calories"
-                  type="number"
-                  value={calories}
-                  onChange={(e) => setCalories(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 165"
-                />
-                <FormInput
-                  label="Protein (g)"
-                  type="number"
-                  value={protein}
-                  onChange={(e) => setProtein(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 31"
-                />
-                <FormInput
-                  label="Fat (g)"
-                  type="number"
-                  value={fat}
-                  onChange={(e) => setFat(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 3.6"
-                />
-                <FormInput
-                  label="Carbs (g)"
-                  type="number"
-                  value={carbs}
-                  onChange={(e) => setCarbs(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 0"
-                />
-                <FormInput
-                  label="Sodium (mg)"
-                  type="number"
-                  value={sodium}
-                  onChange={(e) => setSodium(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 74"
-                />
-                <FormInput
-                  label="Fiber (g)"
-                  type="number"
-                  value={fiber}
-                  onChange={(e) => setFiber(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g., 0"
-                />
-              </div>
-              <label className="flex items-center justify-between p-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50">
-                <span className="font-medium">Save as Favorite</span>
-                <div className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    className="sr-only peer"
-                    type="checkbox"
-                    checked={saveAsFavorite}
-                    onChange={(e) => setSaveAsFavorite(e.target.checked)}
-                  />
-                  <div className="w-11 h-6 bg-neutral-300 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-primary"></div>
-                </div>
-              </label>
+              <div className="peer h-6 w-11 rounded-full bg-neutral-700 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white dark:border-neutral-600"></div>
             </div>
-          </section>
-          <div className="pt-4">
+          </label>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {foodsToDisplay.length === 0 ? (
+          <p className="text-center text-neutral-400">No {activeTab} foods found.</p>
+        ) : (
+          foodsToDisplay.map((food, index) => (
+            <div key={index} className="flex cursor-pointer items-center gap-4 rounded-xl bg-neutral-800/50 p-3 transition-colors hover:bg-primary/20">
+              <div
+                className="h-14 w-14 rounded-lg bg-cover bg-center"
+                style={{ backgroundImage: `url('${(food as any).imageUrl || 'https://via.placeholder.com/150?text=Food'}')` }}
+              ></div>
+              <div className="flex-1">
+                <p className="font-medium">{food.name}</p>
+                <p className="text-sm text-neutral-400">{food.calories} kcal</p>
+              </div>
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary transition-colors hover:bg-primary/30"
+                onClick={() => handleAddFoodFromList(food)}
+              >
+                <span className="material-symbols-outlined">add</span>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-screen flex-col bg-background-dark text-white">
+      <header className="sticky top-0 z-10 border-b border-neutral-700 bg-background-dark/80 backdrop-blur-sm">
+        <div className="flex items-center p-4">
+          <button className="text-neutral-200" onClick={handleClose}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+          <h1 className="flex-1 text-center text-lg font-bold pr-6">Add Food</h1>
+        </div>
+        <div className="px-4">
+          <div className="flex">
             <button
-              className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-              onClick={handleAddFoodManually}
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'manual' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              onClick={() => setActiveTab('manual')}
             >
-              Add Food
+              Manual
+            </button>
+            <button
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'saved' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              onClick={() => setActiveTab('saved')}
+            >
+              Saved
+            </button>
+            <button
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'recent' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              onClick={() => setActiveTab('recent')}
+            >
+              Recent
             </button>
           </div>
-        </main>
-      </div>
-
+        </div>
+      </header>
+      <main className="flex-1 space-y-4 overflow-y-auto p-4">
+        {renderContent()}
+      </main>
+      <footer className="sticky bottom-0 z-10 space-y-4 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+        {geminiApiKey && (
+          <button
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
+            onClick={() => setIsGeminiModalOpen(true)}
+          >
+            <span className="material-symbols-outlined">auto_awesome</span>
+            <span>Add with Gemini</span>
+          </button>
+        )}
+        {activeTab === 'manual' && (
+          <button
+            className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
+            onClick={handleAddFoodManually}
+            disabled={!canSave || isAnalyzing}
+          >
+            Add Food
+          </button>
+        )}
+      </footer>
 
       <AddWithGeminiModal
         isOpen={isGeminiModalOpen}
@@ -281,7 +294,7 @@ const AddFoodPage: React.FC = () => {
         placeholder="e.g., 1 scoop protein, 1 banana, 300ml milk"
         onAnalyze={handleAnalyzeFoodWithGemini}
       />
-      {isAnalyzing && <LoadingIndicator />}
+      {isAnalyzing && <LoadingIndicator text="Analyzing with Gemini..." />}
     </div>
   );
 };

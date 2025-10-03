@@ -5,6 +5,7 @@ import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 import FormInput from '../FormInput';
+import LoadingIndicator from '../LoadingIndicator';
 
 /**
  * A page component for adding or editing a weightlifting workout session.
@@ -32,6 +33,8 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
   const [isLoadingGemini, setIsLoadingGemini] = useState(false);
+
+  const canSave = exercises.length > 0 && exercises.every(ex => ex.name.trim() !== '');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -164,20 +167,15 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {isLoadingGemini && (
-        <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-          <p className="text-white text-lg mt-4">Gemini is analyzing your workout...</p>
-        </div>
-      )}
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:bg-background-dark/80">
-        <button className="text-neutral-800 dark:text-neutral-200" onClick={() => navigate(-1)}>
-          <span className="material-symbols-outlined"> close </span>
+    <div className="flex h-screen flex-col bg-background-dark text-white">
+      {isLoadingGemini && <LoadingIndicator text="Analyzing your workout..." />}
+      <header className="sticky top-0 z-10 flex items-center border-b border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+        <button className="text-neutral-200" onClick={() => navigate(-1)}>
+          <span className="material-symbols-outlined">close</span>
         </button>
-        <h1 className="text-lg font-bold text-center flex-1 pr-6">{isEditMode ? 'Edit Workout' : 'Add Workout'}</h1>
+        <h1 className="flex-1 text-center text-lg font-bold pr-6">{isEditMode ? 'Edit Workout' : 'Add Workout'}</h1>
       </header>
-      <main className="p-4 space-y-4">
+      <main className="flex-1 space-y-6 overflow-y-auto p-4">
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             label="Avg. Heart Rate (bpm)"
@@ -196,10 +194,13 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
         </div>
         <div className="space-y-6">
           {exercises.map((exercise, exerciseIndex) => (
-            <div key={exercise.id} className="rounded-xl bg-neutral-200/50 dark:bg-neutral-800/50 p-4 shadow-sm">
+            <div key={exercise.id} className="rounded-xl bg-neutral-800/50 p-4 shadow-sm">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold">Exercise {exerciseIndex + 1}</h2>
-                <button className="text-neutral-400 dark:text-neutral-500" onClick={() => handleDeleteExercise(exerciseIndex)}>
+                <button
+                  className="text-neutral-400 transition-colors hover:text-red-500"
+                  onClick={() => handleDeleteExercise(exerciseIndex)}
+                >
                   <span className="material-symbols-outlined">delete</span>
                 </button>
               </div>
@@ -211,9 +212,9 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                   placeholder="e.g., Barbell Bench Press"
                 />
                 <div>
-                  <label className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Body Part Targeted</label>
+                  <label className="text-sm font-bold text-neutral-400">Body Part Targeted</label>
                   <select
-                    className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400"
+                    className="h-14 w-full rounded-xl border-none bg-neutral-800/50 px-4 placeholder-neutral-400 focus:ring-2 focus:ring-primary"
                     value={exercise.bodyPart}
                     onChange={(e) => handleExerciseChange(exerciseIndex, 'bodyPart', e.target.value)}
                   >
@@ -226,68 +227,70 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-3 pt-2">
-                  <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-neutral-600 dark:text-neutral-400">
+                  <div className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4 px-2 pb-2 text-center text-sm font-semibold text-neutral-400">
                     <span className="w-8">Set</span>
                     <span>Reps</span>
                     <span>Weight (lbs)</span>
-                    <span></span>
+                    <span className="w-8"></span>
                   </div>
                   {exercise.sets.map((set, setIndex) => (
                     <div key={setIndex} className="grid grid-cols-[auto_1fr_1fr_auto] items-center gap-x-4">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-300 dark:bg-neutral-700 text-sm font-bold">{setIndex + 1}</span>
+                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-700 text-sm font-bold">{setIndex + 1}</span>
                       <input
-                        className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 text-center"
+                        className="h-14 w-full rounded-xl border-none bg-neutral-800/50 text-center placeholder-neutral-400 focus:ring-2 focus:ring-primary"
                         type="number"
                         value={set.reps}
                         onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'reps', e.target.value)}
                       />
                       <input
-                        className="w-full h-14 px-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 text-center"
+                        className="h-14 w-full rounded-xl border-none bg-neutral-800/50 text-center placeholder-neutral-400 focus:ring-2 focus:ring-primary"
                         type="number"
                         value={set.weight}
                         onChange={(e) => handleSetChange(exerciseIndex, setIndex, 'weight', e.target.value)}
                       />
-                      <button className="text-neutral-400 dark:text-neutral-500" onClick={() => handleDeleteSet(exerciseIndex, setIndex)}>
+                      <button
+                        className="text-neutral-500 transition-colors hover:text-red-500"
+                        onClick={() => handleDeleteSet(exerciseIndex, setIndex)}
+                      >
                         <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   ))}
                   <button
-                    className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-3 font-bold text-primary transition-colors hover:bg-primary/30"
                     onClick={() => handleAddSet(exerciseIndex)}
                   >
-                    <span className="material-symbols-outlined"> add </span> Add Set
+                    <span className="material-symbols-outlined">add</span> Add Set
                   </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="pt-4">
+        <div className="space-y-4 pt-4">
           <button
-            className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-700 py-4 font-bold text-neutral-400 transition-colors hover:border-primary hover:text-primary"
             onClick={handleAddExercise}
           >
-            <span className="material-symbols-outlined"> add_circle </span>
+            <span className="material-symbols-outlined">add</span>
             <span>Add Exercise</span>
           </button>
+          {geminiApiKey && (
+            <button
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
+              onClick={() => setIsGeminiModalOpen(true)}
+            >
+              <span className="material-symbols-outlined">auto_awesome</span>
+              <span>Add with Gemini</span>
+            </button>
+          )}
         </div>
-        {geminiApiKey && (
-            <section className="py-4">
-                <button
-                className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                onClick={() => setIsGeminiModalOpen(true)}
-                >
-                <span className="material-symbols-outlined"> auto_awesome </span>
-                <span>Add with Gemini</span>
-                </button>
-            </section>
-        )}
       </main>
-      <footer className="sticky bottom-0 bg-background-light/80 py-2 backdrop-blur-sm dark:bg-background-dark/80">
+      <footer className="sticky bottom-0 z-10 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
         <button
-          className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
           onClick={handleSaveWorkout}
+          disabled={!canSave || isLoadingGemini}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { DumbbellIcon, RunningIcon } from '../icons';
 
 /**
  * A page component that prompts the user to choose between a "Cardio" or "Weights" workout.
@@ -16,31 +17,42 @@ const ChooseWorkoutType: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-full flex-col">
-      <header className="flex items-center justify-between p-4">
-        <button className="text-gray-600 dark:text-gray-400" onClick={() => navigate(-1)}>
-          <svg fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
-          </svg>
+    <div className="flex h-screen w-full flex-col bg-background-dark text-white">
+      <header className="sticky top-0 z-10 flex items-center border-b border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+        <button className="text-neutral-200" onClick={() => navigate(-1)}>
+          <span className="material-symbols-outlined">close</span>
         </button>
-        <h1 className="text-lg font-bold">Add Workout</h1>
-        <div className="w-6"></div>
+        <h1 className="flex-1 text-center text-lg font-bold pr-6">Add Workout</h1>
       </header>
-      <main className="flex-1 px-4 py-8">
-        <h2 className="text-2xl font-bold mb-8">What type of workout?</h2>
+      <main className="flex-1 overflow-y-auto p-4">
+        <h2 className="mb-8 text-2xl font-bold">What type of workout?</h2>
         <div className="space-y-4">
-          <a className="flex items-center justify-between rounded-lg bg-white/5 dark:bg-black/10 p-4 transition-all duration-200 hover:bg-primary/20 dark:hover:bg-primary/30" href="#" onClick={(e) => { e.preventDefault(); navigate(`/log/add-workout/cardio?date=${dateString}`); }}>
-            <span className="text-lg font-medium">Cardio</span>
-            <svg className="text-gray-500 dark:text-gray-400" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
-            </svg>
-          </a>
-          <a className="flex items-center justify-between rounded-lg bg-white/5 dark:bg-black/10 p-4 transition-all duration-200 hover:bg-primary/20 dark:hover:bg-primary/30" href="#" onClick={(e) => { e.preventDefault(); navigate(`/log/add-workout/weights?date=${dateString}`); }}>
-            <span className="text-lg font-medium">Weights</span>
-            <svg className="text-gray-500 dark:text-gray-400" fill="currentColor" height="24" viewBox="0 0 256 256" width="24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
-            </svg>
-          </a>
+          <button
+            className="flex w-full items-center gap-4 rounded-xl bg-neutral-800/50 p-6 text-left transition-all duration-200 hover:bg-primary/20"
+            onClick={() => navigate(`/log/add-workout/cardio?date=${dateString}`)}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/30 text-primary">
+              <RunningIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-lg font-bold">Cardio</p>
+              <p className="text-sm text-neutral-400">Running, cycling, swimming, etc.</p>
+            </div>
+            <span className="material-symbols-outlined ml-auto text-neutral-500">chevron_right</span>
+          </button>
+          <button
+            className="flex w-full items-center gap-4 rounded-xl bg-neutral-800/50 p-6 text-left transition-all duration-200 hover:bg-primary/20"
+            onClick={() => navigate(`/log/add-workout/weights?date=${dateString}`)}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/30 text-primary">
+              <DumbbellIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-lg font-bold">Weightlifting</p>
+              <p className="text-sm text-neutral-400">Strength training, bodybuilding, etc.</p>
+            </div>
+            <span className="material-symbols-outlined ml-auto text-neutral-500">chevron_right</span>
+          </button>
         </div>
       </main>
     </div>
