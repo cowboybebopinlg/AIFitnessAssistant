@@ -5,6 +5,7 @@ import { getWorkoutInfoFromText } from '../../services/geminiService';
 import { WorkoutSession, FitbitActivity } from '../../types';
 import AddWithGeminiModal from '../AddWithGeminiModal';
 import FormInput from '../FormInput';
+import LoadingIndicator from '../LoadingIndicator';
 
 /**
  * A page component for adding or editing a cardio workout session.
@@ -127,14 +128,14 @@ const AddCardioWorkoutPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="flex items-center justify-between p-4 bg-background-light dark:bg-background-dark sticky top-0 z-10">
-        <button className="text-neutral-800 dark:text-neutral-200" onClick={() => navigate(-1)}>
-          <span className="material-symbols-outlined"> close </span>
+    <div className="flex h-screen flex-col bg-background-dark text-white">
+      <header className="sticky top-0 z-10 flex items-center border-b border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+        <button className="text-neutral-200" onClick={() => navigate(-1)}>
+          <span className="material-symbols-outlined">close</span>
         </button>
-        <h1 className="text-lg font-bold text-center flex-1 pr-6">{isEditMode ? 'Edit Cardio Workout' : 'Add Cardio Workout'}</h1>
+        <h1 className="flex-1 text-center text-lg font-bold pr-6">{isEditMode ? 'Edit Cardio Workout' : 'Add Cardio Workout'}</h1>
       </header>
-      <main className="p-4 space-y-4">
+      <main className="flex-1 space-y-6 overflow-y-auto p-4">
         <div className="space-y-4">
           <FormInput
             label="Activity Type"
@@ -168,47 +169,37 @@ const AddCardioWorkoutPage: React.FC = () => {
             disabled={!!fitbitActivity}
           />
           <div>
-            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-neutral-400">Notes</label>
             <textarea
-              className="w-full h-20 p-4 rounded-lg bg-neutral-200/50 dark:bg-neutral-800/50 border-none focus:ring-2 focus:ring-primary placeholder-neutral-500 dark:placeholder-neutral-400 resize-none"
-              placeholder="e.g., felt strong, new PR)"
+              className="h-24 w-full resize-none rounded-xl border-none bg-neutral-800/50 p-4 placeholder-neutral-400 focus:ring-2 focus:ring-primary"
+              placeholder="e.g., felt strong, new PR"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             ></textarea>
           </div>
         </div>
         {geminiApiKey && (
-          <section className="py-4">
+          <section>
             <button
-              className="w-full flex items-center justify-center gap-2 h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
               onClick={() => setIsGeminiModalOpen(true)}
             >
-              <span className="material-symbols-outlined"> auto_awesome </span>
+              <span className="material-symbols-outlined">auto_awesome</span>
               <span>Add with Gemini</span>
             </button>
           </section>
         )}
       </main>
-      <footer className="p-4 bg-background-light dark:bg-background-dark sticky bottom-0">
+      <footer className="sticky bottom-0 z-10 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
         <button
-          className="w-full flex items-center justify-center h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
           onClick={handleSaveWorkout}
-          disabled={!!fitbitActivity || isLoadingGemini}
+          disabled={!activityType || !duration || !!fitbitActivity || isLoadingGemini}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
-      {isLoadingGemini && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="flex flex-col rounded-xl bg-background-light dark:bg-background-dark p-8 items-center justify-center">
-            <svg className="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p className="mt-4 text-lg font-bold text-slate-900 dark:text-white">Analyzing with Gemini...</p>
-          </div>
-        </div>
-      )}
+      {isLoadingGemini && <LoadingIndicator text="Analyzing with Gemini..." />}
       <AddWithGeminiModal
         isOpen={isGeminiModalOpen}
         onClose={() => setIsGeminiModalOpen(false)}
