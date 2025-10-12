@@ -20,12 +20,12 @@ const safetySettings = [
 /**
  * Generates a structured suggestion for the user's dashboard based on their data.
  * @param {AppData} appData - The complete application data for the user.
- * @param {string} apiKey - The user's Gemini API key.
+ * @param {string} apiKey - The user's FitAI API key.
  * @returns {Promise<string>} A promise that resolves to a JSON string containing suggestions for food, activity, and other areas. Returns an error message if the API key is not set or if the request fails.
  */
 export const getDashboardSuggestion = async (appData: AppData, apiKey: string): Promise<string> => {
     if (!apiKey) {
-        return "Gemini API key is not set. Please set it in the settings.";
+        return "FitAI API key is not set. Please set it in the settings.";
     }
 
     const mcp = generateMCP(appData);
@@ -64,9 +64,9 @@ export const getDashboardSuggestion = async (appData: AppData, apiKey: string): 
 
 
 /**
- * Analyzes a user's prompt to determine their intent and extracts relevant data using the Gemini model.
- * This is the core function for the "Ask Gemini" feature, supporting conversational interactions.
- * @param {string} apiKey - The user's Gemini API key.
+ * Analyzes a user's prompt to determine their intent and extracts relevant data using the FitAI model.
+ * This is the core function for the "Ask FitAI" feature, supporting conversational interactions.
+ * @param {string} apiKey - The user's FitAI API key.
  * @param {string} userPrompt - The natural language input from the user.
  * @param {AppData} appData - The complete application data to provide context.
  * @param {any[]} conversationHistory - The history of the current conversation.
@@ -81,13 +81,13 @@ export const getIntentfulResponse = async (
     if (!apiKey) {
         return {
             intent: 'UNKNOWN',
-            summary: "Gemini API key is not set. Please set it in the settings.",
+            summary: "FitAI API key is not set. Please set it in the settings.",
             data: {},
         };
     }
     const mcp = generateMCP(appData);
     const systemInstruction = `
-        You are an intelligent assistant for the GeminiFit app. Your job is to analyze the user's input, determine their intent, and provide a helpful response in a structured JSON format.
+        You are an intelligent assistant for the FitAI app. Your job is to analyze the user's input, determine their intent, and provide a helpful response in a structured JSON format.
         If you are unable to determine the answer from the context, you can use Google Search to find the information.
         Always return your response as a JSON object with the following schema:
         {
@@ -110,7 +110,7 @@ export const getIntentfulResponse = async (
         const result = await chat.sendMessage(userPrompt);
         const response = await result.response;
         const responseText = await response.text();
-        console.log("Gemini API Response for intent:", responseText);
+        console.log("FitAI API Response for intent:", responseText);
 
         const jsonStart = responseText.indexOf('{');
         const jsonEnd = responseText.lastIndexOf('}');
@@ -152,8 +152,8 @@ export const getIntentfulResponse = async (
 
 
 /**
- * Generates a conversational response from the Gemini model based on user data and a prompt.
- * @param {string} apiKey - The user's Gemini API key.
+ * Generates a conversational response from the FitAI model based on user data and a prompt.
+ * @param {string} apiKey - The user's FitAI API key.
  * @param {string} userPrompt - The natural language input from the user.
  * @param {AppData} appData - The complete application data to provide context.
  * @param {string} [customInstructions=""] - Optional custom instructions to prepend to the system prompt.
@@ -166,7 +166,7 @@ export const getConversationalResponse = async (
     customInstructions: string = ""
 ): Promise<string> => {
     if (!apiKey) {
-        return "Gemini API key is not set. Please set it in the settings.";
+        return "FitAI API key is not set. Please set it in the settings.";
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -196,7 +196,7 @@ export const getConversationalResponse = async (
  * Parses natural language text to extract structured nutrition information for a meal.
  * @param {string} text - The user's text input describing a meal (e.g., "I had a chicken salad for lunch").
  * @param {AppData} appData - The complete application data for context.
- * @param {string} apiKey - The user's Gemini API key.
+ * @param {string} apiKey - The user's FitAI API key.
  * @returns {Promise<Partial<Meal>>} A promise that resolves to a meal object with extracted nutritional information.
  * @throws {Error} Throws an error if the API call fails or the response cannot be parsed.
  */
@@ -222,7 +222,7 @@ export const getNutritionInfoFromText = async (text: string, appData: AppData, a
         const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
-        console.log("Gemini API Response for nutrition:", responseText);
+        console.log("FitAI API Response for nutrition:", responseText);
         
         // Find the start and end of the JSON block
         const jsonStart = responseText.indexOf('{');
@@ -244,7 +244,7 @@ export const getNutritionInfoFromText = async (text: string, appData: AppData, a
  * Parses natural language text to extract structured workout information.
  * @param {string} text - The user's text input describing a workout (e.g., "ran 3 miles in 30 minutes").
  * @param {AppData} appData - The complete application data for context.
- * @param {string} apiKey - The user's Gemini API key.
+ * @param {string} apiKey - The user's FitAI API key.
  * @returns {Promise<Partial<WorkoutSession>>} A promise that resolves to a workout session object with extracted details.
  * @throws {Error} Throws an error if the API call fails or the response cannot be parsed.
  */
@@ -271,7 +271,7 @@ export const getWorkoutInfoFromText = async (text: string, appData: AppData, api
         const result = await model.generateContent(instruction);
         const response = await result.response;
         const responseText = await response.text();
-        console.log("Gemini API Response for workout:", responseText);
+        console.log("FitAI API Response for workout:", responseText);
         
         // Find the start and end of the JSON block
         const jsonStart = responseText.indexOf('{');

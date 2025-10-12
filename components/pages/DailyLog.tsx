@@ -110,9 +110,7 @@ const DailyLog: React.FC = () => {
       <div className="flex-grow">
         <header className="sticky top-0 z-10 bg-[#121212]/80 backdrop-blur-sm">
           <div className="flex items-center justify-between p-4">
-            <button className="text-white" onClick={() => navigate('/dashboard')}>
-              <span className="material-symbols-outlined">arrow_back_ios_new</span>
-            </button>
+            <div className="w-8"></div>
             <div className="flex items-center gap-2">
               <button className="text-white" onClick={handlePrevDay}>
                 <span className="material-symbols-outlined">chevron_left</span>
@@ -122,9 +120,15 @@ const DailyLog: React.FC = () => {
                 <span className="material-symbols-outlined">chevron_right</span>
               </button>
             </div>
-            <button className="text-white">
-              <span className="material-symbols-outlined">calendar_today</span>
-            </button>
+            <div className="relative w-8">
+              <input
+                type="date"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                value={dateString}
+                onChange={(e) => setCurrentDate(new Date(e.target.value))}
+              />
+              <span className="material-symbols-outlined text-white">calendar_today</span>
+            </div>
           </div>
         </header>
         <main className="p-4">

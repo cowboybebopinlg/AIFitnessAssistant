@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import AddWithGeminiModal from '../AddWithGeminiModal';
+import AddWithFitAIModal from '../AddWithFitAIModal';
 import { useAppContext } from '../../context/AppContext';
 import { Meal } from '../../types';
 import { getNutritionInfoFromText } from '../../services/geminiService';
@@ -13,7 +13,7 @@ import FormInput from '../FormInput';
  * It provides multiple ways to add a food item:
  * 1. From a list of saved (common) foods.
  * 2. From a list of recent foods from the current day.
- * 3. By parsing a natural language description using Gemini.
+ * 3. By parsing a natural language description using FitAI.
  * 4. By entering the nutritional information manually.
  * The manual entry form can be pre-filled with data passed via navigation state.
  * @returns {JSX.Element} The rendered Add Food page component.
@@ -52,7 +52,7 @@ const AddFoodPage: React.FC = () => {
   const dateString = searchParams.get('date') || getLocalDateString(new Date());
 
   const [activeTab, setActiveTab] = useState('manual'); // 'saved', 'recent', or 'manual'
-  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
+  const [isFitAIModalOpen, setIsFitAIModalOpen] = useState(false);
 
   const [foodName, setFoodName] = useState('');
   const [calories, setCalories] = useState<number | ''>('');
@@ -95,9 +95,9 @@ const AddFoodPage: React.FC = () => {
     navigate('/log');
   };
 
-  const handleAnalyzeFoodWithGemini = async (text: string) => {
+  const handleAnalyzeFoodWithFitAI = async (text: string) => {
     if (!geminiApiKey) {
-      alert("Please set your Gemini API key in the settings.");
+      alert("Please set your FitAI API key in the settings.");
       return;
     }
 
@@ -116,7 +116,7 @@ const AddFoodPage: React.FC = () => {
       navigate('/log');
     } catch (error) {
       console.error(error);
-      alert("Failed to parse food entry with Gemini.");
+      alert("Failed to parse food entry with FitAI.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -186,8 +186,8 @@ const AddFoodPage: React.FC = () => {
               placeholder="e.g., 0"
             />
           </div>
-          <label className="flex items-center justify-between rounded-xl bg-neutral-800/50 p-4">
-            <span className="font-medium">Save as Favorite</span>
+          <label className="flex items-center justify-between rounded-xl bg-dark-800 p-4">
+            <span className="font-medium text-light-200">Save as Favorite</span>
             <div className="relative inline-flex cursor-pointer items-center">
               <input
                 className="peer sr-only"
@@ -195,9 +195,18 @@ const AddFoodPage: React.FC = () => {
                 checked={saveAsFavorite}
                 onChange={(e) => setSaveAsFavorite(e.target.checked)}
               />
-              <div className="peer h-6 w-11 rounded-full bg-neutral-700 after:absolute after:top-0.5 after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white dark:border-neutral-600"></div>
+              <div className="peer h-6 w-11 rounded-full bg-dark-700 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-dark-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary-500 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
             </div>
           </label>
+            {geminiApiKey && (
+                <button
+                className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary-500/50 py-3 font-bold text-primary-500 transition-colors hover:bg-primary-500/10"
+                onClick={() => setIsFitAIModalOpen(true)}
+                >
+                <span className="material-symbols-outlined">auto_awesome</span>
+                <span>Add with FitAI</span>
+                </button>
+            )}
         </div>
       );
     }
@@ -242,19 +251,19 @@ const AddFoodPage: React.FC = () => {
         <div className="px-4">
           <div className="flex">
             <button
-              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'manual' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'manual' ? 'border-primary-500 text-primary-500' : 'border-transparent text-neutral-400'}`}
               onClick={() => setActiveTab('manual')}
             >
               Manual
             </button>
             <button
-              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'saved' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'saved' ? 'border-primary-500 text-primary-500' : 'border-transparent text-neutral-400'}`}
               onClick={() => setActiveTab('saved')}
             >
               Saved
             </button>
             <button
-              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'recent' ? 'border-primary text-primary' : 'border-transparent text-neutral-400'}`}
+              className={`flex-1 border-b-2 py-3 text-center text-sm font-bold ${activeTab === 'recent' ? 'border-primary-500 text-primary-500' : 'border-transparent text-neutral-400'}`}
               onClick={() => setActiveTab('recent')}
             >
               Recent
@@ -265,19 +274,10 @@ const AddFoodPage: React.FC = () => {
       <main className="flex-1 space-y-4 overflow-y-auto p-4">
         {renderContent()}
       </main>
-      <footer className="sticky bottom-0 z-10 space-y-4 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
-        {geminiApiKey && (
-          <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
-            onClick={() => setIsGeminiModalOpen(true)}
-          >
-            <span className="material-symbols-outlined">auto_awesome</span>
-            <span>Add with Gemini</span>
-          </button>
-        )}
+      <footer className="sticky bottom-0 z-10 border-t border-dark-700 bg-dark-900/80 p-4 backdrop-blur-sm">
         {activeTab === 'manual' && (
           <button
-            className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
+            className="h-14 w-full rounded-xl bg-primary-500 px-6 font-bold text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleAddFoodManually}
             disabled={!canSave || isAnalyzing}
           >
@@ -286,15 +286,15 @@ const AddFoodPage: React.FC = () => {
         )}
       </footer>
 
-      <AddWithGeminiModal
-        isOpen={isGeminiModalOpen}
-        onClose={() => setIsGeminiModalOpen(false)}
-        title="Add Food with Gemini"
-        description="Let Gemini analyze your food input and add it to your log."
+      <AddWithFitAIModal
+        isOpen={isFitAIModalOpen}
+        onClose={() => setIsFitAIModalOpen(false)}
+        title="Add Food with FitAI"
+        description="Let FitAI analyze your food input and add it to your log."
         placeholder="e.g., 1 scoop protein, 1 banana, 300ml milk"
-        onAnalyze={handleAnalyzeFoodWithGemini}
+        onAnalyze={handleAnalyzeFoodWithFitAI}
       />
-      {isAnalyzing && <LoadingIndicator text="Analyzing with Gemini..." />}
+      {isAnalyzing && <LoadingIndicator text="Analyzing with FitAI..." />}
     </div>
   );
 };

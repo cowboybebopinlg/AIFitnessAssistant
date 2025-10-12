@@ -1,6 +1,6 @@
 {
-  "appId": "com.geminifit.app",
-  "appName": "GeminiFit",
+  "appId": "com.fitai.app",
+  "appName": "FitAI",
   "webDir": "dist",
   "bundledWebRuntime": false
 }

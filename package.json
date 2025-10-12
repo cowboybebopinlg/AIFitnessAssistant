@@ -1,7 +1,7 @@
 {
-  "name": "geminifit",
+  "name": "fitai",
   "version": "1.0.0",
-  "description": "GeminiFit Custom Tracking App",
+  "description": "FitAI Custom Tracking App",
   "private": true,
   "scripts": {
     "dev": "vite",

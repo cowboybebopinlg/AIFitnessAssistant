@@ -1,12 +1,12 @@
-# Privacy Policy for GeminiFit
+# Privacy Policy for FitAI
 
 **Last updated:** September 20, 2025
 
-This Privacy Policy describes how your personal information is handled in the GeminiFit application.
+This Privacy Policy describes how your personal information is handled in the FitAI application.
 
 ## Information Collection and Use
 
-GeminiFit is a personal application designed to run locally on your device. All data you enter, including but not limited to workout logs, food entries, and personal metrics, is stored exclusively on your device.
+FitAI is a personal application designed to run locally on your device. All data you enter, including but not limited to workout logs, food entries, and personal metrics, is stored exclusively on your device.
 
 This application does not collect, transmit, or store any of your personal data on any external servers.
 

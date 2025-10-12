@@ -16,7 +16,7 @@ const MorningMetricsCard = ({ data, fitbitData }) => {
     const fitbitSummary = fitbitData?.summary;
     const readiness = data?.readiness > 0 ? data.readiness : 'N/A';
     const rhr = fitbitSummary?.restingHeartRate || 'N/A';
-    const hrv = fitbitData?.hrv?.[0]?.value?.dailyRmssd || 'N/A';
+    const hrv = fitbitData?.hrv?.[0]?.value?.dailyRmssd ? Math.round(fitbitData.hrv[0].value.dailyRmssd) : 'N/A';
     const steps = fitbitSummary?.steps?.toLocaleString() || 'N/A';
     const calories = fitbitSummary?.caloriesOut?.toLocaleString() || 'N/A';
 
@@ -280,6 +280,15 @@ export const Dashboard: React.FC = () => {
         }
     }, [appData, getLogForDate, todaysLog, geminiApiKey]);
 
+    const { syncFitbitData, isFitbitAuthenticated } = useAppContext();
+
+    useEffect(() => {
+        if (isFitbitAuthenticated) {
+            const today = new Date().toISOString().slice(0, 10);
+            syncFitbitData(today);
+        }
+    }, [isFitbitAuthenticated, syncFitbitData]);
+
     useEffect(() => {
         if (appData && !hasFetchedInitialSuggestion) {
             fetchSuggestion();
@@ -305,12 +314,8 @@ export const Dashboard: React.FC = () => {
             <div className="flex-grow">
                 <header className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-gray-900 z-10">
                     <div className="w-12"></div>
-                    <h1 className="text-white text-2xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">GeminiFit</h1>
-                    <div className="flex w-12 items-center justify-end">
-                        <button className="flex items-center justify-center h-12 w-12 bg-transparent text-white">
-                            <SettingsIcon className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <h1 className="text-white text-2xl font-bold leading-tight tracking-[-0.015em] flex-1 text-center">FitAI</h1>
+                    <div className="flex w-12 items-center justify-end"></div>
                 </header>
                 <main className="p-4 space-y-6">
                     <MorningMetricsCard data={todaysLog} fitbitData={todaysFitbitData} />

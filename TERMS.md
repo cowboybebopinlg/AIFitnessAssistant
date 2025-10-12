@@ -1,8 +1,8 @@
-# Terms of Service for GeminiFit
+# Terms of Service for FitAI
 
 **Last updated:** September 20, 2025
 
-By using the GeminiFit application ("Service"), you are agreeing to be bound by the following terms and conditions ("Terms of Service").
+By using the FitAI application ("Service"), you are agreeing to be bound by the following terms and conditions ("Terms of Service").
 
 ## Disclaimer
 

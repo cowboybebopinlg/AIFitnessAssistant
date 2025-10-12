@@ -3,14 +3,14 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { WorkoutSession, Exercise, FitbitActivity } from '../../types';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
-import AddWithGeminiModal from '../AddWithGeminiModal';
+import AddWithFitAIModal from '../AddWithFitAIModal';
 import FormInput from '../FormInput';
 import LoadingIndicator from '../LoadingIndicator';
 
 /**
  * A page component for adding or editing a weightlifting workout session.
  * It allows users to build a workout by adding multiple exercises, each with multiple sets of reps and weight.
- * The form supports both manual entry and natural language parsing via Gemini.
+ * The form supports both manual entry and natural language parsing via FitAI.
  * It can be pre-filled with data from a Fitbit activity or an existing workout for editing.
  * @returns {JSX.Element} The rendered page component.
  */
@@ -31,8 +31,8 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
   ]);
   const [averageHeartRate, setAverageHeartRate] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
-  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
-  const [isLoadingGemini, setIsLoadingGemini] = useState(false);
+  const [isFitAIModalOpen, setIsFitAIModalOpen] = useState(false);
+  const [isLoadingFitAI, setIsLoadingFitAI] = useState(false);
 
   const canSave = exercises.length > 0 && exercises.every(ex => ex.name.trim() !== '');
 
@@ -124,12 +124,12 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
     navigate(-1);
   };
 
-  const handleAnalyzeWorkoutWithGemini = async (text: string) => {
+  const handleAnalyzeWorkoutWithFitAI = async (text: string) => {
     if (!geminiApiKey) {
       // Consider a more user-friendly notification
       return;
     }
-    setIsLoadingGemini(true);
+    setIsLoadingFitAI(true);
     try {
       const geminiWorkout = await getWorkoutInfoFromText(text, appData, geminiApiKey);
       
@@ -162,13 +162,13 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
       console.error(error);
       // Consider a more user-friendly error message
     } finally {
-      setIsLoadingGemini(false);
+      setIsLoadingFitAI(false);
     }
   };
 
   return (
     <div className="flex h-screen flex-col bg-background-dark text-white">
-      {isLoadingGemini && <LoadingIndicator text="Analyzing your workout..." />}
+      {isLoadingFitAI && <LoadingIndicator text="Analyzing your workout..." />}
       <header className="sticky top-0 z-10 flex items-center border-b border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
         <button className="text-neutral-200" onClick={() => navigate(-1)}>
           <span className="material-symbols-outlined">close</span>
@@ -257,7 +257,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
                     </div>
                   ))}
                   <button
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-3 font-bold text-primary transition-colors hover:bg-primary/30"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-3 font-bold text-white transition-colors hover:bg-primary-600"
                     onClick={() => handleAddSet(exerciseIndex)}
                   >
                     <span className="material-symbols-outlined">add</span> Add Set
@@ -269,7 +269,7 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
         </div>
         <div className="space-y-4 pt-4">
           <button
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-700 py-4 font-bold text-neutral-400 transition-colors hover:border-primary hover:text-primary"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-500 py-4 font-bold text-white transition-colors hover:bg-primary-600"
             onClick={handleAddExercise}
           >
             <span className="material-symbols-outlined">add</span>
@@ -277,31 +277,31 @@ const AddWeightliftingWorkoutPage: React.FC = () => {
           </button>
           {geminiApiKey && (
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
-              onClick={() => setIsGeminiModalOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary-500/50 py-3 font-bold text-primary-500 transition-colors hover:bg-primary-500/10"
+              onClick={() => setIsFitAIModalOpen(true)}
             >
               <span className="material-symbols-outlined">auto_awesome</span>
-              <span>Add with Gemini</span>
+              <span>Add with FitAI</span>
             </button>
           )}
         </div>
       </main>
-      <footer className="sticky bottom-0 z-10 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+      <footer className="sticky bottom-0 z-10 border-t border-dark-700 bg-dark-900/80 p-4 backdrop-blur-sm">
         <button
-          className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
+          className="h-14 w-full rounded-xl bg-primary-500 px-6 font-bold text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSaveWorkout}
-          disabled={!canSave || isLoadingGemini}
+          disabled={!canSave || isLoadingFitAI}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
-      <AddWithGeminiModal
-        isOpen={isGeminiModalOpen}
-        onClose={() => setIsGeminiModalOpen(false)}
-        title="Add Weightlifting Workout with Gemini"
+      <AddWithFitAIModal
+        isOpen={isFitAIModalOpen}
+        onClose={() => setIsFitAIModalOpen(false)}
+        title="Add Weightlifting Workout with FitAI"
         description="Describe your workout in plain text. e.g., '3 sets of 10 reps of bench press at 135lbs, and 3 sets of 12 reps of squats at 225lbs.'"
         placeholder="e.g., 3 sets of 10 reps of bench press at 135lbs..."
-        onAnalyze={handleAnalyzeWorkoutWithGemini}
+        onAnalyze={handleAnalyzeWorkoutWithFitAI}
       />
     </div>
   );
