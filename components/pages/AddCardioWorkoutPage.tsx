@@ -3,13 +3,13 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { getWorkoutInfoFromText } from '../../services/geminiService';
 import { WorkoutSession, FitbitActivity } from '../../types';
-import AddWithGeminiModal from '../AddWithGeminiModal';
+import AddWithFitAIModal from '../AddWithFitAIModal';
 import FormInput from '../FormInput';
 import LoadingIndicator from '../LoadingIndicator';
 
 /**
  * A page component for adding or editing a cardio workout session.
- * It provides a form for manual input and an option to use Gemini for natural language parsing.
+ * It provides a form for manual input and an option to use FitAI for natural language parsing.
  * The form can be pre-filled with data from a Fitbit activity or an existing workout for editing.
  * @returns {JSX.Element} The rendered page component.
  */
@@ -29,8 +29,8 @@ const AddCardioWorkoutPage: React.FC = () => {
   const [averageHeartRate, setAverageHeartRate] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
   const [notes, setNotes] = useState('');
-  const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
-  const [isLoadingGemini, setIsLoadingGemini] = useState(false); // New state for Gemini loading
+  const [isFitAIModalOpen, setIsFitAIModalOpen] = useState(false);
+  const [isLoadingFitAI, setIsLoadingFitAI] = useState(false); // New state for FitAI loading
 
   const isEditMode = workoutIndex !== null;
 
@@ -94,17 +94,17 @@ const AddCardioWorkoutPage: React.FC = () => {
     navigate('/log'); // Navigate directly to daily log
   };
 
-  const handleAnalyzeWorkoutWithGemini = async (text: string) => {
+  const handleAnalyzeWorkoutWithFitAI = async (text: string) => {
     if (!geminiApiKey) {
-      alert('Please set your Gemini API key in the settings.');
+      alert('Please set your FitAI API key in the settings.');
       return;
     }
 
-    setIsLoadingGemini(true); // Set loading state
+    setIsLoadingFitAI(true); // Set loading state
     try {
-      console.log('Sending to Gemini:', text); // Log input
+      console.log('Sending to FitAI:', text); // Log input
       const workout = await getWorkoutInfoFromText(text, appData, geminiApiKey);
-      console.log('Received from Gemini:', workout); // Log output
+      console.log('Received from FitAI:', workout); // Log output
 
       const newWorkout: WorkoutSession = {
         type: 'cardio',
@@ -121,9 +121,9 @@ const AddCardioWorkoutPage: React.FC = () => {
       navigate('/log');
     } catch (error) {
       console.error(error);
-      alert('Failed to parse workout with Gemini.');
+      alert('Failed to parse workout with FitAI.');
     } finally {
-      setIsLoadingGemini(false); // Reset loading state
+      setIsLoadingFitAI(false); // Reset loading state
     }
   };
 
@@ -181,32 +181,32 @@ const AddCardioWorkoutPage: React.FC = () => {
         {geminiApiKey && (
           <section>
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary/20 py-4 font-bold text-primary transition-colors hover:bg-primary/30"
-              onClick={() => setIsGeminiModalOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary-500/50 py-3 font-bold text-primary-500 transition-colors hover:bg-primary-500/10"
+              onClick={() => setIsFitAIModalOpen(true)}
             >
               <span className="material-symbols-outlined">auto_awesome</span>
-              <span>Add with Gemini</span>
+              <span>Add with FitAI</span>
             </button>
           </section>
         )}
       </main>
-      <footer className="sticky bottom-0 z-10 border-t border-neutral-700 bg-background-dark/80 p-4 backdrop-blur-sm">
+      <footer className="sticky bottom-0 z-10 border-t border-dark-700 bg-dark-900/80 p-4 backdrop-blur-sm">
         <button
-          className="h-12 w-full rounded-xl bg-primary px-6 font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background-dark disabled:opacity-50"
+          className="h-14 w-full rounded-xl bg-primary-500 px-6 font-bold text-white transition-colors hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-900 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSaveWorkout}
-          disabled={!activityType || !duration || !!fitbitActivity || isLoadingGemini}
+          disabled={!activityType || !duration || !!fitbitActivity || isLoadingFitAI}
         >
           {isEditMode ? 'Save Changes' : 'Save Workout'}
         </button>
       </footer>
-      {isLoadingGemini && <LoadingIndicator text="Analyzing with Gemini..." />}
-      <AddWithGeminiModal
-        isOpen={isGeminiModalOpen}
-        onClose={() => setIsGeminiModalOpen(false)}
-        title="Add Cardio Workout with Gemini"
+      {isLoadingFitAI && <LoadingIndicator text="Analyzing with FitAI..." />}
+      <AddWithFitAIModal
+        isOpen={isFitAIModalOpen}
+        onClose={() => setIsFitAIModalOpen(false)}
+        title="Add Cardio Workout with FitAI"
         description="Describe your cardio workout in plain text. e.g., 'Ran 5k in 25 minutes and then walked for 10 minutes.'"
         placeholder="e.g., Ran 5k in 25 minutes..."
-        onAnalyze={handleAnalyzeWorkoutWithGemini}
+        onAnalyze={handleAnalyzeWorkoutWithFitAI}
       />
     </div>
   );

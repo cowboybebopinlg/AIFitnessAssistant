@@ -35,8 +35,14 @@ const AddMeasurementModal: React.FC<AddMeasurementModalProps> = ({ isOpen, onClo
       setMeasurementType(measurementName.toLowerCase());
       const log = getLogForDate(date);
       setValue(log?.[measurementName.toLowerCase()] || '');
-    } else if (userProfile?.measurements && userProfile.measurements.length > 0) {
-      setMeasurementType(userProfile.measurements[0].name.toLowerCase());
+    } else {
+        // Default to 'weight' if available, otherwise the first in the list
+        const weightMeasurement = userProfile?.measurements?.find(m => m.name.toLowerCase() === 'weight');
+        if (weightMeasurement) {
+            setMeasurementType('weight');
+        } else if (userProfile?.measurements && userProfile.measurements.length > 0) {
+            setMeasurementType(userProfile.measurements[0].name.toLowerCase());
+        }
     }
   }, [measurementName, userProfile, date, getLogForDate]);
 
@@ -71,7 +77,8 @@ const AddMeasurementModal: React.FC<AddMeasurementModalProps> = ({ isOpen, onClo
           className="w-full bg-gray-700 border-none rounded-md p-2 focus:ring-2 focus:ring-blue-500 mb-4"
           disabled={!!measurementName}
         >
-          {userProfile?.measurements?.map(m => (
+          <option value="weight">Weight</option>
+          {userProfile?.measurements?.filter(m => m.name.toLowerCase() !== 'weight').map(m => (
             <option key={m.name} value={m.name.toLowerCase()}>{m.name}</option>
           ))}
         </select>

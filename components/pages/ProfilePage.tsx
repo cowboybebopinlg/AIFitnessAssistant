@@ -37,7 +37,7 @@ const AccordionSection: React.FC<{
  * The main component for the user profile page.
  * It allows users to view, edit, and save their profile information, which includes
  * mission statements, biometrics, health context, and training/nutrition protocols.
- * It also integrates with Gemini to allow users to generate their profile from natural language.
+ * It also integrates with FitAI to allow users to generate their profile from natural language.
  * @returns {JSX.Element} The rendered profile page component.
  */
 const ProfilePage: React.FC = () => {
@@ -46,9 +46,9 @@ const ProfilePage: React.FC = () => {
 
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isLoadingGemini, setIsLoadingGemini] = useState(false);
-    const [geminiPrompt, setGeminiPrompt] = useState('');
-    const [geminiStatus, setGeminiStatus] = useState('');
+    const [isLoadingFitAI, setIsLoadingFitAI] = useState(false);
+    const [fitAIPrompt, setFitAIPrompt] = useState('');
+    const [fitAIStatus, setFitAIStatus] = useState('');
     const [openSections, setOpenSections] = useState({
         mission: true,
         biometrics: false,
@@ -148,17 +148,17 @@ const ProfilePage: React.FC = () => {
     };
 
     const handleGenerateProfile = async () => {
-        if (!geminiPrompt.trim()) {
-            setGeminiStatus('Please enter a description of your profile.');
+        if (!fitAIPrompt.trim()) {
+            setFitAIStatus('Please enter a description of your profile.');
             return;
         }
-        setIsLoadingGemini(true);
-        setGeminiStatus('Gemini is building your profile...');
+        setIsLoadingFitAI(true);
+        setFitAIStatus('FitAI is building your profile...');
 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
         const payload = {
-            contents: [{ parts: [{ text: geminiPrompt }] }],
+            contents: [{ parts: [{ text: fitAIPrompt }] }],
             systemInstruction: {
                 parts: [{ text: "You are an expert fitness assistant. Your task is to parse the user's unstructured text and extract structured information to populate a user profile form. Fill in every field of the provided JSON schema based on the user's text. If a piece of information is not provided, use a reasonable default or leave the string empty. Today's date is July 6, 2025." }]
             },
@@ -210,7 +210,7 @@ const ProfilePage: React.FC = () => {
             
             if (jsonText) {
                 const data = JSON.parse(jsonText);
-                // Populate state from Gemini response
+                // Populate state from FitAI response
                 setPrimaryGoal(data.primaryGoal || '');
                 setTargetDate(data.targetDate || '');
                 setMissionStatement(data.missionStatement || '');
@@ -224,19 +224,19 @@ const ProfilePage: React.FC = () => {
                 setTrainingDayTargets(data.trainingDayTargets ? { ...data.trainingDayTargets, calories: String(data.trainingDayTargets.calories || ''), protein: String(data.trainingDayTargets.protein || ''), fat: String(data.trainingDayTargets.fat || ''), fiber: String(data.trainingDayTargets.fiber || ''), sodium: String(data.trainingDayTargets.sodium || '') } : { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
                 setRecoveryDayTargets(data.recoveryDayTargets ? { ...data.recoveryDayTargets, calories: String(data.recoveryDayTargets.calories || ''), protein: String(data.recoveryDayTargets.protein || ''), fat: String(data.recoveryDayTargets.fat || ''), fiber: String(data.recoveryDayTargets.fiber || ''), sodium: String(data.recoveryDayTargets.sodium || '') } : { calories: '', protein: '', fat: '', fiber: '', sodium: '' });
 
-                setGeminiStatus('Profile generated successfully!');
+                setFitAIStatus('Profile generated successfully!');
                 setTimeout(() => {
                     setIsModalOpen(false);
-                    setGeminiStatus('');
+                    setFitAIStatus('');
                 }, 1500);
             } else {
                  throw new Error("No content received from API.");
             }
         } catch (error) {
-            console.error("Error calling Gemini API:", error);
-            setGeminiStatus('Failed to generate profile. Please try again.');
+            console.error("Error calling FitAI API:", error);
+            setFitAIStatus('Failed to generate profile. Please try again.');
         } finally {
-            setIsLoadingGemini(false);
+            setIsLoadingFitAI(false);
         }
     };
 
@@ -244,16 +244,16 @@ const ProfilePage: React.FC = () => {
         <div className="bg-gray-900 text-white font-['Noto_Sans']">
             <div className="container mx-auto p-4 md:p-8 max-w-4xl">
                 <header className="text-center mb-10">
-                    <h1 className="text-4xl md:text-5xl font-bold text-blue-500 font-['Space_Grotesk']">GeminiFit Profile</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold text-blue-500 font-['Space_Grotesk']">FitAI Profile</h1>
                     <p className="text-gray-400 mt-2">Your central source of truth for a data-driven fitness journey.</p>
                 </header>
 
-                {/* Build with Gemini Section */}
+                {/* Build with FitAI Section */}
                 <div className="bg-gray-800 p-6 rounded-lg mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center space-x-4">
                             <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                            <h2 className="text-2xl font-semibold font-['Space_Grotesk']">Build with Gemini</h2>
+                            <h2 className="text-2xl font-semibold font-['Space_Grotesk']">Build with FitAI</h2>
                         </div>
                         <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
                             Start Building
@@ -396,35 +396,35 @@ const ProfilePage: React.FC = () => {
                 </form>
             </div>
 
-            {/* Gemini Modal */}
+            {/* FitAI Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold text-blue-500 font-['Space_Grotesk']">Build Your Profile with Gemini</h2>
+                            <h2 className="text-2xl font-bold text-blue-500 font-['Space_Grotesk']">Build Your Profile with FitAI</h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white text-3xl">&times;</button>
                         </div>
-                        <p className="text-gray-400 mb-4">Describe your profile in your own words. Include your goals, stats, health notes, and nutrition/training strategies. Gemini will do the rest.</p>
-                        <textarea value={geminiPrompt} onChange={e => setGeminiPrompt(e.target.value)} rows={10} className="w-full bg-gray-700 border-none rounded-md p-3 focus:ring-2 focus:ring-blue-500" placeholder="e.g., 'My goal is fat loss. I'm 6 feet tall and currently 220 lbs. I lift 3 times a week... My training day calories are 2000.'"></textarea>
+                        <p className="text-gray-400 mb-4">Describe your profile in your own words. Include your goals, stats, health notes, and nutrition/training strategies. FitAI will do the rest.</p>
+                        <textarea value={fitAIPrompt} onChange={e => setFitAIPrompt(e.target.value)} rows={10} className="w-full bg-gray-700 border-none rounded-md p-3 focus:ring-2 focus:ring-blue-500" placeholder="e.g., 'My goal is fat loss. I'm 6 feet tall and currently 220 lbs. I lift 3 times a week... My training day calories are 2000.'"></textarea>
                         
-                        {geminiStatus && (
+                        {fitAIStatus && (
                             <div className="mt-4 text-center">
-                                {isLoadingGemini ? (
+                                {isLoadingFitAI ? (
                                     <div className="flex justify-center items-center">
                                         <div className="loader border-t-blue-500 border-4 border-gray-700 rounded-full w-10 h-10 animate-spin"></div>
-                                        <p className="ml-4 text-blue-500">{geminiStatus}</p>
+                                        <p className="ml-4 text-blue-500">{fitAIStatus}</p>
                                     </div>
                                 ) : (
-                                    <p className={geminiStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}>{geminiStatus}</p>
+                                    <p className={fitAIStatus.includes('Failed') ? 'text-red-400' : 'text-green-400'}>{fitAIStatus}</p>
                                 )}
                             </div>
                         )}
 
                         <div className="flex justify-end space-x-4 mt-4">
                             <button onClick={() => setIsModalOpen(false)} className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition">Cancel</button>
-                            <button onClick={handleGenerateProfile} disabled={isLoadingGemini} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center disabled:opacity-50">
+                            <button onClick={handleGenerateProfile} disabled={isLoadingFitAI} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center disabled:opacity-50">
                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                                {isLoadingGemini ? 'Generating...' : 'Generate Profile'}
+                                {isLoadingFitAI ? 'Generating...' : 'Generate Profile'}
                             </button>
                         </div>
                     </div>

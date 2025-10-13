@@ -2,9 +2,9 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# GeminiFit: Your AI-Powered Fitness Companion
+# FitAI: Your AI-Powered Fitness Companion
 
-GeminiFit is a modern, data-driven fitness tracking application designed to provide users with deep insights into their health and wellness journey. By integrating with the Gemini API, it offers intelligent features like natural language logging and smart suggestions. The app is built as a cross-platform solution using Capacitor, allowing it to run on the web, Android, and iOS from a single codebase.
+FitAI is a modern, data-driven fitness tracking application designed to provide users with deep insights into their health and wellness journey. By integrating with the FitAI API, it offers intelligent features like natural language logging and smart suggestions. The app is built as a cross-platform solution using Capacitor, allowing it to run on the web, Android, and iOS from a single codebase.
 
 ## ✨ Key Features
 
@@ -61,8 +61,8 @@ Follow these instructions to get a local copy of the project up and running for 
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/your-username/geminifit.git
-    cd geminifit
+    git clone https://github.com/your-username/fitai.git
+    cd fitai
     ```
 
 2.  **Install dependencies:**

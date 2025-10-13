@@ -3,7 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { App as CapacitorApp } from '@capacitor/app';
 
 import BottomNav from './components/BottomNav';
-import AskGeminiFeature from './components/AskGemini';
+import AskFitAI from './components/AskFitAI';
 import AppProvider from './context/AppContext';
 
 const Dashboard = lazy(() => import('./components/pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -76,7 +76,7 @@ const AppContent: React.FC = () => {
             </Suspense>
           </main>
           <BottomNav />
-          <AskGeminiFeature />
+          <AskFitAI />
         </div>
       </div>
     </Router>

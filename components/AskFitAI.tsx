@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { getIntentfulResponse } from '../services/geminiService';
 import type { AskGeminiResponse } from '../types';
+import { SparklesIcon } from './icons';
 
 /**
- * @file This file defines the "Ask Gemini" feature, including the floating action button (FAB)
- * and the chat modal for interacting with the Gemini API.
+ * @file This file defines the "Ask FitAI" feature, including the main button
+ * and the chat modal for interacting with the FitAI API.
  */
 
 /**
@@ -26,9 +27,9 @@ type Message = {
 };
 
 /**
- * Defines the props for the AskGeminiModal component.
+ * Defines the props for the AddWithFitAIModal component.
  */
-type AskGeminiModalProps = {
+type AddWithFitAIModalProps = {
   /** A boolean indicating whether the modal is open or closed. */
   isOpen: boolean;
   /** A function to be called when the modal is requested to be closed. */
@@ -38,10 +39,10 @@ type AskGeminiModalProps = {
 /**
  * A modal component that provides a chat interface for users to interact with the Gemini model.
  * It handles sending user prompts, displaying the conversation, and processing actions based on the AI's response.
- * @param {AskGeminiModalProps} props - The props for the component.
+ * @param {AddWithFitAIModalProps} props - The props for the component.
  * @returns {JSX.Element | null} The rendered modal component or null if it's not open.
  */
-const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
+const AddWithFitAIModal: React.FC<AddWithFitAIModalProps> = ({ isOpen, onClose }) => {
   const { geminiApiKey, appData, addMeal, addWorkout } = useAppContext();
   const navigate = useNavigate();
 
@@ -74,7 +75,7 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
   const callGeminiAPI = async (userMessage: Message) => {
     if (!geminiApiKey || !appData) {
-        setConversation(prev => [...prev, { sender: 'gemini', text: "Please set your Gemini API key in the settings to use this feature." }]);
+        setConversation(prev => [...prev, { sender: 'gemini', text: "Please set your FitAI API key in the settings to use this feature." }]);
         return;
     }
 
@@ -135,21 +136,21 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black z-40 flex items-center justify-center p-4" onClick={onClose}>
-        <div className="bg-background-dark w-full max-w-lg h-[80vh] flex flex-col rounded-xl border border-slate-700 font-['Space_Grotesk'] text-white" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-4 border-b border-slate-700">
-                <h2 className="text-xl font-bold">Ask Gemini</h2>
-                <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">&times;</button>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="bg-dark-800 w-full max-w-lg h-[90vh] max-h-[700px] flex flex-col rounded-2xl border border-dark-700 text-light-100 shadow-2xl shadow-black/50" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-4 border-b border-dark-700">
+                <h2 className="text-xl font-bold text-light-50">Ask FitAI</h2>
+                <button onClick={onClose} className="text-dark-300 hover:text-light-100 text-2xl">&times;</button>
             </div>
             
             <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                 {conversation.map((msg, index) => (
                     <div key={index} className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-blue-600 rounded-br-none' : 'bg-slate-700 rounded-bl-none'}`}>
+                    <div className={`max-w-xs md:max-w-md p-3 rounded-2xl ${msg.sender === 'user' ? 'bg-primary-500 rounded-br-none' : 'bg-dark-700 rounded-bl-none'}`}>
                         {msg.imagePreview && <img src={msg.imagePreview} alt="User upload" className="rounded-lg mb-2" />}
-                        <p className="text-white whitespace-pre-wrap">{msg.text}</p>
+                        <p className="whitespace-pre-wrap">{msg.text}</p>
                         {msg.sender === 'gemini' && msg.response && (msg.response.intent === 'LOG_FOOD' || msg.response.intent === 'LOG_WORKOUT') && (
-                            <button onClick={() => handleActionClick(msg.response)} className="mt-2 w-full text-left bg-blue-500/50 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                            <button onClick={() => handleActionClick(msg.response)} className="mt-2 w-full text-left bg-primary-500/50 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
                                 Go to Log &rarr;
                             </button>
                         )}
@@ -158,41 +159,29 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
                 ))}
                 {isLoading && (
                     <div className="flex justify-start">
-                    <div className="bg-slate-700 p-3 rounded-2xl rounded-bl-none">
+                    <div className="bg-dark-700 p-3 rounded-2xl rounded-bl-none">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-dark-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-2 h-2 bg-dark-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-2 h-2 bg-dark-400 rounded-full animate-bounce"></div>
                         </div>
                     </div>
                     </div>
                 )}
                 <div ref={chatEndRef} />
             </div>
-            <div className="flex flex-col gap-4 p-4 pt-0">
+            <div className="p-4 border-t border-dark-700">
               <textarea
-                className="h-40 w-full resize-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:ring-primary"
-                placeholder="Ask Gemini"
+                className="h-24 w-full resize-none rounded-lg bg-dark-900 p-3 text-light-100 placeholder-dark-400 focus:border-primary-500 focus:ring-primary-500"
+                placeholder="Log 'a salmon salad for lunch'..."
                 value={textareaContent}
                 onChange={(e) => setTextareaContent(e.target.value)}
-              ></textarea>
-              <div className="relative flex items-center justify-center">
-                <span className="absolute w-full border-t border-gray-300 dark:border-gray-600"></span>
-                <span className="relative bg-white dark:bg-gray-800 px-2 text-sm text-gray-500 dark:text-gray-400">OR</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <span className="material-symbols-outlined">image</span>
-                  <span>Upload</span>
-                </button>
-                <button className="flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-4 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <span className="material-symbols-outlined">photo_camera</span>
-                  <span>Take Photo</span>
-                </button>
-              </div>
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
+              />
               <button
-                className="w-full rounded-lg bg-blue-600 py-4 text-center font-bold text-white"
+                className="mt-2 w-full rounded-lg bg-primary-500 py-3 text-center font-bold text-white transition-colors hover:bg-primary-600 disabled:bg-primary-700/50"
                 onClick={handleSend}
+                disabled={isLoading || !textareaContent.trim()}
               >
                 Send
               </button>
@@ -204,36 +193,31 @@ const AskGeminiModal: React.FC<AskGeminiModalProps> = ({ isOpen, onClose }) => {
 
 
 /**
- * The main feature component that includes the Floating Action Button (FAB) to open the AskGeminiModal.
- * The FAB is conditionally rendered based on the current route.
- * @returns {JSX.Element} The rendered feature component.
+ * A button that opens a modal for the "Add with FitAI" feature.
+ * This component is designed to be the centerpiece of the bottom navigation bar.
+ * @returns {JSX.Element} The rendered "Ask FitAI" component.
  */
-const AskGeminiFeature = () => {
+const AskFitAI: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const location = useLocation();
-
-    // Hide FAB on specific pages
-    const hiddenPaths = ['/settings', '/profile'];
-    const isHidden = hiddenPaths.includes(location.pathname);
 
     return (
         <>
-            {!isHidden && (
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="fixed bottom-24 right-6 bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-30"
-                    aria-label="Ask Gemini"
-                >
-                    <span className="material-symbols-outlined text-3xl">auto_awesome</span>
-                </button>
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="relative z-10 flex h-16 w-16 -translate-y-4 items-center justify-center rounded-full border-4 border-dark-900 bg-primary-500 text-white shadow-lg transition-transform duration-200 hover:scale-105"
+                aria-label="Ask FitAI"
+            >
+                <SparklesIcon className="h-8 w-8" />
+            </button>
+            {isModalOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black bg-opacity-50 backdrop-blur-sm"
+                    onClick={() => setIsModalOpen(false)}
+                />
             )}
-            
-            <AskGeminiModal 
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-            />
+            <AddWithFitAIModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </>
     );
 };
 
-export default AskGeminiFeature;
+export default AskFitAI;

@@ -36,9 +36,9 @@ interface AppContextType {
     exportData: () => Promise<string>;
     /** A function to retrieve the log for a specific date. */
     getLogForDate: (date: string) => DailyLog | undefined;
-    /** The user's Gemini API key. */
+    /** The user's FitAI API key. */
     geminiApiKey: string | null;
-    /** A function to set the Gemini API key. */
+    /** A function to set the FitAI API key. */
     setGeminiApiKey: (key: string | null) => void;
     /** A function to add a food item to the common foods list. */
     addCommonFood: (food: CommonFood) => void;
@@ -78,7 +78,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [appData, setAppData] = useState<AppData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(null);
+    const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(import.meta.env.VITE_GEMINI_API_KEY || null);
     const [fitbitAccessToken, setFitbitAccessToken] = useState<string | null>(null);
 
     const isFitbitAuthenticated = !!fitbitAccessToken;
@@ -151,8 +151,8 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     }, [appData, isLoading]);
 
     /**
-     * Sets the Gemini API key in the application state and persists it.
-     * @param {string | null} key - The Gemini API key.
+     * Sets the FitAI API key in the application state and persists it.
+     * @param {string | null} key - The FitAI API key.
      */
     const setGeminiApiKey = (key: string | null) => {
         setGeminiApiKeyState(key);
@@ -366,7 +366,7 @@ const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `geminifit_data_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `fitai_data_${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
